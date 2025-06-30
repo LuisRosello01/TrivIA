@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pruebas de Ollama - Generador de Preguntas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .status.connected {
+            background: rgba(76, 175, 80, 0.3);
+        }
+        .status.disconnected {
+            background: rgba(244, 67, 54, 0.3);
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label {
+            font-weight: 600;
+        }
+        select, input, button {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 14px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .question-display {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .answers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .answer {
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }        .answer.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            font-weight: 600;
+        }
+        .answer.correct.hidden {
+            background: #f8f9fa;
+            border-color: #e9ecef;
+            font-weight: normal;
+        }
+        .toggle-answer-btn {
+            background: #17a2b8;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .toggle-answer-btn:hover {
+            background: #138496;
+            transform: translateY(-1px);
+        }
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+            font-size: 14px;
+        }
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .meta-label {
+            font-weight: 600;
+            color: #6c757d;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }        .error {
+            background: rgba(244, 67, 54, 0.3);
+            border: 1px solid #f44336;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .stats {
+            display: grid;
+            gap: 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4caf50;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        .experimental-stats {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .experimental-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #ffc107;
+        }
+        .confidence-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        .confidence-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .confidence-high { background: #4caf50; }
+        .confidence-medium { background: #ff9800; }
+        .confidence-low { background: #f44336; }
+        .match-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .reset-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .reset-btn:hover {
+            background: #d32f2f;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .server-info, .available-servers {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .server-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .server-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .server-item.available {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 3px solid #4caf50;
+        }
+        .server-item.unavailable {
+            background: rgba(244, 67, 54, 0.2);
+            border-left: 3px solid #f44336;
+        }
+        .server-connect-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .server-connect-btn:hover {
+            background: #1976D2;
+        }
+        .server-connect-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Pruebas de Ollama</h1>
+            <p>Generador de Preguntas con IA Local</p>
+        </div>
+
+        <div id="status" class="status disconnected">
+            <span>🔴</span>
+            <span>Verificando conexión con Ollama...</span>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="category">Categoría:</label>
+                <select id="category">
+                    <option value="historia">Historia</option>
+                    <option value="ciencia">Ciencia</option>
+                    <option value="deportes">Deportes</option>
+                    <option value="arte">Arte</option>
+                    <option value="geografia">Geografía</option>
+                    <option value="entretenimiento">Entretenimiento</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="difficulty">Dificultad:</label>
+                <select id="difficulty">
+                    <option value="easy">Fácil</option>
+                    <option value="medium" selected>Medio</option>
+                    <option value="hard">Difícil</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="topic">Tema específico (opcional):</label>
+                <input type="text" id="topic" placeholder="ej: historia mundial">
+            </div>            <div class="control-group">
+                <label for="model">Modelo:</label>
+                <select id="model" onchange="onModelChange()">
+                    <option value="">Cargando modelos...</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button id="generateBtn" onclick="generateQuestion()">
+                    🎯 Generar Pregunta
+                </button>
+            </div>
+
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button id="testBtn" onclick="testConnection()">
+                    🧪 Probar Conexión
+                </button>
+            </div>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Generando pregunta con IA...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="success" class="success" style="display: none;"></div>
+
+        <div id="questionDisplay" style="display: none;"></div>
+    </div>    <div class="container">
+        <h2>🖥️ Configuración de Servidor</h2>
+        <div class="controls">
+            <div class="control-group">
+                <label for="serverMode">Modo de Servidor:</label>
+                <select id="serverMode" onchange="changeServerMode()">
+                    <option value="auto">Detección Automática</option>
+                    <option value="localhost">Solo Localhost</option>
+                    <option value="dedicated">Servidor Dedicado</option>
+                </select>
+            </div>
+
+            <div class="control-group" id="dedicatedServerConfig" style="display: none;">
+                <label for="serverIp">IP del Servidor:</label>
+                <input type="text" id="serverIp" placeholder="192.168.1.100" value="">
+            </div>
+
+            <div class="control-group" id="dedicatedPortConfig" style="display: none;">
+                <label for="serverPort">Puerto:</label>
+                <input type="number" id="serverPort" placeholder="11434" value="11434">
+            </div>            <div class="control-group">
+                <label>&nbsp;</label>
+                <button id="refreshModelsBtn" onclick="refreshModels()">
+                    🔄 Actualizar Modelos
+                </button>
+            </div>
+
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button id="connectServerBtn" onclick="connectToServer()">
+                    🔗 Conectar al Servidor
+                </button>
+            </div>
+
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button id="scanServersBtn" onclick="scanNetworkServers()">
+                    🔍 Escanear Red
+                </button>
+            </div>
+        </div>
+
+        <div id="serverInfo" class="server-info" style="display: none;">
+            <h3>📡 Información del Servidor</h3>
+            <div id="serverDetails"></div>
+        </div>
+
+        <div id="availableServers" class="available-servers" style="display: none;">
+            <h3>🌐 Servidores Disponibles</h3>
+            <div id="serversList"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Estadísticas</h2>
+        <div id="statsDisplay" class="stats">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="generationCount">0</div>
+                    <div class="stat-label">Preguntas Generadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="successRate">0%</div>
+                    <div class="stat-label">Tasa de Éxito</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgTime">0ms</div>
+                    <div class="stat-label">Tiempo Promedio</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="cacheSize">0</div>
+                    <div class="stat-label">Cache Size</div>
+                </div>
+            </div>
+
+            <div class="experimental-stats" id="experimentalStats" style="display: none;">
+                <div class="experimental-header">
+                    🧪 Estadísticas de Validación Experimental
+                    <button class="reset-btn" onclick="resetValidationStats()">🔄 Reiniciar</button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalValidations">0</div>
+                        <div class="stat-label">Total Validaciones</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="validationSuccessRate">0%</div>
+                        <div class="stat-label">Tasa de Éxito</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="correctedAnswers">0</div>
+                        <div class="stat-label">Respuestas Corregidas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="regeneratedQuestions">0</div>
+                        <div class="stat-label">Preguntas Regeneradas</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h4>Distribución de Confianza:</h4>
+                    <div style="margin: 10px 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>Alta</span>
+                            <span id="highConfidenceCount">0 (0%)</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill confidence-high" id="highConfidenceBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div style="margin: 10px 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>Media</span>
+                            <span id="mediumConfidenceCount">0 (0%)</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill confidence-medium" id="mediumConfidenceBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div style="margin: 10px 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>Baja</span>
+                            <span id="lowConfidenceCount">0 (0%)</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill confidence-low" id="lowConfidenceBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h4>Puntuaciones de Coincidencia:</h4>
+                    <div class="match-score">
+                        <span>Promedio:</span>
+                        <span id="avgMatchScore">0.000</span>
+                    </div>
+                    <div class="match-score">
+                        <span>Máxima:</span>
+                        <span id="maxMatchScore">0.000</span>
+                    </div>
+                    <div class="match-score">
+                        <span>Mínima:</span>
+                        <span id="minMatchScore">0.000</span>
+                    </div>
+                    <div class="match-score">
+                        <span>Muestras:</span>
+                        <span id="matchSamples">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>    <script src="js/utils/OllamaClient.js"></script>
+    <script>
+        let ollamaClient;
+        let generationCount = 0;
+        let successCount = 0;
+        let totalTime = 0;
+
+        // Funciones de utilidad para mostrar mensajes
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            errorEl.innerHTML = `<strong>❌ Error:</strong> ${message}`;
+            errorEl.style.display = 'block';
+            
+            // Auto-ocultar después de 8 segundos
+            setTimeout(() => {
+                if (errorEl.style.display === 'block') {
+                    errorEl.style.display = 'none';
+                }
+            }, 8000);
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('success');
+            successEl.innerHTML = `<strong>✅ Éxito:</strong> ${message}`;
+            successEl.style.display = 'block';
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                if (successEl.style.display === 'block') {
+                    successEl.style.display = 'none';
+                }
+            }, 5000);
+        }
+
+        function hideMessages() {
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initOllamaClient();
+            updateStats();
+        });
+
+        async function initOllamaClient() {
+            try {
+                console.log('🚀 Inicializando cliente Ollama...');
+                showSuccess('🔄 Inicializando conexión con Ollama...');
+                
+                // Crear nuevo cliente
+                ollamaClient = new OllamaClient();
+                
+                // Verificar estado y conectar automáticamente
+                await checkStatus();
+                
+                // Si se conectó exitosamente, actualizar información completa
+                if (ollamaClient && ollamaClient.isAvailable) {
+                    console.log('✅ Cliente Ollama inicializado correctamente');
+                    showSuccess('✅ Conexión establecida con Ollama');
+                    
+                    // Cargar modelos disponibles
+                    await loadAvailableModels();
+                    
+                    // Actualizar información del servidor
+                    await updateServerInfo();
+                } else {
+                    console.warn('⚠️ No se pudo establecer conexión inicial con Ollama');
+                    showError('⚠️ No se pudo conectar a Ollama. Verifica que esté ejecutándose.');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error inicializando cliente Ollama:', error);
+                showError(`Error inicializando Ollama: ${error.message}`);
+            }
+        }        async function checkStatus() {
+            const statusEl = document.getElementById('status');
+            
+            try {
+                console.log('🔍 Verificando disponibilidad de Ollama...');
+                statusEl.className = 'status disconnected';
+                statusEl.innerHTML = '<span>🔄</span><span>Conectando a Ollama...</span>';
+                
+                // Verificar disponibilidad con detección automática
+                await ollamaClient.checkAvailability();
+                
+                if (ollamaClient.isAvailable) {
+                    console.log('✅ Ollama conectado exitosamente');
+                    statusEl.className = 'status connected';
+                    statusEl.innerHTML = '<span>🟢</span><span>Ollama conectado y disponible</span>';
+                    
+                    // Obtener información del servidor actual
+                    const serverInfo = ollamaClient.getServerInfo();
+                    console.log(`🌐 Servidor actual: ${serverInfo.currentServer}`);
+                    console.log(`🎯 Modelo configurado: ${serverInfo.model}`);
+                    
+                    // Probar conexión para verificar que todo funciona
+                    const testResult = await ollamaClient.testConnection();
+                    if (testResult.success) {
+                        console.log(`✅ Prueba de conexión exitosa con ${testResult.server}`);
+                        if (testResult.availableModels && testResult.availableModels.length > 0) {
+                            console.log(`📋 ${testResult.availableModels.length} modelo(s) disponible(s)`);
+                        }
+                    } else {
+                        console.warn(`⚠️ Problema en prueba de conexión: ${testResult.error}`);
+                    }
+                    
+                } else {
+                    console.warn('❌ Ollama no está disponible');
+                    statusEl.className = 'status disconnected';
+                    statusEl.innerHTML = '<span>🔴</span><span>Ollama no está disponible - Verificar instalación</span>';
+                    showError('No se encontró ningún servidor Ollama disponible');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error verificando estado de Ollama:', error);
+                statusEl.className = 'status disconnected';
+                statusEl.innerHTML = `<span>🔴</span><span>Error: ${error.message}</span>`;
+                showError(`Error conectando a Ollama: ${error.message}`);
+            }
+        }        async function loadAvailableModels() {
+            const modelSelect = document.getElementById('model');
+            
+            try {
+                console.log('🔄 Cargando modelos disponibles desde el servidor...');
+                
+                // Mostrar estado de carga
+                modelSelect.innerHTML = '<option value="">🔄 Cargando modelos...</option>';
+                
+                const models = await ollamaClient.listAvailableModels();
+                
+                if (models && models.length > 0) {
+                    console.log(`✅ ${models.length} modelo(s) encontrado(s):`, models.map(m => m.name));
+                    
+                    // Limpiar opciones existentes
+                    modelSelect.innerHTML = '';
+                    
+                    // Agregar modelos encontrados
+                    let modelSelected = false;
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.name;
+                        option.textContent = `${model.name} (${model.size || 'tamaño desconocido'})`;
+                        
+                        // Seleccionar el modelo actual si coincide, o un modelo por defecto
+                        if (!modelSelected && (
+                            model.name === ollamaClient.model || 
+                            model.name.includes('llama3.1:8b') || 
+                            model.name.includes('llama3.2:3b') ||
+                            model.name.includes('llama3.1') ||
+                            model.name.includes('llama3') ||
+                            models.indexOf(model) === 0  // Seleccionar el primero si no hay coincidencias
+                        )) {
+                            option.selected = true;
+                            modelSelected = true;
+                            // Actualizar el modelo actual en el cliente
+                            ollamaClient.setModel(model.name);
+                            console.log(`🎯 Modelo seleccionado automáticamente: ${model.name}`);
+                        }
+                        
+                        modelSelect.appendChild(option);
+                    });
+                    
+                    // Si no se seleccionó ningún modelo, seleccionar el primero
+                    if (!modelSelected && models.length > 0) {
+                        const firstModel = models[0];
+                        modelSelect.options[0].selected = true;
+                        ollamaClient.setModel(firstModel.name);
+                        console.log(`🎯 Modelo seleccionado por defecto: ${firstModel.name}`);
+                    }
+                    
+                    showSuccess(`✅ ${models.length} modelo(s) cargado(s) exitosamente`);
+                    
+                } else {
+                    console.warn('⚠️ No se encontraron modelos en el servidor');
+                    modelSelect.innerHTML = '<option value="">❌ No hay modelos disponibles</option>';
+                    showError('No se encontraron modelos en el servidor Ollama');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error cargando modelos:', error);
+                modelSelect.innerHTML = '<option value="">❌ Error cargando modelos</option>';
+                showError(`Error cargando modelos: ${error.message}`);
+            }
+        }
+
+        async function generateQuestion() {
+            if (!ollamaClient.isAvailable) {
+                showError('Ollama no está disponible. Verificar instalación.');
+                return;
+            }
+
+            const generateBtn = document.getElementById('generateBtn');
+            const loadingEl = document.getElementById('loading');
+            
+            generateBtn.disabled = true;
+            loadingEl.style.display = 'block';
+            hideMessages();
+
+            const startTime = Date.now();
+
+            try {
+                // Configurar modelo seleccionado
+                const selectedModel = document.getElementById('model').value;
+                ollamaClient.setModel(selectedModel);
+
+                const options = {
+                    category: document.getElementById('category').value,
+                    difficulty: document.getElementById('difficulty').value,
+                    specificTopic: document.getElementById('topic').value || null
+                };
+
+                generationCount++;
+                const question = await ollamaClient.generateQuestion(options);
+                
+                const endTime = Date.now();
+                const generationTime = endTime - startTime;
+                totalTime += generationTime;
+                successCount++;
+
+                displayQuestion(question, generationTime);
+                showSuccess(`Pregunta generada en ${generationTime}ms`);
+
+            } catch (error) {
+                showError(`Error generando pregunta: ${error.message}`);
+            } finally {
+                generateBtn.disabled = false;
+                loadingEl.style.display = 'none';
+                updateStats();
+            }
+        }        async function testConnection() {
+            const testBtn = document.getElementById('testBtn');
+            testBtn.disabled = true;
+            hideMessages();
+
+            try {
+                showSuccess('🧪 Probando conexión con el servidor...');
+                
+                // Configurar el modelo seleccionado antes de probar
+                const selectedModel = document.getElementById('model').value;
+                if (selectedModel) {
+                    ollamaClient.setModel(selectedModel);
+                    console.log(`🎯 Modelo configurado para prueba: ${selectedModel}`);
+                }
+                
+                const result = await ollamaClient.testConnection();
+                
+                if (result.success) {
+                    console.log(`✅ Prueba de conexión exitosa con ${result.server}`);
+                    showSuccess(`✅ Conexión exitosa con ${result.server}`);
+                    showSuccess(`🎯 Modelo: ${result.model} ${result.modelAvailable ? '(disponible)' : '(NO disponible)'}`);
+                    showSuccess(`📊 ${result.availableModels?.length || 0} modelo(s) encontrado(s) en el servidor`);
+                    
+                    // Actualizar estado del sistema después de una conexión exitosa
+                    await checkStatus();
+                    
+                    // Actualizar información del servidor
+                    await updateServerInfo();
+                    
+                    // Si hay modelos nuevos o el estado cambió, recargar la lista
+                    if (result.availableModels && result.availableModels.length > 0) {
+                        console.log('🔄 Actualizando lista de modelos después de prueba exitosa...');
+                        await loadAvailableModels();
+                    }
+                    
+                    // Mostrar información adicional si el modelo no está disponible
+                    if (!result.modelAvailable) {
+                        showError(`⚠️ El modelo "${result.model}" no está disponible en el servidor`);
+                        
+                        // Sugerir un modelo disponible si hay
+                        if (result.availableModels && result.availableModels.length > 0) {
+                            const suggestedModel = result.availableModels[0];
+                            showSuccess(`💡 Sugerencia: Usar modelo "${suggestedModel}" que está disponible`);
+                        }
+                    }
+                    
+                } else {
+                    console.error(`❌ Fallo en la prueba: ${result.error}`);
+                    showError(`❌ Fallo en la prueba: ${result.error}`);
+                    showError(`🌐 Servidor probado: ${result.server}`);
+                    
+                    // Actualizar estado para reflejar la desconexión
+                    const statusEl = document.getElementById('status');
+                    statusEl.className = 'status disconnected';
+                    statusEl.innerHTML = '<span>🔴</span><span>Conexión falló durante la prueba</span>';
+                }
+                
+            } catch (error) {
+                console.error('❌ Error en prueba de conexión:', error);
+                showError(`Error en prueba: ${error.message}`);
+                
+                // Actualizar estado para reflejar el error
+                const statusEl = document.getElementById('status');
+                statusEl.className = 'status disconnected';
+                statusEl.innerHTML = `<span>🔴</span><span>Error: ${error.message}</span>`;
+                
+            } finally {
+                testBtn.disabled = false;
+                updateStats(); // Actualizar estadísticas al final
+            }
+        }
+
+        function displayQuestion(question, generationTime) {
+            const display = document.getElementById('questionDisplay');
+            
+            const formattedTime = new Date(question.generatedAt || Date.now()).toLocaleTimeString();
+              display.innerHTML = `
+                <div class="question-display">
+                    <div class="question-text">${question.text}</div>
+                    <button class="toggle-answer-btn" onclick="toggleCorrectAnswer()">
+                        👁️ Mostrar Respuesta Correcta
+                    </button>
+                    <div class="answers">
+                        ${question.answers.map((answer, index) => `
+                            <div class="answer ${index === question.correctIndex ? 'correct hidden' : ''}" data-correct="${index === question.correctIndex}">
+                                ${String.fromCharCode(65 + index)}. ${answer}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${question.explanation ? `
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong>Explicación:</strong> ${question.explanation}
+                        </div>
+                    ` : ''}
+                    <div class="metadata">
+                        <div class="meta-item">
+                            <span class="meta-label">Categoría:</span>
+                            <span>${question.category}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Dificultad:</span>
+                            <span>${question.difficulty}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Tema:</span>
+                            <span>${question.topic || 'General'}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Fuente:</span>
+                            <span>${question.source}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Generado:</span>
+                            <span>${formattedTime}</span>
+                        </div>
+                        ${generationTime > 0 ? `
+                        <div class="meta-item">
+                            <span class="meta-label">Tiempo:</span>
+                            <span>${generationTime}ms</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            display.style.display = 'block';
+        }        function updateStats() {
+            const stats = ollamaClient ? ollamaClient.getStats() : {};
+            const avgTime = successCount > 0 ? Math.round(totalTime / successCount) : 0;
+            const successRate = generationCount > 0 ? Math.round((successCount / generationCount) * 100) : 0;
+
+            document.getElementById('statsDisplay').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${ollamaClient?.isAvailable ? '🟢' : '🔴'}</div>
+                    <div class="stat-label">Estado</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.model || 'N/A'}</div>
+                    <div class="stat-label">Modelo Actual</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${generationCount}</div>
+                    <div class="stat-label">Preguntas Generadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${successCount}</div>
+                    <div class="stat-label">Exitosas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${successRate}%</div>
+                    <div class="stat-label">Tasa de Éxito</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${avgTime}ms</div>
+                    <div class="stat-label">Tiempo Promedio</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.cacheSize || 0}</div>
+                    <div class="stat-label">Cache</div>
+                </div>
+            `;
+            
+            // Actualizar estadísticas experimentales si están disponibles
+            updateExperimentalStats();
+        }
+
+        function updateExperimentalStats() {
+            if (!ollamaClient || typeof ollamaClient.getValidationStatsReport !== 'function') {
+                return;
+            }
+
+            try {
+                const validationStats = ollamaClient.getValidationStatsReport();
+                const experimentalSection = document.getElementById('experimentalStats');
+                
+                // Mostrar la sección experimental si hay estadísticas
+                if (validationStats.totalValidations > 0) {
+                    experimentalSection.style.display = 'block';
+                    
+                    // Actualizar valores básicos
+                    document.getElementById('totalValidations').textContent = validationStats.totalValidations;
+                    document.getElementById('validationSuccessRate').textContent = 
+                        `${(validationStats.successRate * 100).toFixed(1)}%`;
+                    document.getElementById('correctedAnswers').textContent = validationStats.correctedAnswers;
+                    document.getElementById('regeneratedQuestions').textContent = validationStats.regeneratedQuestions;
+                    
+                    // Actualizar distribución de confianza
+                    const total = validationStats.totalValidations;
+                    const confidence = validationStats.confidenceDistribution;
+                    
+                    updateConfidenceBar('high', confidence.high, total);
+                    updateConfidenceBar('medium', confidence.medium, total);
+                    updateConfidenceBar('low', confidence.low, total);
+                    
+                    // Actualizar puntuaciones de coincidencia
+                    document.getElementById('avgMatchScore').textContent = 
+                        validationStats.averageMatchScore.toFixed(3);
+                    document.getElementById('maxMatchScore').textContent = 
+                        validationStats.maxMatchScore.toFixed(3);
+                    document.getElementById('minMatchScore').textContent = 
+                        validationStats.minMatchScore.toFixed(3);
+                    document.getElementById('matchSamples').textContent = 
+                        validationStats.matchScoreSamples;
+                }
+            } catch (error) {
+                console.warn('Error actualizando estadísticas experimentales:', error);
+            }
+        }
+
+        function updateConfidenceBar(level, count, total) {
+            const percentage = total > 0 ? (count / total) * 100 : 0;
+            const countElement = document.getElementById(`${level}ConfidenceCount`);
+            const barElement = document.getElementById(`${level}ConfidenceBar`);
+            
+            if (countElement && barElement) {
+                countElement.textContent = `${count} (${percentage.toFixed(1)}%)`;
+                barElement.style.width = `${percentage}%`;
+            }
+        }
+
+        function resetValidationStats() {
+            if (ollamaClient) {
+                ollamaClient.resetValidationStats();
+                updateExperimentalStats();
+                showSuccess('📊 Estadísticas de validación reiniciadas');
+            }
+        }
+
+        // Funciones de configuración de servidor
+        function changeServerMode() {
+            const mode = document.getElementById('serverMode').value;
+            const dedicatedConfig = document.getElementById('dedicatedServerConfig');
+            const portConfig = document.getElementById('dedicatedPortConfig');
+            
+            if (mode === 'dedicated') {
+                dedicatedConfig.style.display = 'block';
+                portConfig.style.display = 'block';
+            } else {
+                dedicatedConfig.style.display = 'none';
+                portConfig.style.display = 'none';
+            }
+        }        async function connectToServer() {
+            const connectBtn = document.getElementById('connectServerBtn');
+            connectBtn.disabled = true;
+            hideMessages();
+
+            try {
+                const serverMode = document.getElementById('serverMode').value;
+                console.log(`🔗 Modo de conexión seleccionado: ${serverMode}`);
+                
+                if (serverMode === 'dedicated') {
+                    const ip = document.getElementById('serverIp').value.trim();
+                    const port = document.getElementById('serverPort').value || '11434';
+                    
+                    if (!ip) {
+                        showError('Por favor, especifica la IP del servidor dedicado');
+                        return;
+                    }
+                    
+                    const serverUrl = `http://${ip}:${port}`;
+                    console.log(`🔗 Configurando servidor dedicado: ${serverUrl}`);
+                    showSuccess(`🔄 Conectando a servidor dedicado: ${serverUrl}`);
+                    
+                    // Configurar servidor dedicado
+                    ollamaClient.setDedicatedServer(ip, parseInt(port));
+                    
+                } else if (serverMode === 'localhost') {
+                    console.log('🔗 Configurando modo localhost únicamente');
+                    showSuccess('🔄 Configurando conexión solo a localhost...');
+                    // Reinicializar para forzar solo localhost
+                    ollamaClient = new OllamaClient({ autoDetect: false });
+                    
+                } else if (serverMode === 'auto') {
+                    console.log('🔗 Reinicializando con detección automática');
+                    showSuccess('🔄 Reinicializando con detección automática...');
+                    // Reinicializar cliente con detección automática
+                    await initOllamaClient();
+                    return; // initOllamaClient ya maneja todo el proceso
+                }
+                
+                // Probar la conexión
+                console.log('🧪 Probando conexión al servidor...');
+                const result = await ollamaClient.testConnection();
+                
+                if (result.success) {
+                    console.log(`✅ Conexión exitosa con ${result.server}`);
+                    showSuccess(`✅ Conectado exitosamente a ${result.server}`);
+                    
+                    // ACTUALIZACIÓN AUTOMÁTICA: Cuando la conexión es exitosa
+                    console.log('🔄 Actualizando estado y modelos automáticamente...');
+                    
+                    // 1. Actualizar estado del sistema
+                    await checkStatus();
+                    
+                    // 2. Cargar modelos disponibles del servidor
+                    await loadAvailableModels();
+                    
+                    // 3. Actualizar información detallada del servidor
+                    await updateServerInfo();
+                    
+                    // 4. Mostrar información de confirmación
+                    showSuccess(`🎯 ${result.availableModels?.length || 0} modelo(s) disponible(s) en el servidor`);
+                    
+                    if (result.availableModels && result.availableModels.length > 0) {
+                        console.log('📋 Modelos encontrados:', result.availableModels);
+                    }
+                    
+                } else {
+                    console.error(`❌ Fallo en la conexión: ${result.error}`);
+                    showError(`❌ No se pudo conectar: ${result.error || 'Error desconocido'}`);
+                    
+                    // Actualizar estado para mostrar desconexión
+                    const statusEl = document.getElementById('status');
+                    statusEl.className = 'status disconnected';
+                    statusEl.innerHTML = '<span>🔴</span><span>Falló la conexión al servidor</span>';
+                }
+                
+            } catch (error) {
+                console.error('❌ Error conectando al servidor:', error);
+                showError(`Error conectando: ${error.message}`);
+                
+                // Actualizar estado para mostrar error
+                const statusEl = document.getElementById('status');
+                statusEl.className = 'status disconnected';
+                statusEl.innerHTML = `<span>🔴</span><span>Error de conexión</span>`;
+                
+            } finally {
+                connectBtn.disabled = false;
+                updateStats(); // Actualizar estadísticas
+            }
+        }
+
+        async function scanNetworkServers() {
+            const scanBtn = document.getElementById('scanServersBtn');
+            scanBtn.disabled = true;
+            
+            try {
+                showSuccess('🔍 Escaneando servidores en la red...');
+                
+                const servers = await ollamaClient.listAvailableServers();
+                displayAvailableServers(servers);
+                
+                document.getElementById('availableServers').style.display = 'block';
+                
+            } catch (error) {
+                showError(`Error escaneando servidores: ${error.message}`);
+            } finally {
+                scanBtn.disabled = false;
+            }
+        }        async function updateServerInfo() {
+            try {
+                const serverInfo = ollamaClient.getServerInfo();
+                const testResult = await ollamaClient.testConnection();
+                
+                const serverDetails = document.getElementById('serverDetails');
+                
+                // Obtener información detallada de modelos
+                let modelInfo = 'N/A';
+                let modelStatus = '❌';
+                let totalModels = 0;
+                
+                if (testResult.success && testResult.availableModels) {
+                    totalModels = testResult.availableModels.length;
+                    modelStatus = testResult.modelAvailable ? '✅' : '⚠️';
+                    
+                    if (testResult.modelAvailable) {
+                        modelInfo = `${serverInfo.model} (disponible)`;
+                    } else {
+                        modelInfo = `${serverInfo.model} (NO disponible)`;
+                    }
+                }
+                
+                serverDetails.innerHTML = `
+                    <div class="server-details">
+                        <div class="stat-card">
+                            <div class="stat-value">${serverInfo.isAvailable ? '🟢' : '🔴'}</div>
+                            <div class="stat-label">Estado del Servidor</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="font-size: 0.8em; word-break: break-all;">${serverInfo.currentServer}</div>
+                            <div class="stat-label">URL del Servidor</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${testResult.version || 'N/A'}</div>
+                            <div class="stat-label">Versión Ollama</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${modelStatus}</div>
+                            <div class="stat-label">Modelo Actual</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${totalModels}</div>
+                            <div class="stat-label">Modelos Disponibles</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${serverInfo.autoDetectEnabled ? '🔍 Activado' : '🔒 Desactivado'}</div>
+                            <div class="stat-label">Auto-detección</div>
+                        </div>
+                    </div>
+                    
+                    ${testResult.success && testResult.availableModels ? `
+                        <div style="margin-top: 15px;">
+                            <h4>📋 Modelos en el Servidor:</h4>
+                            <div style="max-height: 150px; overflow-y: auto; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px;">
+                                ${testResult.availableModels.map(model => `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                        <span>${model}</span>
+                                        <span>${model === serverInfo.model ? '🎯 Actual' : ''}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+                
+                document.getElementById('serverInfo').style.display = 'block';
+                
+                if (!testResult.success) {
+                    showError(`⚠️ Problema de conexión: ${testResult.error}`);
+                } else if (!testResult.modelAvailable) {
+                    showError(`⚠️ El modelo "${serverInfo.model}" no está disponible en el servidor`);
+                }
+                
+            } catch (error) {
+                console.error('Error actualizando información del servidor:', error);
+                showError(`Error obteniendo información del servidor: ${error.message}`);
+            }
+        }
+
+        function displayAvailableServers(servers) {
+            const serversList = document.getElementById('serversList');
+            
+            if (servers.length === 0) {
+                serversList.innerHTML = '<p>No se encontraron servidores disponibles</p>';
+                return;
+            }
+            
+            serversList.innerHTML = servers.map(server => `
+                <div class="server-item ${server.available ? 'available' : 'unavailable'}">
+                    <div>
+                        <strong>${server.url}</strong>
+                        <br>
+                        <small>Estado: ${server.status} ${server.version ? `(v${server.version})` : ''}</small>
+                    </div>
+                    ${server.available ? `
+                        <button class="server-connect-btn" onclick="connectToSpecificServer('${server.url}')">
+                            Conectar
+                        </button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        async function connectToSpecificServer(serverUrl) {
+            try {
+                const url = new URL(serverUrl);
+                const ip = url.hostname;
+                const port = url.port || 11434;
+                
+                await ollamaClient.setDedicatedServer(ip, port);
+                
+                document.getElementById('serverMode').value = 'dedicated';
+                document.getElementById('serverIp').value = ip;
+                document.getElementById('serverPort').value = port;
+                
+                changeServerMode();
+                await updateServerInfo();
+                
+                showSuccess(`✅ Conectado a ${serverUrl}`);
+                
+            } catch (error) {
+                showError(`Error conectando a servidor: ${error.message}`);
+            }
+        }
+
+        async function refreshModels() {
+            const refreshBtn = document.getElementById('refreshModelsBtn');
+            refreshBtn.disabled = true;
+            
+            try {
+                showSuccess('🔄 Actualizando lista de modelos...');
+                
+                // Verificar que el servidor esté disponible
+                await ollamaClient.checkAvailability();
+                
+                if (ollamaClient.isAvailable) {
+                    // Recargar modelos
+                    await loadAvailableModels();
+                    
+                    // Actualizar información del servidor
+                    await updateServerInfo();
+                    
+                    showSuccess('✅ Modelos actualizados correctamente');
+                } else {
+                    showError('❌ Servidor no disponible. Verificar conexión.');
+                }
+                
+            } catch (error) {
+                showError(`Error actualizando modelos: ${error.message}`);
+            } finally {
+                refreshBtn.disabled = false;
+            }
+        }        function onModelChange() {
+            const selectedModel = document.getElementById('model').value;
+            if (selectedModel && ollamaClient) {
+                console.log(`🔄 Cambiando modelo a: ${selectedModel}`);
+                ollamaClient.setModel(selectedModel);
+                showSuccess(`🎯 Modelo cambiado a: ${selectedModel}`);
+            }
+        }
+
+        function toggleCorrectAnswer() {
+            const toggleBtn = document.querySelector('.toggle-answer-btn');
+            const correctAnswers = document.querySelectorAll('.answer[data-correct="true"]');
+            
+            if (!toggleBtn || correctAnswers.length === 0) return;
+            
+            const isHidden = correctAnswers[0].classList.contains('hidden');
+            
+            correctAnswers.forEach(answer => {
+                if (isHidden) {
+                    answer.classList.remove('hidden');
+                    toggleBtn.innerHTML = '🙈 Ocultar Respuesta Correcta';
+                    toggleBtn.style.background = '#dc3545';
+                } else {
+                    answer.classList.add('hidden');
+                    toggleBtn.innerHTML = '👁️ Mostrar Respuesta Correcta';
+                    toggleBtn.style.background = '#17a2b8';
+                }
+            });
+        }
+
+        async function scanNetworkServers() {
+            const scanBtn = document.getElementById('scanServersBtn');
+            scanBtn.disabled = true;
+            hideMessages();
+
+            try {
+                showSuccess('🔍 Escaneando la red en busca de servidores Ollama...');
+                
+                const availableServers = await ollamaClient.detectAvailableServers();
+                
+                if (availableServers.length > 0) {
+                    showSuccess(`🎯 Encontrados ${availableServers.length} servidor(es) Ollama`);
+                    
+                    // Mostrar servidores encontrados
+                    const serversDiv = document.getElementById('availableServers');
+                    const serversList = serversDiv.querySelector('#serversList') || document.createElement('div');
+                    serversList.id = 'serversList';
+                    serversList.innerHTML = '';
+                    
+                    availableServers.forEach((server, index) => {
+                        const serverItem = document.createElement('div');
+                        serverItem.className = 'server-item';
+                        serverItem.innerHTML = `
+                            <div style="padding: 10px; border: 1px solid #ddd; margin: 5px 0; border-radius: 5px;">
+                                <strong>🖥️ Servidor ${index + 1}:</strong> ${server.url}<br>
+                                <small>Modelos: ${server.models?.length || 0} disponible(s)</small>
+                                <button onclick="selectServer('${server.url}')" 
+                                        style="margin-left: 10px; padding: 5px 10px;">
+                                    Seleccionar
+                                </button>
+                            </div>
+                        `;
+                        serversList.appendChild(serverItem);
+                    });
+                    
+                    if (!serversDiv.querySelector('#serversList')) {
+                        serversDiv.appendChild(serversList);
+                    }
+                    serversDiv.style.display = 'block';
+                    
+                } else {
+                    showError('❌ No se encontraron servidores Ollama en la red');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error escaneando servidores:', error);
+                showError(`Error escaneando red: ${error.message}`);
+            } finally {
+                scanBtn.disabled = false;
+            }
+        }
+
+        function selectServer(serverUrl) {
+            try {
+                const url = new URL(serverUrl);
+                const ip = url.hostname;
+                const port = url.port || '11434';
+                
+                // Actualizar campos de servidor dedicado
+                document.getElementById('serverMode').value = 'dedicated';
+                document.getElementById('serverIp').value = ip;
+                document.getElementById('serverPort').value = port;
+                
+                // Mostrar campos de configuración
+                changeServerMode();
+                
+                showSuccess(`✅ Servidor seleccionado: ${serverUrl}`);
+                
+            } catch (error) {
+                showError(`Error seleccionando servidor: ${error.message}`);
+            }
+        }        // Actualizar stats cada 5 segundos
+        setInterval(updateStats, 5000);
+
+        // Función para refrescar estado automáticamente cuando OllamaClient detecta cambios
+        async function refreshOnAvailabilityChange() {
+            try {
+                if (ollamaClient && ollamaClient.isAvailable) {
+                    console.log('🔄 Ollama disponible - Verificando cambios...');
+                    
+                    // Verificar si hay cambios en el estado
+                    const currentStatus = document.getElementById('status').className;
+                    const isCurrentlyConnected = currentStatus.includes('connected');
+                    
+                    // Si el estado cambió a disponible, actualizar todo
+                    if (!isCurrentlyConnected) {
+                        console.log('🆕 Estado cambió a disponible - Actualizando interfaz...');
+                        await checkStatus();
+                        await loadAvailableModels();
+                        await updateServerInfo();
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ Error en verificación automática:', error);
+            }
+        }
+
+        // Verificar cambios en la disponibilidad cada 10 segundos
+        setInterval(refreshOnAvailabilityChange, 10000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,801 @@
+/* ========================================
+   ESTILOS MODULARES - TRIVIAL GAME
+   Estilos específicos para componentes modulares
+   ======================================== */
+
+/* ========================================
+   MÓDULO DE CONFIGURACIÓN
+   ======================================== */
+
+.config-section {
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-xl);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-lg);
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.config-section:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(2px);
+}
+
+.config-section h3 {
+    margin-bottom: var(--spacing-lg);
+    color: var(--secondary-color);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-weight: 600;
+}
+
+.config-section p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+}
+
+/* ========================================
+   MÓDULO DE TUTORIAL
+   ======================================== */
+
+.tutorial-steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.tutorial-step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.tutorial-step-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-left-color: var(--accent-color);
+    transform: translateX(4px);
+}
+
+.step-number {
+    background: var(--gradient-primary);
+    color: white;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-md);
+    font-size: 1.1rem;
+}
+
+.step-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.step-content h4 {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-sm);
+    font-size: 1.1rem;
+}
+
+.step-content p {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ========================================
+   MÓDULO DE CATEGORÍAS
+   ======================================== */
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--spacing-lg);
+    margin: var(--spacing-xl) 0;
+}
+
+.category-item {
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.category-item:hover::before {
+    left: 100%;
+}
+
+.category-item:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+}
+
+.category-icon {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-sm);
+    display: block;
+}
+
+.category-name {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+/* Colores específicos para categorías */
+.categoria-historia {
+    background: linear-gradient(135deg, var(--historia-color), #e74c3c);
+}
+
+.categoria-ciencia {
+    background: linear-gradient(135deg, var(--ciencia-color), #1abc9c);
+}
+
+.categoria-deportes {
+    background: linear-gradient(135deg, var(--deportes-color), #3498db);
+}
+
+.categoria-arte {
+    background: linear-gradient(135deg, var(--arte-color), #2ecc71);
+}
+
+.categoria-geografia {
+    background: linear-gradient(135deg, var(--geografia-color), #f39c12);
+}
+
+.categoria-entretenimiento {
+    background: linear-gradient(135deg, var(--entretenimiento-color), #e91e63);
+}
+
+/* ========================================
+   MÓDULO DE TIPOS DE CASILLAS
+   ======================================== */
+
+.casillas-types {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+    margin: var(--spacing-xl) 0;
+}
+
+.casilla-type {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-xl);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-lg);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.casilla-type:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary-color);
+    transform: translateX(4px);
+}
+
+.casilla-icon {
+    font-size: 2.5rem;
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-md);
+}
+
+.casilla-icon.normal {
+    background: linear-gradient(135deg, #4ECDC4, #44A08D);
+}
+
+.casilla-icon.cuña {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+}
+
+.casilla-icon.especial {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+}
+
+.casilla-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.casilla-info h4 {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-sm);
+    font-size: 1.2rem;
+}
+
+.casilla-info p {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ========================================
+   MÓDULO DE ESTADÍSTICAS EXTENDIDAS
+   ======================================== */
+
+.game-info-extended {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+}
+
+.stats-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    border-top: 3px solid var(--primary-color);
+}
+
+.stats-section h4 {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.stats-section h4::before {
+    font-size: 1.2em;
+}
+
+.stats-section.general-stats h4::before {
+    content: '📊';
+}
+
+.stats-section.time-stats h4::before {
+    content: '⏱️';
+}
+
+.stats-section.accuracy-stats h4::before {
+    content: '🎯';
+}
+
+.stats-section.progress-stats h4::before {
+    content: '📈';
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+}
+
+.stat-mini {
+    text-align: center;
+    padding: var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+}
+
+.stat-mini-value {
+    font-weight: bold;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    display: block;
+}
+
+.stat-mini-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: var(--spacing-xs);
+}
+
+/* ========================================
+   MÓDULO DE MODAL EXTENDIDO
+   ======================================== */
+
+.modal-header-extended {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg);
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+}
+
+.modal-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.modal-title {
+    flex: 1;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Modal de confirmación */
+.confirmation-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.confirmation-icon {
+    font-size: 4rem;
+    margin-bottom: var(--spacing-lg);
+    color: var(--warning-color);
+}
+
+.confirmation-message {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-lg);
+}
+
+.confirmation-details {
+    background: rgba(255, 152, 0, 0.1);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--warning-color);
+    margin-bottom: var(--spacing-lg);
+}
+
+.confirmation-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+}
+
+/* Modal de victoria */
+.game-over-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xxl);
+}
+
+.game-over-icon {
+    font-size: 5rem;
+    margin-bottom: var(--spacing-lg);
+    animation: celebration 2s ease-in-out infinite;
+}
+
+.winner-info {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-xl);
+    background: var(--gradient-primary);
+    border-radius: var(--border-radius-lg);
+    color: white;
+    box-shadow: var(--shadow-lg);
+}
+
+.winner-name {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: var(--spacing-sm);
+}
+
+.winner-time {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.final-stats,
+.players-ranking {
+    margin-bottom: var(--spacing-xl);
+}
+
+.final-stats h4,
+.players-ranking h4 {
+    margin-bottom: var(--spacing-lg);
+    color: var(--primary-color);
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.ranking-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--border-color);
+}
+
+.ranking-item.first {
+    border-left-color: #FFD700;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.ranking-item.second {
+    border-left-color: #C0C0C0;
+    background: rgba(192, 192, 192, 0.1);
+}
+
+.ranking-item.third {
+    border-left-color: #CD7F32;
+    background: rgba(205, 127, 50, 0.1);
+}
+
+.ranking-position {
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    min-width: 2rem;
+}
+
+.ranking-player {
+    flex: 1;
+    text-align: left;
+    margin-left: var(--spacing-md);
+    color: var(--text-primary);
+}
+
+.ranking-score {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+/* ========================================
+   INDICADORES DE CARGA MODULARES
+   ======================================== */
+
+.loading-content-extended {
+    text-align: center;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.loading-steps {
+    margin-top: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.loading-step {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.loading-step.active {
+    background: rgba(102, 126, 234, 0.1);
+    border-left: 3px solid var(--primary-color);
+}
+
+.loading-step.completed {
+    color: var(--success-color);
+}
+
+.loading-step-icon {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--text-muted);
+    border-radius: 50%;
+    position: relative;
+}
+
+.loading-step.active .loading-step-icon {
+    border-color: var(--primary-color);
+    animation: spin 1s linear infinite;
+}
+
+.loading-step.completed .loading-step-icon {
+    border-color: var(--success-color);
+    background: var(--success-color);
+}
+
+.loading-step.completed .loading-step-icon::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 0.8rem;
+}
+
+/* ========================================
+   MÓDULO DE PROGRESO
+   ======================================== */
+
+.progress-container {
+    margin: var(--spacing-lg) 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm);
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: progressShimmer 2s infinite;
+}
+
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.progress-label {
+    font-weight: 500;
+}
+
+.progress-value {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* ========================================
+   ANIMACIONES MODULARES
+   ======================================== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes celebration {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+    }
+    25% {
+        transform: scale(1.1) rotate(-5deg);
+    }
+    75% {
+        transform: scale(1.1) rotate(5deg);
+    }
+}
+
+@keyframes progressShimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes moduleLoad {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes moduleReady {
+    from {
+        opacity: 0.5;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ========================================
+   UTILIDADES MODULARES
+   ======================================== */
+
+.module-loaded {
+    animation: moduleReady 0.3s ease-out;
+}
+
+.screen {
+    opacity: 0;
+}
+
+.highlight-section {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-md) 0;
+}
+
+.warning-section {
+    background: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-md) 0;
+}
+
+.success-section {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-md) 0;
+}
+
+/* ========================================
+   RESPONSIVE PARA MÓDULOS
+   ======================================== */
+
+@media (max-width: 768px) {
+    .config-section {
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .categories-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: var(--spacing-md);
+    }
+    
+    .tutorial-step-item {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-md);
+    }
+    
+    .casilla-type {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-md);
+    }
+    
+    .casilla-icon {
+        width: 3rem;
+        height: 3rem;
+        font-size: 2rem;
+    }
+    
+    .game-info-extended {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .pause-stats-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+    
+    .stat-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xs);
+    }
+    
+    .confirmation-actions {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .ranking-item {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-sm);
+    }
+    
+    .ranking-position,
+    .ranking-player,
+    .ranking-score {
+        text-align: center;
+        margin: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .step-number {
+        width: 2rem;
+        height: 2rem;
+        font-size: 1rem;
+    }
+    
+    .casilla-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1.5rem;
+    }
+    
+    .modal-header-extended {
+        padding: var(--spacing-md);
+    }
+    
+    .modal-title {
+        font-size: 1.1rem;
+    }
+    
+    .winner-name {
+        font-size: 1.5rem;
+    }
+    
+    .game-over-icon {
+        font-size: 3rem;
+    }
+    
+    .confirmation-icon {
+        font-size: 3rem;
+    }
+}

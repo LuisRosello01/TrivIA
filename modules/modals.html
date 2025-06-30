@@ -1,0 +1,176 @@
+<!-- ========================================
+     MÓDULO: SISTEMA DE MODALES
+     Contiene: Modales para preguntas, resultados y pausa
+     ======================================== -->
+
+<!-- Modal de pregunta -->
+<div id="question-modal" class="modal">
+    <div class="modal-content">
+        <!-- Header de la pregunta con categoría y temporizador -->
+        <div class="question-header">
+            <div class="category-badge" id="question-category">
+                <!-- La categoría se insertará dinámicamente -->
+            </div>
+            
+            <!-- Indicador de traducción -->
+            <div class="translation-indicator" id="translation-indicator" style="display: none;">
+                <span class="translation-icon">🌐</span>
+                <span class="translation-text">Traducido automáticamente</span>
+            </div>
+            
+            <!-- Temporizador visual -->
+            <div class="timer" id="question-timer" style="display: none;">
+                <div class="timer-bar"></div>
+                <span class="timer-text">30</span>
+            </div>
+        </div>
+        
+        <!-- Contenido principal de la pregunta -->
+        <div class="question-content">
+            <h3 id="question-text">
+                <!-- El texto de la pregunta se insertará aquí -->
+            </h3>
+            <div id="question-answers" class="answers-container">
+                <!-- Las opciones de respuesta se generarán dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- Acciones de la pregunta -->
+        <div class="question-actions">
+            <button id="show-original-question-btn" class="btn btn-tertiary" style="display: none;">
+                🔄 Ver pregunta original
+            </button>
+            <button id="minimize-question-btn" class="btn btn-secondary btn-small">
+                ➖ Minimizar
+            </button>
+            <button id="skip-question-btn" class="btn btn-secondary">
+                ⏭️ Pasar pregunta
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de resultado -->
+<div id="result-modal" class="modal">
+    <div class="modal-content">
+        <!-- Contenido del resultado -->
+        <div class="result-content">
+            <div id="result-icon" class="result-icon">
+                <!-- Icono de resultado (✅ o ❌) se insertará aquí -->
+            </div>
+            <h3 id="result-title">
+                <!-- Título del resultado -->
+            </h3>
+            <p id="result-message">
+                <!-- Mensaje del resultado -->
+            </p>
+            
+            <!-- Respuesta correcta (solo se muestra si es incorrecta) -->
+            <div id="correct-answer" class="correct-answer" style="display: none;">
+                <h4>✅ Respuesta correcta:</h4>
+                <p id="correct-answer-text"></p>
+            </div>
+            
+            <!-- Información adicional del resultado -->
+            <div id="result-extra-info" class="result-extra-info" style="display: none;">
+                <!-- Información adicional como puntos ganados, tiempo, etc. -->
+            </div>
+        </div>
+        
+        <!-- Acciones del resultado -->
+        <div class="result-actions">
+            <button id="continue-btn" class="btn btn-primary">
+                ➡️ Continuar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de pausa -->
+<div id="pause-modal" class="modal">
+    <div class="modal-content">
+        <div class="pause-header">
+            <h3>⏸️ Juego Pausado</h3>
+            <p>El juego se ha pausado. ¿Qué quieres hacer?</p>
+        </div>
+        
+        <!-- Acciones de pausa -->
+        <div class="pause-actions">
+            <button id="resume-btn" class="btn btn-primary">
+                ▶️ Continuar Juego
+            </button>
+            <button id="save-game-btn" class="btn btn-secondary">
+                💾 Guardar Partida
+            </button>
+            <button id="quit-game-btn" class="btn btn-danger">
+                🚪 Salir al Menú
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="confirmation-modal" class="modal">
+    <div class="modal-content">
+        <div class="confirmation-header">
+            <div id="confirmation-icon" class="confirmation-icon">⚠️</div>
+            <h3 id="confirmation-title">Confirmar acción</h3>
+        </div>
+        
+        <div class="confirmation-content">
+            <p id="confirmation-message">
+                ¿Estás seguro de que quieres realizar esta acción?
+            </p>
+        </div>
+        
+        <div class="confirmation-actions">
+            <button id="confirmation-cancel-btn" class="btn btn-secondary">
+                ❌ Cancelar
+            </button>
+            <button id="confirmation-confirm-btn" class="btn btn-primary">
+                ✅ Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de fin de juego -->
+<div id="game-over-modal" class="modal">
+    <div class="modal-content">
+        <div class="game-over-header">
+            <div class="game-over-icon">🏆</div>
+            <h3 id="game-over-title">¡Fin del Juego!</h3>
+        </div>
+        
+        <!-- Resultados finales -->
+        <div class="game-over-content">
+            <div id="winner-info" class="winner-info">
+                <!-- Información del ganador -->
+            </div>
+            
+            <div class="final-stats">
+                <h4>📊 Estadísticas Finales</h4>
+                <div id="final-stats-content">
+                    <!-- Estadísticas finales del juego -->
+                </div>
+            </div>
+            
+            <div class="players-ranking">
+                <h4>🥇 Clasificación Final</h4>
+                <div id="players-ranking-list">
+                    <!-- Ranking de jugadores -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Acciones del fin de juego -->
+        <div class="game-over-actions">
+            <button id="new-game-btn" class="btn btn-primary">
+                🎮 Nueva Partida
+            </button>
+            <button id="game-over-menu-btn" class="btn btn-secondary">
+                📋 Volver al Menú
+            </button>
+        </div>
+    </div>
+</div>

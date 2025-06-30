@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>Trivial - Juego de Preguntas</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+    
+    <!-- Meta tags for better mobile support -->
+    <meta name="description" content="Juego de trivial moderno para 2-6 jugadores con preguntas dinámicas y tablero interactivo">
+    <meta name="keywords" content="trivial, juego, preguntas, multijugador, HTML5, JavaScript">
+    <meta name="author" content="Trivial Game">
+    
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="Trivial - Juego de Preguntas">
+    <meta property="og:description" content="Juego de trivial moderno para 2-6 jugadores con preguntas dinámicas">
+    <meta property="og:type" content="game">
+      <!-- Mobile optimizations -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <!--<link rel="stylesheet" href="css/critical.css">-->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/modules.css">
+</head>
+<body>
+    <!-- Aplicación Principal -->
+    <div id="app">
+        <!-- MÓDULO: Sistema de Menús (cargado desde modules/menu.html) -->
+        <div id="menu-module">
+            <!-- Este contenido se cargará desde modules/menu.html -->
+        </div>
+        
+        <!-- MÓDULO: Interfaz de Juego -->
+        <div id="game-module">
+            <!-- Este contenido se cargará desde modules/game.html -->
+        </div>
+        
+        <!-- MÓDULO: Sistema de Modales -->
+        <div id="modals-module">
+            <!-- Este contenido se cargará desde modules/modals.html -->
+        </div>
+    </div>
+
+    <!-- Loader de módulos y scripts -->
+    <script>
+        /**
+         * Cargador de módulos HTML para organizar mejor la estructura
+         * @author Luis Roselló
+         */
+        class ModuleLoader {            constructor() {
+                this.modules = [
+                    { id: 'menu-module', file: 'modules/menu.html' },
+                    { id: 'game-module', file: 'modules/game.html' },
+                    { id: 'modals-module', file: 'modules/modals.html' }
+                ];
+                this.loadedModules = 0;
+                this.totalModules = this.modules.length;
+            }/**
+             * Carga un módulo HTML específico
+             */
+            async loadModule(module) {
+                try {
+                    console.log(`🔄 Cargando módulo: ${module.file}`);
+                    const response = await fetch(module.file);
+                    if (!response.ok) {
+                        throw new Error(`Error cargando ${module.file}: ${response.status}`);
+                    }
+                    
+                    const content = await response.text();
+                    const container = document.getElementById(module.id);
+                    
+                    if (container) {
+                        container.innerHTML = content;
+                        console.log(`✅ Módulo cargado: ${module.file}`);
+                        
+                        // Verificar que se cargaron elementos importantes
+                        if (module.id === 'menu-module') {
+                            const menuScreen = container.querySelector('#menu-screen');
+                            const startBtn = container.querySelector('#start-game-btn');
+                            console.log(`🔍 Verificación menú - Screen: ${!!menuScreen}, Botón: ${!!startBtn}`);
+                        }
+                    } else {
+                        console.error(`❌ No se encontró el contenedor: ${module.id}`);
+                    }
+                    
+                    this.loadedModules++;
+                    this.checkAllModulesLoaded();
+                    
+                } catch (error) {
+                    console.error(`❌ Error cargando módulo ${module.file}:`, error);
+                    // Continuar con la carga de otros módulos
+                    this.loadedModules++;
+                    this.checkAllModulesLoaded();
+                }
+            }            /**
+             * Verifica si todos los módulos se han cargado
+             */
+            checkAllModulesLoaded() {
+                if (this.loadedModules === this.totalModules) {
+                    console.log('🎯 Todos los módulos HTML cargados correctamente');
+                    
+                    // Solo cargar scripts si no está la bandera loadOnlyModules
+                    if (!this.loadOnlyModules) {
+                        this.loadScripts();
+                    } else {
+                        console.log('🚀 Módulos cargados, scripts ya incluidos directamente');
+                        // Disparar evento para indicar que los módulos están listos
+                        document.dispatchEvent(new CustomEvent('modulesReady'));
+                    }
+                }
+            }/**
+             * Carga los scripts JavaScript después de cargar los módulos HTML
+             */
+            async loadScripts() {
+                try {
+                    const scriptsResponse = await fetch('modules/scripts.html');
+                    const scriptsContent = await scriptsResponse.text();
+                    
+                    // Crear un contenedor temporal para extraer los scripts
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = scriptsContent;
+                    
+                    const scripts = tempDiv.querySelectorAll('script');
+                    
+                    // Cargar scripts secuencialmente para mantener el orden
+                    for (const script of scripts) {
+                        await this.loadScript(script.src);
+                    }
+                    
+                    console.log('🚀 Aplicación completamente cargada y lista');
+                    
+                    // Disparar evento personalizado para indicar que todo está listo
+                    document.dispatchEvent(new CustomEvent('appReady'));
+                    
+                } catch (error) {
+                    console.error('❌ Error cargando scripts:', error);
+                }
+            }
+
+            /**
+             * Carga un script individual
+             */
+            loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = () => {
+                        console.log(`✅ Script cargado: ${src}`);
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        console.error(`❌ Error cargando script: ${src}`);
+                        reject(new Error(`Error cargando ${src}`));
+                    };
+                    document.body.appendChild(script);
+                });
+            }
+
+            /**
+             * Inicia la carga de todos los módulos
+             */
+            async init() {
+                console.log('🔄 Iniciando carga de módulos HTML...');
+                
+                // Cargar todos los módulos en paralelo
+                const loadPromises = this.modules.map(module => this.loadModule(module));
+                
+                try {
+                    await Promise.allSettled(loadPromises);
+                } catch (error) {
+                    console.error('❌ Error durante la carga de módulos:', error);
+                }
+            }
+        }        // Inicializar el cargador de módulos cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cargar todos los módulos (incluyendo el menú)
+            const loader = new ModuleLoader();
+            loader.modules = [
+                { id: 'menu-module', file: 'modules/menu.html' },
+                { id: 'game-module', file: 'modules/game.html' },
+                { id: 'modals-module', file: 'modules/modals.html' }
+            ];
+            loader.totalModules = 3;
+            loader.loadOnlyModules = true; // Nueva bandera para evitar carga de scripts
+            loader.init();
+        });
+
+        // Mostrar indicador de carga
+        document.addEventListener('DOMContentLoaded', () => {
+            // Crear indicador de carga
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.id = 'loading-indicator';
+            loadingIndicator.innerHTML = `
+                <div class="loading-content">
+                    <div class="loading-spinner">�</div>
+                    <div class="loading-text">Cargando Trivial...</div>
+                    <div class="loading-progress">
+                        <div class="progress-bar"></div>
+                    </div>
+                </div>
+            `;
+            loadingIndicator.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                color: white;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            `;
+            
+            document.body.appendChild(loadingIndicator);
+            
+            // Ocultar indicador cuando la página esté completamente cargada
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    loadingIndicator.style.opacity = '0';
+                    loadingIndicator.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => {
+                        document.body.removeChild(loadingIndicator);
+                    }, 500);
+                }, 1000);
+            });
+        });
+    </script>
+
+    <!-- Estilos para el indicador de carga -->
+    <style>
+        .loading-content {
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            font-size: 4rem;
+            animation: spin 2s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        .loading-text {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        .loading-progress {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+            border-radius: 2px;
+            animation: progress 3s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes progress {
+            0% { width: 0; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }    </style>
+
+    <!-- Scripts de utilidades -->    <script src="js/utils/ApiClient.js"></script>
+    <script src="js/utils/Storage.js"></script>
+    <script src="js/utils/MobileUtils.js"></script>
+    <script src="js/utils/OllamaClient.js"></script>    <!-- Scripts del motor de juego -->
+    <script src="js/game/Player.js"></script>
+    <script src="js/game/Question.js"></script>
+    <script src="js/game/Board.js"></script>
+    <script src="js/game/GameEngine.js"></script>
+    <script src="js/game/ChallengeEngine.js"></script>
+
+    <!-- Scripts de interfaz de usuario -->
+    <script src="js/ui/MenuUI.js"></script>
+    <script src="js/ui/GameUI.js"></script>
+    <script src="js/ui/ChallengeUI.js"></script>
+
+    <!-- Script principal -->
+    <script src="js/main.js"></script>
+    
+</body>
+</html>

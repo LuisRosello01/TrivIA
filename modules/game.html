@@ -1,0 +1,119 @@
+<!-- ========================================
+     MÓDULO: INTERFAZ DE JUEGO PRINCIPAL
+     Contiene: Tablero, controles y paneles del juego
+     ======================================== -->
+
+<!-- Pantalla principal del juego -->
+<div id="game-screen" class="screen">
+    <!-- Header del juego con información del turno actual -->
+    <div class="game-header">
+        <div class="current-player">
+            <span>🎯 Turno de:</span>
+            <div id="current-player-info">
+                <div class="player-token"></div>
+                <span id="current-player-name">Jugador 1</span>
+            </div>
+        </div>
+          <!-- Controles del juego -->
+        <div class="game-controls">
+            <button id="translation-toggle-btn" class="btn btn-small btn-translation" title="Alternar traducción automática">
+                🌐 Traducción
+            </button>
+            <button id="reopen-question-btn" class="btn btn-small btn-warning" style="display: none;" title="Reabrir pregunta pendiente">
+                ❓ Pregunta Pendiente
+            </button>
+            <button id="pause-menu-btn" class="btn btn-small" title="Pausar juego y mostrar menú">
+                ⏸️ Menú
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenido principal del juego -->
+    <div class="game-main">
+        <!-- Panel lateral izquierdo: Historial de preguntas -->
+        <div class="questions-history-panel">
+            <h3>📝 Historial de Preguntas</h3>
+            <div id="questions-history-list">
+                <div class="history-empty">
+                    <p>🕒 Aún no se han hecho preguntas...</p>
+                    <small>Aquí aparecerá el historial de preguntas y respuestas</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área central: Tablero de juego -->
+        <div class="board-container">
+            <!-- Canvas del tablero -->
+            <canvas id="game-board" width="600" height="600"></canvas>
+            
+            <!-- Indicadores superpuestos en el tablero -->
+              <!-- Indicador de traducción -->
+            <div id="board-translation-indicator" class="board-translation-indicator">
+                <div class="board-translation-content">
+                    <div class="board-translation-spinner">🌐</div>
+                    <div class="board-translation-text">Traduciendo pregunta...</div>
+                    <div class="board-translation-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indicador de pregunta pendiente -->
+            <div id="board-pending-question" class="board-pending-question" style="display: none;">
+                <div class="board-pending-content">
+                    <div class="board-pending-icon">❓</div>
+                    <div class="board-pending-text">Pregunta pendiente</div>
+                    <div class="board-pending-subtitle">Click en el botón naranja para continuar</div>
+                </div>
+            </div>
+            
+            <!-- Botón para iniciar pregunta después del movimiento -->
+            <div id="board-start-question" class="board-start-question" style="display: none;">
+                <div class="board-start-content">
+                    <div class="board-start-icon">🎯</div>
+                    <div class="board-start-text">¡Listo para la pregunta!</div>
+                    <button id="start-question-btn" class="btn btn-primary board-start-btn">
+                        ▶️ Comenzar Pregunta
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Área del dado -->
+            <div class="dice-container">
+                <div id="dice" class="dice">
+                    <div class="dice-face">🎲</div>
+                </div>
+                <button id="roll-dice-btn" class="btn btn-primary">🎲 Tirar Dado</button>
+            </div>
+        </div>
+
+        <!-- Panel lateral derecho: Lista de jugadores -->
+        <div class="players-panel">
+            <h3>👥 Jugadores</h3>
+            <div id="players-list">
+                <!-- Los jugadores se cargarán dinámicamente aquí -->
+            </div>
+            
+            <!-- Información adicional del juego -->
+            <div class="game-info">
+                <div class="game-stats">
+                    <h4>📊 Estadísticas</h4>
+                    <div class="stat-item">
+                        <span class="stat-label">🎯 Preguntas respondidas:</span>
+                        <span class="stat-value" id="total-questions">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">✅ Aciertos:</span>
+                        <span class="stat-value" id="total-correct">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">⏱️ Tiempo de juego:</span>
+                        <span class="stat-value" id="game-time">00:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

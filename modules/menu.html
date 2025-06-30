@@ -1,0 +1,306 @@
+<!-- ========================================
+     MÓDULO: SISTEMA DE MENÚS PRINCIPAL
+     Contiene: Menú principal, configuración y tutorial
+     ======================================== -->
+
+<!-- Pantalla de menú principal -->
+<div id="menu-screen" class="screen active">
+    <div class="menu-container">
+        <h1 class="game-title">🎲 TRIVIAL 🎲</h1>        <div class="menu-options">
+            <button id="challenge-mode-btn" class="btn btn-highlight">⚡ Modo Desafío</button>
+            <button id="start-game-btn" class="btn btn-primary">👥 Multijugador</button>
+            <button id="continue-game-btn" class="btn btn-secondary" style="display: none;">Continuar Partida</button>
+            <button id="settings-btn" class="btn btn-secondary">⚙️ Configuración</button>
+            <button id="tutorial-btn" class="btn btn-secondary">Tutorial</button>
+        </div>
+    </div>
+</div>
+
+<!-- Pantalla de configuración multijugador -->
+<div id="config-screen" class="screen">
+    <div class="config-container">
+        <h2>⚙️ Configuración Multijugador</h2>
+        
+        <!-- Configuración de jugadores -->
+        <div class="config-section">
+            <h3>👥 Jugadores</h3>
+            <div class="config-option">
+                <label for="player-count">Número de jugadores:</label>
+                <select id="player-count">
+                    <option value="2">2 jugadores</option>
+                    <option value="3">3 jugadores</option>
+                    <option value="4" selected>4 jugadores</option>
+                    <option value="5">5 jugadores</option>
+                    <option value="6">6 jugadores</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Configuración de dificultad -->
+        <div class="config-section">
+            <h3>🎯 Dificultad</h3>
+            <div class="config-option">
+                <label for="difficulty">Nivel de dificultad:</label>
+                <select id="difficulty">
+                    <option value="easy">🟢 Fácil</option>
+                    <option value="medium" selected>🟡 Medio</option>
+                    <option value="hard">🔴 Difícil</option>
+                </select>
+            </div>
+            <div class="config-option">
+                <label for="timer">Tiempo por pregunta:</label>
+                <select id="timer">
+                    <option value="0">⏳ Sin límite</option>
+                    <option value="15">⏱️ 15 segundos</option>
+                    <option value="30" selected>⏰ 30 segundos</option>
+                    <option value="45">🕐 45 segundos</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Configuración de audio y traducción -->
+        <div class="config-section">
+            <h3>🔧 Preferencias</h3>
+            <div class="config-option">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="sound-enabled" checked>
+                    <span class="checkmark"></span>
+                    🔊 Sonidos activados
+                </label>
+            </div>
+            <div class="config-option">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="translation-enabled" checked>
+                    <span class="checkmark"></span>
+                    🌐 Traducir preguntas automáticamente
+                </label>
+            </div>
+        </div>        <div class="config-buttons">
+            <button id="config-back-btn" class="btn btn-secondary">⬅️ Volver</button>
+            <button id="config-save-btn" class="btn btn-primary">🎮 Iniciar Juego Multijugador</button>
+        </div></div>
+</div>
+
+<!-- Pantalla de tutorial -->
+<div id="tutorial-screen" class="screen">
+    <div class="tutorial-container">
+        <h2>📚 Cómo Jugar al Trivial</h2>
+        
+        <!-- Paso 1: Objetivo del juego -->
+        <div class="tutorial-step active" id="tutorial-step-1">
+            <h3>🎯 Objetivo del Juego</h3>
+            <p>Sé el primero en recopilar una cuña de cada una de las 6 categorías y responder correctamente la pregunta final en el centro del tablero.</p>
+            
+            <div class="categories-preview">
+                <h4>📋 Categorías del Juego:</h4>
+                <div class="categories-grid">
+                    <div class="category" style="background-color: #FF6B6B;">📚 Historia</div>
+                    <div class="category" style="background-color: #4ECDC4;">🔬 Ciencia</div>
+                    <div class="category" style="background-color: #45B7D1;">⚽ Deportes</div>
+                    <div class="category" style="background-color: #96CEB4;">🎨 Arte</div>
+                    <div class="category" style="background-color: #FECA57;">🌍 Geografía</div>
+                    <div class="category" style="background-color: #FF9FF3;">🎬 Entretenimiento</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 2: Mecánica del juego -->
+        <div class="tutorial-step" id="tutorial-step-2">
+            <h3>🎲 Mecánica del Juego</h3>
+            <div class="tutorial-steps-list">
+                <div class="tutorial-step-item">
+                    <span class="step-number">1</span>
+                    <p><strong>Tirar el dado:</strong> Muévete por el tablero según el número que salga</p>
+                </div>
+                <div class="tutorial-step-item">
+                    <span class="step-number">2</span>
+                    <p><strong>Responder pregunta:</strong> Contesta la pregunta de la categoría donde caigas</p>
+                </div>
+                <div class="tutorial-step-item">
+                    <span class="step-number">3</span>
+                    <p><strong>Ganar cuñas:</strong> Si aciertas en una casilla de cuña (centro), obtienes esa cuña</p>
+                </div>
+                <div class="tutorial-step-item">
+                    <span class="step-number">4</span>
+                    <p><strong>Pregunta final:</strong> Con todas las cuñas, ve al centro para la pregunta final</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 3: Tipos de casillas -->
+        <div class="tutorial-step" id="tutorial-step-3">
+            <h3>🎯 Tipos de Casillas</h3>
+            <div class="casillas-types">
+                <div class="casilla-type">
+                    <div class="casilla-icon normal">⭕</div>
+                    <div class="casilla-info">
+                        <h4>Casillas Normales</h4>
+                        <p>Pregunta de la categoría correspondiente. Si aciertas, puedes volver a tirar.</p>
+                    </div>
+                </div>
+                <div class="casilla-type">
+                    <div class="casilla-icon cuña">🏆</div>
+                    <div class="casilla-info">
+                        <h4>Casillas de Cuña</h4>
+                        <p>Pregunta para ganar cuña de esa categoría. ¡Estas son las más importantes!</p>
+                    </div>
+                </div>
+                <div class="casilla-type">
+                    <div class="casilla-icon especial">⭐</div>
+                    <div class="casilla-info">
+                        <h4>Casillas Especiales</h4>
+                        <p>Efectos especiales como volver a tirar o elegir categoría.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navegación del tutorial -->
+        <div class="tutorial-navigation">
+            <button id="tutorial-prev-btn" class="btn btn-secondary" disabled>⬅️ Anterior</button>
+            <span id="tutorial-progress">1 / 3</span>
+            <button id="tutorial-next-btn" class="btn btn-primary">➡️ Siguiente</button>
+            <button id="tutorial-close-btn" class="btn btn-secondary">❌ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Pantalla de configuración del modo Desafío -->
+<div id="challenge-config-screen" class="screen">
+    <div class="config-container">
+        <h2>⚡ Configuración Modo Desafío</h2>
+
+        <!-- Configuración básica del desafío -->
+        <div class="config-section">
+            <h3>⚙️ Configuración Básica</h3>
+            <div class="config-option">
+                <label for="challenge-difficulty">Nivel de dificultad:</label>                <select id="challenge-difficulty">
+                    <option value="easy">🟢 Principiante</option>
+                    <option value="medium" selected>🟡 Intermedio</option>
+                    <option value="hard">🔴 Experto</option>
+                    <option value="random">🎲 Dificultad Aleatoria</option>
+                </select>
+            </div>
+            <div class="config-option">
+                <label for="challenge-timer">Tiempo límite:</label>
+                <select id="challenge-timer">
+                    <option value="0">⏳ Sin límite</option>
+                    <option value="10">⏱️ 10 segundos</option>
+                    <option value="15">⏰ 15 segundos</option>
+                    <option value="20" selected>🕐 20 segundos</option>
+                    <option value="30">⏳ 30 segundos</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Configuración de categorías para el desafío -->
+        <div class="config-section">
+            <h3>📚 Categorías a Incluir</h3>
+            <div class="challenge-categories">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="challenge-historia" checked>
+                    <span class="checkmark"></span>
+                    📚 Historia
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="challenge-ciencia" checked>
+                    <span class="checkmark"></span>
+                    🔬 Ciencia
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="challenge-deportes" checked>
+                    <span class="checkmark"></span>
+                    ⚽ Deportes
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="challenge-arte" checked>
+                    <span class="checkmark"></span>
+                    🎨 Arte
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="challenge-geografia" checked>
+                    <span class="checkmark"></span>
+                    🌍 Geografía
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="challenge-entretenimiento" checked>
+                    <span class="checkmark"></span>
+                    🎬 Entretenimiento
+                </label>
+            </div>
+        </div>
+
+        <div class="config-buttons">
+            <button id="challenge-back-btn" class="btn btn-secondary">⬅️ Volver</button>
+            <button id="challenge-start-btn" class="btn btn-highlight">⚡ Iniciar Desafío</button>
+        </div>
+    </div>
+</div>
+
+<!-- Pantalla de configuración general -->
+<div id="settings-screen" class="screen">
+    <div class="config-container">
+        <h2>⚙️ Configuración General</h2>
+        
+        <!-- Configuración de jugadores -->
+        <div class="config-section">
+            <h3>👥 Jugadores</h3>
+            <div class="config-option">
+                <label for="settings-player-count">Número de jugadores por defecto:</label>
+                <select id="settings-player-count">
+                    <option value="2">2 jugadores</option>
+                    <option value="3">3 jugadores</option>
+                    <option value="4" selected>4 jugadores</option>
+                    <option value="5">5 jugadores</option>
+                    <option value="6">6 jugadores</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Configuración de dificultad -->
+        <div class="config-section">
+            <h3>🎯 Dificultad</h3>
+            <div class="config-option">
+                <label for="settings-difficulty">Nivel de dificultad por defecto:</label>
+                <select id="settings-difficulty">
+                    <option value="easy">🟢 Fácil</option>
+                    <option value="medium" selected>🟡 Medio</option>
+                    <option value="hard">🔴 Difícil</option>
+                </select>
+            </div>
+            <div class="config-option">
+                <label for="settings-timer">Tiempo por pregunta por defecto:</label>
+                <select id="settings-timer">
+                    <option value="0">⏳ Sin límite</option>
+                    <option value="15">⏱️ 15 segundos</option>
+                    <option value="30" selected>⏰ 30 segundos</option>
+                    <option value="45">🕐 45 segundos</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Configuración de audio y traducción -->
+        <div class="config-section">
+            <h3>🔧 Preferencias</h3>
+            <div class="config-option">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="settings-sound-enabled" checked>
+                    <span class="checkmark"></span>
+                    🔊 Sonidos activados
+                </label>
+            </div>
+            <div class="config-option">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="settings-translation-enabled" checked>
+                    <span class="checkmark"></span>
+                    🌐 Traducir preguntas automáticamente
+                </label>
+            </div>
+        </div>
+
+        <div class="config-buttons">
+            <button id="settings-back-btn" class="btn btn-secondary">⬅️ Volver</button>
+            <button id="settings-save-btn" class="btn btn-primary">💾 Guardar Configuración</button>
+        </div>
+    </div>
+</div>

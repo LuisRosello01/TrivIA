@@ -1,0 +1,369 @@
+{
+  "historia": [
+    {
+      "question": "¿En qué año terminó la Segunda Guerra Mundial?",
+      "answers": ["1945", "1944", "1946", "1943"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién fue el primer presidente de Estados Unidos?",
+      "answers": ["George Washington", "Thomas Jefferson", "John Adams", "Benjamin Franklin"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿En qué año cayó el Muro de Berlín?",
+      "answers": ["1989", "1987", "1991", "1985"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién fue el emperador romano que legalizó el cristianismo?",
+      "answers": ["Constantino I", "Julio César", "Augusto", "Nerón"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿En qué año se descubrió América?",
+      "answers": ["1492", "1485", "1500", "1498"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál fue la primera civilización en desarrollar la escritura?",
+      "answers": ["Sumeria", "Egipcia", "China", "Griega"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿En qué batalla fue derrotado definitivamente Napoleón?",
+      "answers": ["Waterloo", "Austerlitz", "Borodino", "Leipzig"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué imperio construyó Machu Picchu?",
+      "answers": ["Imperio Inca", "Imperio Azteca", "Imperio Maya", "Imperio Chimú"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuándo comenzó la Primera Guerra Mundial?",
+      "answers": ["1914", "1916", "1912", "1918"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién fue el líder de la Revolución Francesa?",
+      "answers": ["Robespierre", "Napoleón", "Luis XVI", "Voltaire"],
+      "correct": 0,
+      "difficulty": "hard"
+    }
+  ],  "ciencia": [
+    {
+      "question": "¿Cuál es el elemento químico más abundante en el universo?",
+      "answers": ["Hidrógeno", "Helio", "Oxígeno", "Carbono"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuántos huesos tiene el cuerpo humano adulto?",
+      "answers": ["206", "195", "215", "187"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Cuál es la velocidad de la luz en el vacío?",
+      "answers": ["300.000 km/s", "250.000 km/s", "350.000 km/s", "280.000 km/s"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué planeta es conocido como el 'planeta rojo'?",
+      "answers": ["Marte", "Venus", "Júpiter", "Saturno"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Quién desarrolló la teoría de la relatividad?",
+      "answers": ["Albert Einstein", "Isaac Newton", "Stephen Hawking", "Galileo Galilei"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es la unidad básica de la herencia?",
+      "answers": ["Gen", "Cromosoma", "ADN", "Célula"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué gas constituye aproximadamente el 78% de la atmósfera terrestre?",
+      "answers": ["Nitrógeno", "Oxígeno", "Argón", "Dióxido de carbono"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es la partícula subatómica con carga positiva?",
+      "answers": ["Protón", "Electrón", "Neutrón", "Fotón"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuántos planetas tiene el sistema solar?",
+      "answers": ["8", "9", "7", "10"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Qué científico propuso las leyes del movimiento?",
+      "answers": ["Isaac Newton", "Albert Einstein", "Galileo Galilei", "Johannes Kepler"],
+      "correct": 0,
+      "difficulty": "medium"
+    }
+  ],  "deportes": [
+    {
+      "question": "¿Cada cuántos años se celebran los Juegos Olímpicos de verano?",
+      "answers": ["4 años", "2 años", "6 años", "3 años"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿En qué deporte se usa el término 'canasta'?",
+      "answers": ["Baloncesto", "Voleibol", "Tenis", "Béisbol"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuántos jugadores tiene un equipo de fútbol en el campo?",
+      "answers": ["11", "10", "12", "9"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿En qué país se originó el tenis moderno?",
+      "answers": ["Inglaterra", "Francia", "España", "Estados Unidos"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién tiene más títulos de Grand Slam en tenis masculino hasta 2024?",
+      "answers": ["Novak Djokovic", "Rafael Nadal", "Roger Federer", "Pete Sampras"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Cuál es la distancia oficial de una maratón?",
+      "answers": ["42,195 km", "40 km", "45 km", "42 km"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿En qué deporte se utiliza un disco de goma llamado 'puck'?",
+      "answers": ["Hockey sobre hielo", "Curling", "Polo", "Lacrosse"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué país ha ganado más Copas del Mundo de fútbol?",
+      "answers": ["Brasil", "Alemania", "Argentina", "Italia"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuántos sets se necesitan ganar para obtener un partido de tenis masculino en Grand Slam?",
+      "answers": ["3 de 5", "2 de 3", "4 de 7", "3 de 4"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿En qué deporte se compite por la Copa Davis?",
+      "answers": ["Tenis", "Baloncesto", "Voleibol", "Bádminton"],
+      "correct": 0,
+      "difficulty": "easy"
+    }
+  ],  "arte": [
+    {
+      "question": "¿Quién pintó 'La Mona Lisa'?",
+      "answers": ["Leonardo da Vinci", "Miguel Ángel", "Rafael", "Donatello"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿En qué museo de Madrid se encuentra 'La Guernica' de Picasso?",
+      "answers": ["Museo Reina Sofía", "Museo del Prado", "Thyssen-Bornemisza", "CaixaForum"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué artista neerlandés se cortó parte de la oreja?",
+      "answers": ["Vincent van Gogh", "Pablo Picasso", "Salvador Dalí", "Claude Monet"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es la escultura más famosa de Miguel Ángel?",
+      "answers": ["David", "Pietà", "Moisés", "Baco"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué movimiento artístico fundaron Pablo Picasso y Georges Braque?",
+      "answers": ["Cubismo", "Surrealismo", "Impresionismo", "Expresionismo"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién pintó 'La noche estrellada'?",
+      "answers": ["Vincent van Gogh", "Claude Monet", "Pierre-Auguste Renoir", "Edgar Degas"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿En qué ciudad se encuentra la Capilla Sixtina?",
+      "answers": ["Ciudad del Vaticano", "Roma", "Florencia", "Venecia"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién esculpió 'El Pensador'?",
+      "answers": ["Auguste Rodin", "Constantin Brâncuși", "Henry Moore", "Alberto Giacometti"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Qué técnica pictórica inventó Leonardo da Vinci para crear transiciones suaves?",
+      "answers": ["Sfumato", "Claroscuro", "Impasto", "Glazing"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Cuál es la obra más famosa de Salvador Dalí?",
+      "answers": ["La persistencia de la memoria", "Muchacha en la ventana", "Metamorfosis de Narciso", "El gran masturbador"],
+      "correct": 0,
+      "difficulty": "medium"
+    }
+  ],  "geografia": [
+    {
+      "question": "¿Cuál es la capital de Australia?",
+      "answers": ["Canberra", "Sídney", "Melbourne", "Perth"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es el río más largo del mundo?",
+      "answers": ["Nilo", "Amazonas", "Yangtsé", "Mississippi"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Cuál es el país más pequeño del mundo?",
+      "answers": ["Ciudad del Vaticano", "Mónaco", "San Marino", "Liechtenstein"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿En qué continente se encuentra el desierto del Sahara?",
+      "answers": ["África", "Asia", "Australia", "América del Norte"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es la montaña más alta del mundo?",
+      "answers": ["Monte Everest", "K2", "Kangchenjunga", "Lhotse"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Qué país tiene más husos horarios en el mundo?",
+      "answers": ["Francia", "Rusia", "Estados Unidos", "China"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Cuál es el océano más grande del mundo?",
+      "answers": ["Pacífico", "Atlántico", "Índico", "Ártico"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿En qué país sudamericano se encuentra Machu Picchu?",
+      "answers": ["Perú", "Bolivia", "Ecuador", "Colombia"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es la capital de Canadá?",
+      "answers": ["Ottawa", "Toronto", "Montreal", "Vancouver"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué estrecho separa Europa de África?",
+      "answers": ["Estrecho de Gibraltar", "Estrecho de Bering", "Canal de la Mancha", "Estrecho de Magallanes"],
+      "correct": 0,
+      "difficulty": "medium"
+    }
+  ],  "entretenimiento": [
+    {
+      "question": "¿Quién dirigió la película 'El Padrino'?",
+      "answers": ["Francis Ford Coppola", "Martin Scorsese", "Steven Spielberg", "Woody Allen"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cómo se llama el protagonista de la saga 'Harry Potter'?",
+      "answers": ["Harry Potter", "Ron Weasley", "Hermione Granger", "Draco Malfoy"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Qué película ganó el Óscar a la mejor película en 2020?",
+      "answers": ["Parásitos", "1917", "Joker", "Había una vez en Hollywood"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Cuál es la serie de televisión más exitosa de HBO?",
+      "answers": ["Juego de Tronos", "Los Soprano", "The Wire", "Westworld"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién interpretó a Jack en 'Titanic'?",
+      "answers": ["Leonardo DiCaprio", "Brad Pitt", "Matt Damon", "Johnny Depp"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es la película de animación de Disney más taquillera?",
+      "answers": ["Frozen II", "El Rey León (2019)", "Frozen", "Toy Story 4"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿En qué año se estrenó la primera película de 'La Guerra de las Galaxias'?",
+      "answers": ["1977", "1975", "1979", "1980"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién creó la serie animada 'Los Simpson'?",
+      "answers": ["Matt Groening", "Seth MacFarlane", "Mike Judge", "Trey Parker"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué actor interpretó a Forrest Gump?",
+      "answers": ["Tom Hanks", "Robin Williams", "Kevin Costner", "Mel Gibson"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es el nombre del hobbit protagonista de 'El Señor de los Anillos'?",
+      "answers": ["Frodo Bolsón", "Bilbo Bolsón", "Sam Gamyi", "Pippin Tuk"],
+      "correct": 0,
+      "difficulty": "easy"
+    }
+  ]
+}
