@@ -79,27 +79,109 @@ class MenuUI {
         if (!this.menuButtons.startGame) {
             console.error('❌ No se pueden configurar event listeners - elementos no disponibles');
             return;
-        }        // Menú principal - usando event listeners optimizados para móviles
-        this.addMobileOptimizedListener(this.menuButtons.startGame, () => this.showConfigScreen());
-        this.addMobileOptimizedListener(this.menuButtons.continueGame, () => this.continueGame());
-        this.addMobileOptimizedListener(this.menuButtons.settings, () => this.showSettingsScreen());
-        this.addMobileOptimizedListener(this.menuButtons.tutorial, () => this.showTutorialScreen());        // Configuración - usando event listeners optimizados
+        }
+
+        // Menú principal - usando event listeners optimizados para móviles
+        this.addMobileOptimizedListener(this.menuButtons.startGame, () => {
+            // Track clic en botón de inicio
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackButtonClick('start-game-btn', 'Comenzar Juego', 'main-menu');
+            }
+            this.showConfigScreen();
+        });
+        
+        this.addMobileOptimizedListener(this.menuButtons.continueGame, () => {
+            // Track clic en continuar juego
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackButtonClick('continue-game-btn', 'Continuar Juego', 'main-menu');
+            }
+            this.continueGame();
+        });
+        
+        this.addMobileOptimizedListener(this.menuButtons.settings, () => {
+            // Track apertura de configuración
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackSettingsOpen('main-menu');
+                window.trivialAnalytics.trackButtonClick('settings-btn', 'Configuración', 'main-menu');
+            }
+            this.showSettingsScreen();
+        });
+        
+        this.addMobileOptimizedListener(this.menuButtons.tutorial, () => {
+            // Track inicio de tutorial
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackTutorialStart('game-basics', 'menu');
+                window.trivialAnalytics.trackButtonClick('tutorial-btn', 'Tutorial', 'main-menu');
+            }
+            this.showTutorialScreen();
+        });
+
+        // Configuración - usando event listeners optimizados
         if (this.configElements.backBtn && this.configElements.saveBtn) {
-            this.addMobileOptimizedListener(this.configElements.backBtn, () => this.showMenuScreen());
-            this.addMobileOptimizedListener(this.configElements.saveBtn, () => this.saveConfiguration());
+            this.addMobileOptimizedListener(this.configElements.backBtn, () => {
+                // Track navegación hacia atrás
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackBackButton('game-config', 'button');
+                    window.trivialAnalytics.trackMenuNavigation('game-config', 'main-menu', 'back_button');
+                }
+                this.showMenuScreen();
+            });
+            
+            this.addMobileOptimizedListener(this.configElements.saveBtn, () => {
+                // Track guardado de configuración
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackButtonClick('save-config-btn', 'Guardar Configuración', 'game-config');
+                }
+                this.saveConfiguration();
+            });
         }
 
         // Configuración general - usando event listeners optimizados
         if (this.settingsElements.backBtn && this.settingsElements.saveBtn) {
-            this.addMobileOptimizedListener(this.settingsElements.backBtn, () => this.showMenuScreen());
-            this.addMobileOptimizedListener(this.settingsElements.saveBtn, () => this.saveSettings());
+            this.addMobileOptimizedListener(this.settingsElements.backBtn, () => {
+                // Track salida de configuración
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackBackButton('settings', 'button');
+                    window.trivialAnalytics.trackMenuNavigation('settings', 'main-menu', 'back_button');
+                }
+                this.showMenuScreen();
+            });
+            
+            this.addMobileOptimizedListener(this.settingsElements.saveBtn, () => {
+                // Track guardado de configuración general
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackButtonClick('save-settings-btn', 'Guardar Configuración', 'settings');
+                }
+                this.saveSettings();
+            });
         }
 
         // Tutorial - usando event listeners optimizados
         if (this.tutorialElements.prevBtn && this.tutorialElements.nextBtn && this.tutorialElements.closeBtn) {
-            this.addMobileOptimizedListener(this.tutorialElements.prevBtn, () => this.previousTutorialStep());
-            this.addMobileOptimizedListener(this.tutorialElements.nextBtn, () => this.nextTutorialStep());
-            this.addMobileOptimizedListener(this.tutorialElements.closeBtn, () => this.showMenuScreen());
+            this.addMobileOptimizedListener(this.tutorialElements.prevBtn, () => {
+                // Track navegación en tutorial
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackButtonClick('tutorial-prev', 'Anterior', 'tutorial');
+                }
+                this.previousTutorialStep();
+            });
+            
+            this.addMobileOptimizedListener(this.tutorialElements.nextBtn, () => {
+                // Track avance en tutorial
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackButtonClick('tutorial-next', 'Siguiente', 'tutorial');
+                }
+                this.nextTutorialStep();
+            });
+            
+            this.addMobileOptimizedListener(this.tutorialElements.closeBtn, () => {
+                // Track cierre de tutorial
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackButtonClick('tutorial-close', 'Cerrar', 'tutorial');
+                    window.trivialAnalytics.trackMenuNavigation('tutorial', 'main-menu', 'close_button');
+                }
+                this.showMenuScreen();
+            });
         }        // Escuchar cambios en configuración
         Object.values(this.configElements).forEach(element => {
             if (element && (element.tagName === 'SELECT' || element.tagName === 'INPUT')) {
@@ -149,6 +231,12 @@ class MenuUI {
      * Muestra la pantalla de configuración
      */
     showConfigScreen() {
+        // Track apertura del modal de configuración
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackModalOpen('game-config', 'navigation', 'main-menu');
+            window.trivialAnalytics.trackFormStart('game-config-form', 'game_setup');
+        }
+        
         this.showScreen('config');
         this.loadConfiguration();
     }
@@ -157,6 +245,11 @@ class MenuUI {
      * Muestra la pantalla de configuración general
      */
     showSettingsScreen() {
+        // Track apertura del modal de configuración general
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackModalOpen('settings', 'navigation', 'main-menu');
+        }
+        
         this.showScreen('settings');
         this.loadSettings();
     }
@@ -165,6 +258,11 @@ class MenuUI {
      * Muestra la pantalla del tutorial
      */
     showTutorialScreen() {
+        // Track apertura del tutorial
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackModalOpen('tutorial', 'navigation', 'main-menu');
+        }
+        
         this.showScreen('tutorial');
         this.tutorialStep = 1;
         this.updateTutorialDisplay();
@@ -251,6 +349,19 @@ class MenuUI {
     async saveConfiguration() {
         try {
             const config = this.getCurrentConfig();
+            
+            // Track envío del formulario de configuración
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackFormSubmit('game-config-form', 'game_setup', true, 0);
+                
+                // Track cada configuración específica
+                window.trivialAnalytics.trackSettingChange('player_count', config.playerCount, this.gameEngine.config.playerCount, 'game');
+                window.trivialAnalytics.trackSettingChange('difficulty', config.difficulty, this.gameEngine.config.difficulty, 'game');
+                window.trivialAnalytics.trackSettingChange('timer', config.timer, this.gameEngine.config.timer, 'game');
+                window.trivialAnalytics.trackSettingChange('sound_enabled', config.soundEnabled, this.gameEngine.config.soundEnabled, 'audio');
+                window.trivialAnalytics.trackSettingChange('translation_enabled', config.translationEnabled, this.gameEngine.config.translationEnabled, 'accessibility');
+            }
+            
             this.gameEngine.updateConfig(config);
             
             // Mostrar indicador de carga
@@ -268,6 +379,13 @@ class MenuUI {
             }
         } catch (error) {
             console.error('Error al iniciar juego multijugador:', error);
+            
+            // Track error en analytics
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackError('GAME_CONFIG_ERROR', error.message);
+                window.trivialAnalytics.trackFormError('game-config-form', 'general', 'startup_error', error.message);
+            }
+            
             this.hideLoadingIndicator();
             this.showError('Error al iniciar el juego multijugador. Por favor, inténtalo de nuevo.');
         }

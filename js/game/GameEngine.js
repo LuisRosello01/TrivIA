@@ -99,6 +99,14 @@ class GameEngine {    constructor() {
      * @param {Object} config - Configuración del juego
      */    async startNewGame(config = {}) {
         try {
+            // Track configuración del juego
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackGameSetup(
+                    config.playerCount || this.config.playerCount,
+                    config.difficulty || this.config.difficulty
+                );
+            }
+            
             // Actualizar configuración
             this.config = { ...this.config, ...config };
             this.storage.saveConfig(this.config);
@@ -124,6 +132,11 @@ class GameEngine {    constructor() {
             this.gameState = 'playing';
             this.gameStartTime = Date.now();
             
+            // Track inicio del juego
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackGameStart();
+            }
+            
             // Guardar estado inicial
             this.saveGameState();
             
@@ -138,6 +151,12 @@ class GameEngine {    constructor() {
             return true;
         } catch (error) {
             console.error('Error al iniciar nuevo juego:', error);
+            
+            // Track error en analytics
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackError('GAME_START_ERROR', error.message);
+            }
+            
             return false;
         }
     }
@@ -254,6 +273,11 @@ class GameEngine {    constructor() {
 
         // Generar número aleatorio del 1 al 6
         const diceValue = Math.floor(Math.random() * 6) + 1;
+        
+        // Track tirada de dado
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackDiceRoll(diceValue);
+        }
         
         console.log(`${currentPlayer.name} ha sacado un ${diceValue}`);
         
@@ -440,6 +464,16 @@ class GameEngine {    constructor() {
         const timeSpent = this.questionStartTime ? 
             (Date.now() - this.questionStartTime) / 1000 : 0;
         
+        // Track respuesta a pregunta
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackQuestionAnswered(
+                this.currentQuestion.category,
+                this.currentQuestion.difficulty,
+                isCorrect,
+                timeSpent
+            );
+        }
+        
         // Registrar respuesta en estadísticas del jugador
         currentPlayer.recordAnswer(isCorrect, this.currentQuestion.category, timeSpent);
         
@@ -464,6 +498,11 @@ class GameEngine {    constructor() {
                     // Otorgar cuña si está en casilla de cuña
                     const wedgeGranted = currentPlayer.grantWedge(this.currentQuestion.category);
                     if (wedgeGranted) {
+                        // Track cuña obtenida
+                        if (window.trivialAnalytics) {
+                            window.trivialAnalytics.trackMilestone(`wedge_earned_${this.currentQuestion.category}`);
+                        }
+                        
                         this.emit('wedgeEarned', {
                             player: currentPlayer,
                             category: this.currentQuestion.category
@@ -536,6 +575,21 @@ class GameEngine {    constructor() {
         
         const gameTime = this.gameStartTime ? 
             (Date.now() - this.gameStartTime) / 1000 : 0;
+        
+        // Track finalización del juego
+        if (window.trivialAnalytics) {
+            const finalScores = this.players.map(p => ({
+                name: p.name,
+                wedges: p.wedges.length,
+                correctAnswers: p.stats.correctAnswers,
+                totalAnswers: p.stats.totalAnswers
+            }));
+            
+            window.trivialAnalytics.trackGameComplete(player.name, gameTime, finalScores);
+            
+            // Track milestone de victoria
+            window.trivialAnalytics.trackMilestone(`game_won_${this.players.length}_players`);
+        }
         
         console.log(`¡${player.name} ha ganado el juego!`);
         

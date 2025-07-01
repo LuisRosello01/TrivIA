@@ -50,11 +50,26 @@ class Storage {
                 JSON.stringify(stateToSave)
             );
             
+            // Track guardado de partida
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackTechnicalEvent('game_saved', {
+                    dataSize: JSON.stringify(stateToSave).length,
+                    playerCount: gameState.players?.length || 0,
+                    gameProgress: gameState.currentTurn || 0
+                });
+            }
+            
             this.updateLastPlayed();
             console.log('Estado del juego guardado correctamente');
             return true;
         } catch (error) {
             console.error('Error al guardar el estado del juego:', error);
+            
+            // Track error de guardado
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackError('SAVE_ERROR', error.message);
+            }
+            
             this.handleStorageError(error);
             return false;
         }
@@ -78,10 +93,26 @@ class Storage {
                 return null;
             }
 
+            // Track carga de partida
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackTechnicalEvent('game_loaded', {
+                    dataSize: saved.length,
+                    playerCount: gameState.players?.length || 0,
+                    gameAge: Math.round((Date.now() - gameState.savedAt) / (1000 * 60)), // Age in minutes
+                    gameProgress: gameState.currentTurn || 0
+                });
+            }
+
             console.log('Estado del juego cargado correctamente');
             return gameState;
         } catch (error) {
             console.error('Error al cargar el estado del juego:', error);
+            
+            // Track error de carga
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackError('LOAD_ERROR', error.message);
+            }
+            
             this.clearGameState(); // Limpiar estado corrupto
             return null;
         }

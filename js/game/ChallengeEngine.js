@@ -37,6 +37,15 @@ class ChallengeEngine {
     async initialize(config) {
         console.log('🚀 Inicializando Modo Desafío...');
         
+        // Track configuración del desafío
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackChallengeSetup(
+                config.mode || 'survival',
+                config.timer || 20,
+                config.questionCount || 0
+            );
+        }
+        
         // Actualizar configuración
         this.config = { ...this.config, ...config };
         
@@ -84,6 +93,14 @@ class ChallengeEngine {
             this.gameState.isGameRunning = true;
             this.isActive = true;
 
+            // Track inicio del desafío
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackChallengeStart(
+                    this.config.mode || 'survival',
+                    this.config.timer || 20
+                );
+            }
+
             // Cargar primera pregunta
             await this.loadNextQuestion();
             
@@ -101,6 +118,12 @@ class ChallengeEngine {
 
         } catch (error) {
             console.error('❌ Error al iniciar desafío:', error);
+            
+            // Track error en analytics
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackError('CHALLENGE_START_ERROR', error.message);
+            }
+            
             this.dispatchEvent('challengeError', { error: error.message });
             return false;
         }
@@ -239,16 +262,48 @@ class ChallengeEngine {
             return;
         }
 
+        // Calcular tiempo de respuesta
+        const responseTime = this.config.timer - this.gameState.timeRemaining;
+
         // Parar temporizador
         this.stopTimer();
 
         const isCorrect = answer === this.gameState.currentQuestion.respuesta_correcta;
         this.gameState.questionsAnswered++;
 
+        // Track respuesta en challenge
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackChallengeQuestion(
+                this.gameState.questionsAnswered,
+                this.gameState.timeRemaining,
+                isCorrect,
+                responseTime
+            );
+        }
+
         if (isCorrect) {
             this.gameState.correctAnswers++;
             this.gameState.streak++;
             this.gameState.score += this.calculateScore();
+            
+            // Track racha si es significativa
+            if (window.trivialAnalytics && this.gameState.streak >= 3) {
+                window.trivialAnalytics.trackChallengeStreak(
+                    this.config.mode || 'survival',
+                    this.gameState.streak,
+                    'correct'
+                );
+            }
+            
+            // Track bonus por velocidad si respondió rápido
+            if (responseTime <= 5 && window.trivialAnalytics) {
+                const bonusPoints = Math.floor((5 - responseTime) * 10);
+                window.trivialAnalytics.trackChallengeSpeedBonus(
+                    this.config.mode || 'survival',
+                    bonusPoints,
+                    responseTime
+                );
+            }
             
             console.log('✅ Respuesta correcta! Puntuación:', this.gameState.score);
         } else {
@@ -433,6 +488,15 @@ class ChallengeEngine {
         this.gameState.questionsAnswered++;
         this.gameState.streak = 0;
 
+        // Track timeout en analytics
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackChallengeTimeout(
+                this.config.mode || 'survival',
+                this.gameState.currentQuestion.categoria || 'unknown',
+                this.config.timer || 20
+            );
+        }
+
         // Disparar evento de timeout
         this.dispatchEvent('challengeTimeOut', {
             correctAnswer: this.gameState.currentQuestion.respuesta_correcta,
@@ -487,6 +551,31 @@ class ChallengeEngine {
             difficulty: this.config.difficulty
         };
 
+        // Track finalización del desafío
+        if (window.trivialAnalytics) {
+            const timeUsed = Math.round(gameResults.duration / 1000);
+            
+            window.trivialAnalytics.trackChallengeComplete(
+                this.config.mode || 'survival',
+                gameResults.score,
+                timeUsed,
+                gameResults.correctAnswers,
+                gameResults.questionsAnswered
+            );
+            
+            // Track milestone si es un score alto
+            if (gameResults.score >= 1000) {
+                window.trivialAnalytics.trackMilestone(`challenge_high_score_${Math.floor(gameResults.score / 1000)}k`);
+            }
+            
+            // Track dificultad vs rendimiento
+            window.trivialAnalytics.trackChallengeDifficulty(
+                this.config.mode || 'survival',
+                this.config.difficulty,
+                gameResults.accuracy
+            );
+        }
+
         // Disparar evento de fin de desafío
         this.dispatchEvent('challengeEnded', { results: gameResults });
 
@@ -500,6 +589,16 @@ class ChallengeEngine {
     pauseChallenge() {
         if (this.gameState.isGameRunning) {
             this.stopTimer();
+            
+            // Track pausa en analytics
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackChallengePause(
+                    this.config.mode || 'survival',
+                    this.gameState.questionsAnswered,
+                    this.gameState.score
+                );
+            }
+            
             this.dispatchEvent('challengePaused', { gameState: this.gameState });
             console.log('⏸️ Desafío pausado');
         }
@@ -511,6 +610,16 @@ class ChallengeEngine {
     resumeChallenge() {
         if (this.gameState.isGameRunning && this.gameState.currentQuestion) {
             this.startTimer();
+            
+            // Track reanudación en analytics
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackChallengeResume(
+                    this.config.mode || 'survival',
+                    this.gameState.questionsAnswered,
+                    this.gameState.score
+                );
+            }
+            
             this.dispatchEvent('challengeResumed', { gameState: this.gameState });
             console.log('▶️ Desafío reanudado');
         }
@@ -653,6 +762,34 @@ class ChallengeEngine {
             return randomDifficulty;
         }
         return this.config.difficulty;
+    }
+
+    /**
+     * Abandona el desafío actual
+     */
+    abandonChallenge() {
+        if (this.gameState.isGameRunning) {
+            console.log('🚪 Abandonando desafío...');
+            
+            // Track abandono en analytics
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackChallengeAbandon(
+                    this.config.mode || 'survival',
+                    this.gameState.questionsAnswered,
+                    this.gameState.score,
+                    Math.round((Date.now() - this.gameState.gameStartTime) / 1000)
+                );
+            }
+            
+            this.stopTimer();
+            this.gameState.isGameRunning = false;
+            this.isActive = false;
+            
+            this.dispatchEvent('challengeAbandoned', { 
+                gameState: this.gameState,
+                finalScore: this.gameState.score
+            });
+        }
     }
 }
 

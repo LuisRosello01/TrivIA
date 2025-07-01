@@ -460,7 +460,21 @@ class Board {
             const fromSpace = this.getSpaceById(fromPosition);
             const toSpace = this.getSpaceById(toPosition);
             
+            // Track animación de movimiento
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('animation_start', 'player_movement', {
+                    playerId: player.id,
+                    fromPosition: fromPosition,
+                    toPosition: toPosition,
+                    duration: duration
+                });
+            }
+            
             if (!fromSpace || !toSpace) {
+                // Track error de animación
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackError('ANIMATION_ERROR', `Invalid spaces: from=${fromPosition}, to=${toPosition}`);
+                }
                 resolve();
                 return;
             }
@@ -493,6 +507,13 @@ class Board {
                 if (progress < 1) {
                     this.animationFrame = requestAnimationFrame(animate);
                 } else {
+                    // Track finalización de animación
+                    if (window.trivialAnalytics) {
+                        window.trivialAnalytics.trackUIInteraction('animation_complete', 'player_movement', {
+                            playerId: player.id,
+                            actualDuration: elapsed
+                        });
+                    }
                     resolve();
                 }
             };
@@ -561,6 +582,15 @@ class Board {
         // Mostrar indicador si hay cambio significativo
         const sizeChange = Math.abs(this.width - oldWidth) + Math.abs(this.height - oldHeight);
         if (sizeChange > 50) {
+            // Track redimensionamiento significativo
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackTechnicalEvent('board_resize', {
+                    oldDimensions: `${oldWidth}x${oldHeight}`,
+                    newDimensions: `${this.width}x${this.height}`,
+                    sizeChange: sizeChange,
+                    deviceType: deviceInfo.deviceType
+                });
+            }
             this.showResizeIndicator();
         }
           // Actualizar tamaño de casillas según dispositivo - reducido para tablero más pequeño

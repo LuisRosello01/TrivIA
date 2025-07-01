@@ -101,38 +101,126 @@ class GameUI {
      * Configura los event listeners de la UI
      */
     setupEventListeners() {        // Controles del header
-        this.gameHeader.translationToggleBtn.addEventListener('click', () => this.toggleTranslation());
-        this.gameHeader.reopenQuestionBtn.addEventListener('click', () => this.reopenPendingQuestion());
-        this.gameHeader.pauseMenuBtn.addEventListener('click', () => this.pauseGame());
+        this.gameHeader.translationToggleBtn.addEventListener('click', () => {
+            // Track toggle de traducción
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'translation_toggle');
+            }
+            this.toggleTranslation();
+        });
+        
+        this.gameHeader.reopenQuestionBtn.addEventListener('click', () => {
+            // Track reabrir pregunta
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'reopen_question');
+            }
+            this.reopenPendingQuestion();
+        });
+        
+        this.gameHeader.pauseMenuBtn.addEventListener('click', () => {
+            // Track pausa del juego
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'pause_game');
+            }
+            this.pauseGame();
+        });
         
         // Indicador de pregunta pendiente en el tablero
         if (this.boardPendingIndicator) {
-            this.boardPendingIndicator.addEventListener('click', () => this.reopenPendingQuestion());
+            this.boardPendingIndicator.addEventListener('click', () => {
+                // Track click en indicador pendiente
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackUIInteraction('indicator_click', 'pending_question');
+                }
+                this.reopenPendingQuestion();
+            });
             this.boardPendingIndicator.style.cursor = 'pointer';
         }
 
         // Botón de iniciar pregunta en el tablero
         if (this.startQuestionBtn) {
-            this.startQuestionBtn.addEventListener('click', () => this.startBoardQuestion());
+            this.startQuestionBtn.addEventListener('click', () => {
+                // Track iniciar pregunta desde tablero
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackUIInteraction('button_click', 'start_question_board');
+                }
+                this.startBoardQuestion();
+            });
         }
 
         // Dado
-        this.diceElements.rollBtn.addEventListener('click', () => this.rollDice());        // Modal de pregunta
-        this.questionElements.showOriginalBtn.addEventListener('click', () => this.toggleOriginalQuestion());
-        this.questionElements.minimizeBtn.addEventListener('click', () => this.minimizeQuestion());
-        this.questionElements.skipBtn.addEventListener('click', () => this.skipQuestion());
+        this.diceElements.rollBtn.addEventListener('click', () => {
+            // Track tirada de dado
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'roll_dice');
+            }
+            this.rollDice();
+        });        // Modal de pregunta
+        this.questionElements.showOriginalBtn.addEventListener('click', () => {
+            // Track mostrar pregunta original
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'show_original_question');
+            }
+            this.toggleOriginalQuestion();
+        });
+        
+        this.questionElements.minimizeBtn.addEventListener('click', () => {
+            // Track minimizar pregunta
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'minimize_question');
+            }
+            this.minimizeQuestion();
+        });
+        
+        this.questionElements.skipBtn.addEventListener('click', () => {
+            // Track saltar pregunta
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'skip_question');
+            }
+            this.skipQuestion();
+        });
 
         // Modal de resultado
-        this.resultElements.continueBtn.addEventListener('click', () => this.closeResultModal());
+        this.resultElements.continueBtn.addEventListener('click', () => {
+            // Track continuar después de resultado
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'continue_after_result');
+            }
+            this.closeResultModal();
+        });
 
         // Modal de pausa
-        this.pauseElements.resumeBtn.addEventListener('click', () => this.resumeGame());
-        this.pauseElements.saveBtn.addEventListener('click', () => this.saveGame());
-        this.pauseElements.quitBtn.addEventListener('click', () => this.quitGame());
+        this.pauseElements.resumeBtn.addEventListener('click', () => {
+            // Track reanudar juego
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'resume_game');
+            }
+            this.resumeGame();
+        });
+        
+        this.pauseElements.saveBtn.addEventListener('click', () => {
+            // Track guardar juego
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'save_game');
+            }
+            this.saveGame();
+        });
+        
+        this.pauseElements.quitBtn.addEventListener('click', () => {
+            // Track salir del juego
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('button_click', 'quit_game');
+            }
+            this.quitGame();
+        });
 
         // Cerrar modales con Escape
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
+                // Track uso de tecla escape
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackAccessibilityFeature('keyboard_navigation', 'escape_key');
+                }
                 this.closeActiveModal();
             }
         });
@@ -1007,12 +1095,21 @@ class GameUI {
                 }, 1500);
             }, i * 50);
         }
-    }/**
+    }    /**
      * Muestra el modal de pregunta
      */    showQuestionModal(data) {
         this.currentQuestion = data.question;
         this.pendingQuestion = data; // Almacenar pregunta como pendiente
         this.hasAnswered = false; // Resetear estado de respuesta
+        
+        // Track apertura de modal de pregunta
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackUIInteraction('modal_open', 'question_modal', {
+                category: data.question.getCategoryLabel(),
+                difficulty: data.question.difficulty,
+                hasTimer: data.timeLimit > 0
+            });
+        }
         
         // Asegurar que el dado esté deshabilitado durante la pregunta
         this.disableDiceRoll();
@@ -1072,7 +1169,17 @@ class GameUI {
             const button = document.createElement('button');
             button.className = 'answer-btn';
             button.textContent = answer.text;
-            button.addEventListener('click', () => this.answerQuestion(answer.index));
+            button.addEventListener('click', () => {
+                // Track selección de respuesta
+                if (window.trivialAnalytics) {
+                    window.trivialAnalytics.trackUIInteraction('answer_selected', 'question_answer', {
+                        answerIndex: answer.index,
+                        answerPosition: index + 1,
+                        category: question.getCategoryLabel()
+                    });
+                }
+                this.answerQuestion(answer.index);
+            });
             this.questionElements.answers.appendChild(button);
         });
     }    /**
@@ -1138,6 +1245,14 @@ class GameUI {
      */
     skipQuestion() {
         if (this.currentQuestion) {
+            // Track pregunta saltada
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackUIInteraction('question_skipped', 'skip_button', {
+                    category: this.currentQuestion.getCategoryLabel(),
+                    difficulty: this.currentQuestion.difficulty
+                });
+            }
+            
             // Añadir la pregunta saltada al historial
             this.addQuestionToHistory(
                 this.currentQuestion, 

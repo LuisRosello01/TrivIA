@@ -1,272 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Google tag (gtag.js) - Optimizado para Trivial Game -->
+    <!-- Google tag (gtag.js) - Script principal -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RQVNQE35NT"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        // Configuración optimizada para el juego Trivial
-        gtag('config', 'G-RQVNQE35NT', {
-            // Configuración básica
-            page_title: 'Trivial - Juego de Preguntas',
-            page_location: window.location.href,
-            send_page_view: true,
-            
-            // Configuración para GitHub Pages
-            site_speed_sample_rate: 100, // Medir velocidad del sitio al 100%
-            custom_map: {
-                'custom_parameter_1': 'game_type',
-                'custom_parameter_2': 'player_count',
-                'custom_parameter_3': 'difficulty_level'
-            },
-            
-            // Configuración de eventos mejorada
-            allow_google_signals: true,
-            allow_ad_personalization_signals: false, // Privacidad
-            anonymize_ip: true, // Anonimizar IPs para GDPR
-            
-            // Configuración específica para juegos
-            content_group1: 'Trivia Game',
-            content_group2: 'HTML5 Game',
-            content_group3: 'Educational'
-        });
-
-        // Sistema de tracking personalizado para Trivial
-        class TrivialAnalytics {
-            constructor() {
-                this.sessionStartTime = Date.now();
-                this.gameStartTime = null;
-                this.questionsAnswered = 0;
-                this.correctAnswers = 0;
-                this.currentPlayers = 0;
-                this.currentDifficulty = 'medium';
-                this.categoriesPlayed = new Set();
-                
-                // Trackear tiempo en página automáticamente
-                this.trackPageEngagement();
-            }
-
-            // Eventos de navegación y menú
-            trackPageView(pageName) {
-                gtag('event', 'page_view', {
-                    page_title: pageName,
-                    page_location: window.location.href,
-                    event_category: 'Navigation'
-                });
-            }
-
-            trackMenuAction(action) {
-                gtag('event', 'menu_interaction', {
-                    event_category: 'Menu',
-                    event_label: action,
-                    value: 1
-                });
-            }
-
-            // Eventos de configuración del juego
-            trackGameSetup(playerCount, difficulty) {
-                this.currentPlayers = playerCount;
-                this.currentDifficulty = difficulty;
-                
-                gtag('event', 'game_setup', {
-                    event_category: 'Game_Setup',
-                    event_label: `${playerCount}_players_${difficulty}`,
-                    custom_parameter_1: 'trivial',
-                    custom_parameter_2: playerCount,
-                    custom_parameter_3: difficulty,
-                    value: playerCount
-                });
-            }
-
-            // Eventos de gameplay
-            trackGameStart() {
-                this.gameStartTime = Date.now();
-                this.questionsAnswered = 0;
-                this.correctAnswers = 0;
-                this.categoriesPlayed.clear();
-                
-                gtag('event', 'game_start', {
-                    event_category: 'Gameplay',
-                    event_label: `${this.currentPlayers}_players`,
-                    custom_parameter_1: 'trivial',
-                    custom_parameter_2: this.currentPlayers,
-                    custom_parameter_3: this.currentDifficulty
-                });
-            }
-
-            trackQuestionAnswered(category, difficulty, isCorrect, timeToAnswer) {
-                this.questionsAnswered++;
-                if (isCorrect) this.correctAnswers++;
-                this.categoriesPlayed.add(category);
-                
-                gtag('event', 'question_answered', {
-                    event_category: 'Gameplay',
-                    event_label: `${category}_${difficulty}_${isCorrect ? 'correct' : 'wrong'}`,
-                    custom_parameter_1: category,
-                    custom_parameter_2: difficulty,
-                    custom_parameter_3: isCorrect ? 'correct' : 'wrong',
-                    value: timeToAnswer // Tiempo en segundos
-                });
-
-                // Milestone cada 10 preguntas
-                if (this.questionsAnswered % 10 === 0) {
-                    this.trackMilestone(`${this.questionsAnswered}_questions`);
-                }
-            }
-
-            trackGameComplete(winner, totalTime, finalScores) {
-                const accuracyRate = this.questionsAnswered > 0 ? 
-                    Math.round((this.correctAnswers / this.questionsAnswered) * 100) : 0;
-                
-                gtag('event', 'game_complete', {
-                    event_category: 'Completion',
-                    event_label: `${this.currentPlayers}_players_${Math.round(totalTime/60)}min`,
-                    custom_parameter_1: 'trivial',
-                    custom_parameter_2: this.currentPlayers,
-                    custom_parameter_3: this.currentDifficulty,
-                    value: Math.round(totalTime) // Duración total en segundos
-                });
-
-                // Evento de precisión
-                gtag('event', 'game_accuracy', {
-                    event_category: 'Performance',
-                    event_label: `${accuracyRate}%_accuracy`,
-                    value: accuracyRate
-                });
-            }
-
-            // Eventos de interacción
-            trackDiceRoll(result) {
-                gtag('event', 'dice_roll', {
-                    event_category: 'Interaction',
-                    event_label: `rolled_${result}`,
-                    value: result
-                });
-            }
-
-            trackBoardInteraction(action, position) {
-                gtag('event', 'board_interaction', {
-                    event_category: 'Interaction',
-                    event_label: action,
-                    value: position
-                });
-            }
-
-            // Eventos de categorías
-            trackCategorySelection(category) {
-                gtag('event', 'category_selected', {
-                    event_category: 'Categories',
-                    event_label: category,
-                    custom_parameter_1: category
-                });
-            }
-
-            // Eventos de milestones
-            trackMilestone(milestone) {
-                gtag('event', 'milestone_reached', {
-                    event_category: 'Achievements',
-                    event_label: milestone,
-                    value: 1
-                });
-            }
-
-            // Eventos técnicos
-            trackError(errorType, errorMessage) {
-                gtag('event', 'exception', {
-                    description: `${errorType}: ${errorMessage}`,
-                    fatal: false,
-                    event_category: 'Technical'
-                });
-            }
-
-            trackAPIUsage(apiType, success) {
-                gtag('event', 'api_call', {
-                    event_category: 'Technical',
-                    event_label: `${apiType}_${success ? 'success' : 'failure'}`,
-                    value: success ? 1 : 0
-                });
-            }
-
-            trackLoadTime(loadType, timeMs) {
-                gtag('event', 'timing_complete', {
-                    name: loadType,
-                    value: timeMs,
-                    event_category: 'Performance'
-                });
-            }
-
-            // Engagement automático
-            trackPageEngagement() {
-                // Trackear tiempo de permanencia cada 30 segundos
-                setInterval(() => {
-                    const timeOnPage = Math.round((Date.now() - this.sessionStartTime) / 1000);
-                    if (timeOnPage % 30 === 0 && timeOnPage > 0) {
-                        gtag('event', 'page_engagement', {
-                            event_category: 'Engagement',
-                            event_label: `${timeOnPage}_seconds`,
-                            value: timeOnPage
-                        });
-                    }
-                }, 30000);
-
-                // Trackear antes de que el usuario abandone la página
-                window.addEventListener('beforeunload', () => {
-                    const totalTime = Math.round((Date.now() - this.sessionStartTime) / 1000);
-                    gtag('event', 'session_duration', {
-                        event_category: 'Engagement',
-                        event_label: `${Math.round(totalTime/60)}_minutes`,
-                        value: totalTime
-                    });
-                });
-            }
-
-            // Eventos de móvil/desktop
-            trackDeviceUsage() {
-                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                const deviceType = isMobile ? 'mobile' : 'desktop';
-                
-                gtag('event', 'device_type', {
-                    event_category: 'Device',
-                    event_label: deviceType,
-                    custom_parameter_1: deviceType
-                });
-            }
-        }
-
-        // Inicializar sistema de analytics
-        window.trivialAnalytics = new TrivialAnalytics();
-        
-        // Detectar tipo de dispositivo al cargar
-        document.addEventListener('DOMContentLoaded', () => {
-            window.trivialAnalytics.trackDeviceUsage();
-            window.trivialAnalytics.trackPageView('Game_Load');
-        });
-
-        // Funciones globales para fácil acceso desde otros scripts
-        window.trackGameEvent = (action, category = 'Game', label = '', value = null) => {
-            gtag('event', action, {
-                event_category: category,
-                event_label: label,
-                value: value
-            });
-        };
-
-        // Debug mode para desarrollo (solo en localhost)
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            window.gaDebug = true;
-            console.log('🔍 Google Analytics Debug Mode activado');
-            
-            // Override para logging en desarrollo
-            const originalGtag = gtag;
-            gtag = function(...args) {
-                console.log('📊 GA Event:', args);
-                return originalGtag.apply(this, args);
-            };
-        }
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Trivial - Juego de Preguntas</title>
@@ -363,11 +99,6 @@
                 } catch (error) {
                     console.error(`❌ Error cargando módulo ${module.file}:`, error);
                     
-                    // Trackear error de carga de módulo
-                    if (window.trivialAnalytics) {
-                        window.trivialAnalytics.trackError('MODULE_LOAD_ERROR', `${module.file}: ${error.message}`);
-                    }
-                    
                     // Continuar con la carga de otros módulos
                     this.loadedModules++;
                     this.checkAllModulesLoaded();
@@ -453,12 +184,6 @@
             }
         }        // Inicializar el cargador de módulos cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
-            // Trackear tiempo de carga inicial
-            const domLoadTime = performance.now();
-            if (window.trivialAnalytics) {
-                window.trivialAnalytics.trackLoadTime('dom_ready', domLoadTime);
-            }
-            
             // Cargar todos los módulos (incluyendo el menú)
             const loader = new ModuleLoader();
             loader.modules = [
@@ -473,77 +198,7 @@
 
         // Trackear cuando todos los módulos están cargados
         document.addEventListener('modulesReady', () => {
-            const modulesLoadTime = performance.now();
-            if (window.trivialAnalytics) {
-                window.trivialAnalytics.trackLoadTime('modules_ready', modulesLoadTime);
-                window.trivialAnalytics.trackPageView('Modules_Loaded');
-            }
-        });
-
-        // Trackear performance de la página completamente cargada
-        window.addEventListener('load', () => {
-            const fullLoadTime = performance.now();
-            if (window.trivialAnalytics) {
-                window.trivialAnalytics.trackLoadTime('page_fully_loaded', fullLoadTime);
-            }
-            
-            // Trackear información de conexión
-            if ('connection' in navigator) {
-                const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-                if (connection) {
-                    window.trivialAnalytics.trackPageView('Connection_Info', {
-                        event_category: 'Technical',
-                        event_label: `${connection.effectiveType}_${connection.downlink}mbps`,
-                        custom_parameter_1: connection.effectiveType,
-                        custom_parameter_2: connection.downlink,
-                        custom_parameter_3: connection.rtt
-                    });
-                }
-            }
-            
-            // Trackear Core Web Vitals si están disponibles
-            if ('web-vital' in window) {
-                import('https://unpkg.com/web-vitals@3/dist/web-vitals.js').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-                    getCLS((metric) => {
-                        window.trivialAnalytics.trackLoadTime('CLS', metric.value * 1000);
-                    });
-                    getFID((metric) => {
-                        window.trivialAnalytics.trackLoadTime('FID', metric.value);
-                    });
-                    getFCP((metric) => {
-                        window.trivialAnalytics.trackLoadTime('FCP', metric.value);
-                    });
-                    getLCP((metric) => {
-                        window.trivialAnalytics.trackLoadTime('LCP', metric.value);
-                    });
-                    getTTFB((metric) => {
-                        window.trivialAnalytics.trackLoadTime('TTFB', metric.value);
-                    });
-                }).catch(() => {
-                    // Web Vitals no disponible, continuar sin error
-                });
-            }
-        });
-
-        // Trackear eventos de conectividad
-        window.addEventListener('online', () => {
-            if (window.trivialAnalytics) {
-                window.trivialAnalytics.trackPageView('Connection_Online');
-            }
-        });
-
-        window.addEventListener('offline', () => {
-            if (window.trivialAnalytics) {
-                window.trivialAnalytics.trackPageView('Connection_Offline');
-            }
-        });
-
-        // Trackear cambios de visibilidad (usuario cambia de pestaña)
-        document.addEventListener('visibilitychange', () => {
-            if (window.trivialAnalytics) {
-                const isVisible = !document.hidden;
-                window.trivialAnalytics.trackPageView(isVisible ? 'Tab_Visible' : 'Tab_Hidden');
-            }
+            console.log('🎯 Todos los módulos HTML cargados');
         });
     </script>
 
@@ -595,7 +250,8 @@
     <!-- Scripts de utilidades -->    <script src="js/utils/ApiClient.js"></script>
     <script src="js/utils/Storage.js"></script>
     <script src="js/utils/MobileUtils.js"></script>
-    <script src="js/utils/OllamaClient.js"></script>    <!-- Scripts del motor de juego -->
+    <script src="js/utils/OllamaClient.js"></script>
+    <script src="js/utils/Analytics.js"></script>    <!-- Scripts del motor de juego -->
     <script src="js/game/Player.js"></script>
     <script src="js/game/Question.js"></script>
     <script src="js/game/Board.js"></script>

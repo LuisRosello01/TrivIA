@@ -52,6 +52,9 @@ document.addEventListener('appReady', () => {
  * Inicializa todos los componentes de la aplicación
  */
 function initializeApplication() {
+    // Track tiempo de inicialización de la aplicación
+    const initStartTime = performance.now();
+    
     // Inicializar motor del juego
     gameEngine = new GameEngine();
     
@@ -88,6 +91,15 @@ function initializeApplication() {
     
     // Mostrar pantalla inicial
     showInitialScreen();
+    
+    // Track tiempo de inicialización completa
+    const initTime = performance.now() - initStartTime;
+    if (window.trivialAnalytics) {
+        window.trivialAnalytics.trackLoadTime('app_initialization', initTime);
+        window.trivialAnalytics.trackPageView('App_Initialized');
+    }
+    
+    console.log(`✅ Aplicación inicializada en ${Math.round(initTime)}ms`);
 }
 
 /**
@@ -96,15 +108,27 @@ function initializeApplication() {
 function setupScreenNavigation() {
     // Escuchar evento de volver al menú
     document.addEventListener('backToMenu', () => {
+        // Track navegación de vuelta al menú
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackMenuNavigation('game', 'main-menu', 'back_button');
+        }
         menuUI.showMenuScreen();
     });
     
     // Escuchar eventos del motor del juego para cambios de pantalla
     gameEngine.on('gameStarted', () => {
+        // Track inicio de juego
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackMenuNavigation('main-menu', 'game-board', 'game_start');
+        }
         // La pantalla de juego ya se muestra desde MenuUI
     });
     
     gameEngine.on('gameQuit', () => {
+        // Track salida del juego
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackMenuNavigation('game-board', 'main-menu', 'quit_button');
+        }
         menuUI.showMenuScreen();
     });
 }
@@ -116,18 +140,39 @@ function setupGlobalEventListeners() {
     // Manejar errores no capturados
     window.addEventListener('error', (event) => {
         console.error('Error no capturado:', event.error);
+        
+        // Track error en analytics
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackError('JAVASCRIPT_ERROR', 
+                `${event.message} at ${event.filename}:${event.lineno}`);
+        }
+        
         showError('Se produjo un error inesperado. El juego continuará funcionando.');
     });
     
     // Manejar promesas rechazadas
     window.addEventListener('unhandledrejection', (event) => {
         console.error('Promesa rechazada no manejada:', event.reason);
+        
+        // Track promise rejection en analytics
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackError('UNHANDLED_PROMISE_REJECTION', 
+                event.reason?.message || 'Unknown promise rejection');
+        }
+        
         event.preventDefault(); // Evitar que aparezca en la consola del navegador
     });
     
     // Manejar cierre de la aplicación
     window.addEventListener('beforeunload', (event) => {
         if (gameEngine.gameState === 'playing') {
+            // Track abandono del juego
+            if (window.trivialAnalytics) {
+                const sessionTime = Date.now() - (gameEngine.gameStartTime || Date.now());
+                window.trivialAnalytics.trackPageView('Game_Abandoned');
+                // El evento de session_duration se trackea automáticamente en Analytics.js
+            }
+            
             // Guardar automáticamente el juego antes de cerrar
             gameEngine.saveGameState();
             
@@ -141,8 +186,18 @@ function setupGlobalEventListeners() {
     // Manejar cambios de visibilidad de la página
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && gameEngine.gameState === 'playing') {
+            // Track cuando el usuario cambia de pestaña durante el juego
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackPageView('Game_Tab_Hidden');
+            }
+            
             // Pausar el juego cuando la página se oculta
             gameEngine.pauseGame();
+        } else if (!document.hidden && gameEngine.gameState === 'paused') {
+            // Track cuando el usuario vuelve a la pestaña
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackPageView('Game_Tab_Visible');
+            }
         }
     });
     

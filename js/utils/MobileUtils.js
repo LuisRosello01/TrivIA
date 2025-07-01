@@ -31,6 +31,17 @@ class MobileUtils {
         if (this.isMobile || this.isTouch) {
             console.log('📱 Dispositivo móvil detectado, aplicando optimizaciones...');
             
+            // Track detección de dispositivo móvil
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackTechnicalEvent('mobile_detected', {
+                    isMobile: this.isMobile,
+                    isTouch: this.isTouch,
+                    userAgent: navigator.userAgent.substring(0, 100), // Limitar longitud
+                    windowWidth: window.innerWidth,
+                    windowHeight: window.innerHeight
+                });
+            }
+            
             // Añadir clase CSS para móviles
             document.body.classList.add('mobile-device');
             
@@ -124,6 +135,15 @@ class MobileUtils {
      */
     handleOrientationChange() {
         window.addEventListener('orientationchange', () => {
+            // Track cambio de orientación
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackAccessibilityFeature('orientation_change', 'device_rotation', {
+                    orientation: screen.orientation?.type || 'unknown',
+                    windowWidth: window.innerWidth,
+                    windowHeight: window.innerHeight
+                });
+            }
+            
             setTimeout(() => {
                 this.forceRepaint();
                 // Redimensionar elementos si es necesario
