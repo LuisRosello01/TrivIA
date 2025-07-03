@@ -53,15 +53,49 @@ class ChallengeUI {    constructor() {
         this.elements.challengeDifficulty = document.getElementById('challenge-difficulty');
         this.elements.challengeTimer = document.getElementById('challenge-timer');
         
-        // Checkboxes de categorías
+        // Checkboxes de categorías principales
         this.elements.categoriesCheckboxes = {
-            historia: document.getElementById('challenge-historia'),
-            ciencia: document.getElementById('challenge-ciencia'),
-            deportes: document.getElementById('challenge-deportes'),
-            arte: document.getElementById('challenge-arte'),
-            geografia: document.getElementById('challenge-geografia'),
-            entretenimiento: document.getElementById('challenge-entretenimiento')
+            // Categorías principales
+            'historia': document.getElementById('challenge-historia'),
+            'ciencia': document.getElementById('challenge-ciencia'),
+            'deportes': document.getElementById('challenge-deportes'),
+            'arte': document.getElementById('challenge-arte'),
+            'geografia': document.getElementById('challenge-geografia'),
+            'entretenimiento': document.getElementById('challenge-entretenimiento'),
+            
+            // Categorías adicionales - Entretenimiento
+            'conocimiento-general': document.getElementById('challenge-conocimiento-general'),
+            'libros': document.getElementById('challenge-libros'),
+            'musica': document.getElementById('challenge-musica'),
+            'television': document.getElementById('challenge-television'),
+            'videojuegos': document.getElementById('challenge-videojuegos'),
+            'comics': document.getElementById('challenge-comics'),
+            'anime-manga': document.getElementById('challenge-anime-manga'),
+            'animacion': document.getElementById('challenge-animacion'),
+            'musicales-teatro': document.getElementById('challenge-musicales-teatro'),
+            'juegos-mesa': document.getElementById('challenge-juegos-mesa'),
+            
+            // Categorías adicionales - Ciencia y Tecnología
+            'informatica': document.getElementById('challenge-informatica'),
+            'matematicas': document.getElementById('challenge-matematicas'),
+            'gadgets': document.getElementById('challenge-gadgets'),
+            
+            // Categorías adicionales - Cultura
+            'mitologia': document.getElementById('challenge-mitologia'),
+            'politica': document.getElementById('challenge-politica'),
+            
+            // Categorías adicionales - Ocio
+            'celebridades': document.getElementById('challenge-celebridades'),
+            'animales': document.getElementById('challenge-animales'),
+            'vehiculos': document.getElementById('challenge-vehiculos')
         };
+
+        // Elementos de control de categorías
+        this.elements.additionalCategoriesToggle = document.getElementById('additional-categories-toggle');
+        this.elements.additionalCategories = document.getElementById('additional-categories');
+        this.elements.selectAllCategoriesBtn = document.getElementById('select-all-categories');
+        this.elements.deselectAllCategoriesBtn = document.getElementById('deselect-all-categories');
+        this.elements.selectMainCategoriesBtn = document.getElementById('select-main-categories');
 
         // Otros elementos importantes
         this.elements.menuScreen = document.getElementById('menu-screen');
@@ -71,20 +105,40 @@ class ChallengeUI {    constructor() {
     /**
      * Vincula los eventos de los elementos
      */
-    bindEvents() {        // Eventos del menú - usando event listeners optimizados para móviles
+    bindEvents() {        
+        // Eventos del menú - usando event listeners optimizados para móviles
         if (this.elements.challengeModeBtn) {
             this.addMobileOptimizedListener(this.elements.challengeModeBtn, () => this.showChallengeConfig());
         }
 
         if (this.elements.challengeBackBtn) {
             this.addMobileOptimizedListener(this.elements.challengeBackBtn, () => this.showMainMenu());
-        }        if (this.elements.challengeStartBtn) {
+        }        
+
+        if (this.elements.challengeStartBtn) {
             this.addMobileOptimizedListener(this.elements.challengeStartBtn, () => this.startChallengeFromConfig());
         }
 
         // Event listener para el selector de dificultad
         if (this.elements.challengeDifficulty) {
             this.elements.challengeDifficulty.addEventListener('change', (e) => this.onDifficultyChange(e));
+        }
+
+        // Event listeners para categorías adicionales
+        if (this.elements.additionalCategoriesToggle) {
+            this.elements.additionalCategoriesToggle.addEventListener('click', () => this.toggleAdditionalCategories());
+        }
+
+        if (this.elements.selectAllCategoriesBtn) {
+            this.elements.selectAllCategoriesBtn.addEventListener('click', () => this.selectAllCategories());
+        }
+
+        if (this.elements.deselectAllCategoriesBtn) {
+            this.elements.deselectAllCategoriesBtn.addEventListener('click', () => this.deselectAllCategories());
+        }
+
+        if (this.elements.selectMainCategoriesBtn) {
+            this.elements.selectMainCategoriesBtn.addEventListener('click', () => this.selectMainCategories());
         }
     }    /**
      * Configura los listeners de eventos del motor de desafío
@@ -114,6 +168,32 @@ class ChallengeUI {    constructor() {
 
         // Cargar configuración guardada si existe
         this.loadSavedConfig();
+        
+        // Inicializar estado de categorías adicionales
+        this.initializeCategoryControls();
+    }
+
+    /**
+     * Inicializa los controles de categorías adicionales
+     */
+    initializeCategoryControls() {
+        // Asegurar que las categorías adicionales estén ocultas inicialmente
+        if (this.elements.additionalCategories) {
+            this.elements.additionalCategories.style.display = 'none';
+        }
+        
+        // Restaurar texto del toggle
+        if (this.elements.additionalCategoriesToggle) {
+            const toggleSpan = this.elements.additionalCategoriesToggle.querySelector('span');
+            if (toggleSpan) {
+                toggleSpan.textContent = '▼ Mostrar categorías adicionales';
+            }
+        }
+        
+        // Mostrar estadísticas iniciales
+        setTimeout(() => {
+            this.showCategoryStats();
+        }, 100);
     }
 
     /**
@@ -211,13 +291,19 @@ class ChallengeUI {    constructor() {
      * Valida la configuración antes de iniciar
      */
     validateConfig(config) {
-        // Verificar que al menos una categoría esté seleccionada
-        const hasCategories = Object.values(config.categories).some(selected => selected);
-        
-        if (!hasCategories) {
-            this.showError('Debes seleccionar al menos una categoría para el desafío.');
+        // Usar el método de validación mejorado
+        if (!this.validateCategorySelection()) {
             return false;
         }
+
+        // Verificar configuración adicional
+        if (!config.difficulty || !config.timer && config.timer !== 0) {
+            this.showError('⚠️ Configuración incompleta. Verifica la dificultad y el tiempo.');
+            return false;
+        }
+
+        // Mostrar estadísticas de categorías seleccionadas
+        this.showCategoryStats();
 
         return true;
     }
@@ -1614,6 +1700,112 @@ class ChallengeUI {    constructor() {
                 infoElement.style.display = 'none';
             }, 300);
         }
+    }
+
+    /**
+     * Alterna la visibilidad de las categorías adicionales
+     */
+    toggleAdditionalCategories() {
+        const toggle = this.elements.additionalCategoriesToggle;
+        const categories = this.elements.additionalCategories;
+        
+        if (!toggle || !categories) return;
+        
+        const isVisible = categories.style.display !== 'none';
+        
+        if (isVisible) {
+            categories.style.display = 'none';
+            toggle.querySelector('span').textContent = '▼ Mostrar categorías adicionales';
+        } else {
+            categories.style.display = 'block';
+            toggle.querySelector('span').textContent = '▲ Ocultar categorías adicionales';
+        }
+    }
+
+    /**
+     * Selecciona todas las categorías
+     */
+    selectAllCategories() {
+        Object.values(this.elements.categoriesCheckboxes).forEach(checkbox => {
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        });
+        console.log('✅ Todas las categorías seleccionadas');
+    }
+
+    /**
+     * Deselecciona todas las categorías
+     */
+    deselectAllCategories() {
+        Object.values(this.elements.categoriesCheckboxes).forEach(checkbox => {
+            if (checkbox) {
+                checkbox.checked = false;
+            }
+        });
+        console.log('❌ Todas las categorías deseleccionadas');
+    }
+
+    /**
+     * Selecciona solo las categorías principales
+     */
+    selectMainCategories() {
+        const mainCategories = ['historia', 'ciencia', 'deportes', 'arte', 'geografia', 'entretenimiento'];
+        
+        // Primero deseleccionar todas
+        Object.keys(this.elements.categoriesCheckboxes).forEach(categoryKey => {
+            const checkbox = this.elements.categoriesCheckboxes[categoryKey];
+            if (checkbox) {
+                checkbox.checked = mainCategories.includes(categoryKey);
+            }
+        });
+        
+        console.log('🎯 Solo categorías principales seleccionadas');
+    }
+
+    /**
+     * Obtiene las categorías seleccionadas
+     */
+    getSelectedCategories() {
+        const selectedCategories = {};
+        
+        Object.keys(this.elements.categoriesCheckboxes).forEach(categoryKey => {
+            const checkbox = this.elements.categoriesCheckboxes[categoryKey];
+            if (checkbox) {
+                selectedCategories[categoryKey] = checkbox.checked;
+            }
+        });
+        
+        return selectedCategories;
+    }
+
+    /**
+     * Valida que al menos una categoría esté seleccionada
+     */
+    validateCategorySelection() {
+        const selectedCategories = this.getSelectedCategories();
+        const hasSelectedCategories = Object.values(selectedCategories).some(selected => selected);
+        
+        if (!hasSelectedCategories) {
+            this.showError('⚠️ Debes seleccionar al menos una categoría para jugar');
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Muestra el estado de las categorías seleccionadas
+     */
+    showCategoryStats() {
+        const selectedCategories = this.getSelectedCategories();
+        const selectedCount = Object.values(selectedCategories).filter(selected => selected).length;
+        const totalCount = Object.keys(selectedCategories).length;
+        
+        console.log(`📊 Categorías seleccionadas: ${selectedCount}/${totalCount}`);
+        console.log('📋 Categorías activas:', Object.keys(selectedCategories).filter(key => selectedCategories[key]));
+        
+        return { selectedCount, totalCount, selectedCategories };
     }
 
     // ...existing code...

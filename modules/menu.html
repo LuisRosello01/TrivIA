@@ -196,37 +196,184 @@
         <!-- Configuración de categorías para el desafío -->
         <div class="config-section">
             <h3>📚 Categorías a Incluir</h3>
-            <div class="challenge-categories">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="challenge-historia" checked>
-                    <span class="checkmark"></span>
-                    📚 Historia
-                </label>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="challenge-ciencia" checked>
-                    <span class="checkmark"></span>
-                    🔬 Ciencia
-                </label>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="challenge-deportes" checked>
-                    <span class="checkmark"></span>
-                    ⚽ Deportes
-                </label>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="challenge-arte" checked>
-                    <span class="checkmark"></span>
-                    🎨 Arte
-                </label>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="challenge-geografia" checked>
-                    <span class="checkmark"></span>
-                    🌍 Geografía
-                </label>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="challenge-entretenimiento" checked>
-                    <span class="checkmark"></span>
-                    🎬 Entretenimiento
-                </label>
+            
+            <!-- Categorías principales -->
+            <div class="categories-group">
+                <h4>🎯 Categorías Principales</h4>
+                <div class="challenge-categories">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="challenge-historia" checked>
+                        <span class="checkmark"></span>
+                        📚 Historia
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="challenge-ciencia" checked>
+                        <span class="checkmark"></span>
+                        🔬 Ciencia
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="challenge-deportes" checked>
+                        <span class="checkmark"></span>
+                        ⚽ Deportes
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="challenge-arte" checked>
+                        <span class="checkmark"></span>
+                        🎨 Arte
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="challenge-geografia" checked>
+                        <span class="checkmark"></span>
+                        🌍 Geografía
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="challenge-entretenimiento" checked>
+                        <span class="checkmark"></span>
+                        🎬 Entretenimiento
+                    </label>
+                </div>
+            </div>
+
+            <!-- Categorías adicionales -->
+            <div class="categories-group">
+                <h4>🌟 Categorías Adicionales</h4>
+                <div class="categories-expandable">
+                    <div class="expand-toggle" id="additional-categories-toggle">
+                        <span>▼ Mostrar categorías adicionales</span>
+                    </div>
+                    <div class="challenge-categories additional-categories" id="additional-categories" style="display: none;">
+                        
+                        <!-- Entretenimiento -->
+                        <div class="category-subgroup">
+                            <h5>🎭 Entretenimiento</h5>
+                            <div class="category-row">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-conocimiento-general">
+                                    <span class="checkmark"></span>
+                                    🧠 Conocimiento General
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-libros">
+                                    <span class="checkmark"></span>
+                                    📖 Libros
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-musica">
+                                    <span class="checkmark"></span>
+                                    🎵 Música
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-television">
+                                    <span class="checkmark"></span>
+                                    📺 Televisión
+                                </label>
+                            </div>
+                            <div class="category-row">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-videojuegos">
+                                    <span class="checkmark"></span>
+                                    🎮 Videojuegos
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-comics">
+                                    <span class="checkmark"></span>
+                                    💥 Cómics
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-anime-manga">
+                                    <span class="checkmark"></span>
+                                    🌸 Anime/Manga
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-animacion">
+                                    <span class="checkmark"></span>
+                                    🎞️ Animación
+                                </label>
+                            </div>
+                            <div class="category-row">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-musicales-teatro">
+                                    <span class="checkmark"></span>
+                                    🎪 Musicales/Teatro
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-juegos-mesa">
+                                    <span class="checkmark"></span>
+                                    🎲 Juegos de Mesa
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Ciencia y Tecnología -->
+                        <div class="category-subgroup">
+                            <h5>🔬 Ciencia y Tecnología</h5>
+                            <div class="category-row">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-informatica">
+                                    <span class="checkmark"></span>
+                                    💻 Informática
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-matematicas">
+                                    <span class="checkmark"></span>
+                                    🧮 Matemáticas
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-gadgets">
+                                    <span class="checkmark"></span>
+                                    📱 Gadgets
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Cultura -->
+                        <div class="category-subgroup">
+                            <h5>🏛️ Cultura</h5>
+                            <div class="category-row">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-mitologia">
+                                    <span class="checkmark"></span>
+                                    ⚡ Mitología
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-politica">
+                                    <span class="checkmark"></span>
+                                    🏛️ Política
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Ocio -->
+                        <div class="category-subgroup">
+                            <h5>🎯 Ocio</h5>
+                            <div class="category-row">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-celebridades">
+                                    <span class="checkmark"></span>
+                                    ⭐ Celebridades
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-animales">
+                                    <span class="checkmark"></span>
+                                    🐾 Animales
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="challenge-vehiculos">
+                                    <span class="checkmark"></span>
+                                    🚗 Vehículos
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles de selección masiva -->
+            <div class="category-controls">
+                <button type="button" id="select-all-categories" class="btn btn-small">✅ Seleccionar Todo</button>
+                <button type="button" id="deselect-all-categories" class="btn btn-small">❌ Deseleccionar Todo</button>
+                <button type="button" id="select-main-categories" class="btn btn-small">🎯 Solo Principales</button>
             </div>
         </div>
 

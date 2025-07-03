@@ -1,4 +1,30 @@
 {
+  "conocimiento-general": [
+    {
+      "question": "¿Cuál es el océano más grande del mundo?",
+      "answers": ["Pacífico", "Atlántico", "Índico", "Ártico"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿En qué continente se encuentra Egipto?",
+      "answers": ["África", "Asia", "Europa", "América"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es el metal más caro del mundo?",
+      "answers": ["Rodio", "Oro", "Platino", "Paladio"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Cuántos días tiene un año bisiesto?",
+      "answers": ["366", "365", "364", "367"],
+      "correct": 0,
+      "difficulty": "easy"
+    }
+  ],
   "historia": [
     {
       "question": "¿En qué año terminó la Segunda Guerra Mundial?",
@@ -362,6 +388,448 @@
     {
       "question": "¿Cuál es el nombre del hobbit protagonista de 'El Señor de los Anillos'?",
       "answers": ["Frodo Bolsón", "Bilbo Bolsón", "Sam Gamyi", "Pippin Tuk"],
+      "correct": 0,
+      "difficulty": "easy"
+    }
+  ],
+  "informatica": [
+    {
+      "question": "¿Qué significa 'HTML'?",
+      "answers": ["HyperText Markup Language", "High Tech Modern Language", "Home Tool Markup Language", "Hyper Transfer Markup Language"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es la extensión de archivo para JavaScript?",
+      "answers": [".js", ".java", ".jsx", ".script"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Qué empresa desarrolló el sistema operativo Windows?",
+      "answers": ["Microsoft", "Apple", "Google", "IBM"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es el lenguaje de programación más utilizado para desarrollo web?",
+      "answers": ["JavaScript", "Python", "Java", "C++"],
+      "correct": 0,
+      "difficulty": "medium"
+    }
+  ],
+  "matematicas": [
+    {
+      "question": "¿Cuál es el valor de π (pi) aproximadamente?",
+      "answers": ["3.14159", "3.15926", "3.12345", "3.16789"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuántos grados tiene un círculo completo?",
+      "answers": ["360°", "180°", "90°", "270°"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es la fórmula del área de un círculo?",
+      "answers": ["π × r²", "2 × π × r", "π × d", "π × r³"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuánto es 2 elevado a la 10?",
+      "answers": ["1024", "1000", "512", "2048"],
+      "correct": 0,
+      "difficulty": "hard"
+    }
+  ],
+  "musica": [
+    {
+      "question": "¿Cuántas cuerdas tiene una guitarra estándar?",
+      "answers": ["6", "4", "8", "12"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Quién compuso 'La Novena Sinfonía'?",
+      "answers": ["Beethoven", "Mozart", "Bach", "Chopin"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es el instrumento principal del jazz?",
+      "answers": ["Saxofón", "Piano", "Trompeta", "Contrabajo"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién escribió 'Bohemian Rhapsody'?",
+      "answers": ["Freddie Mercury", "John Lennon", "David Bowie", "Elton John"],
+      "correct": 0,
+      "difficulty": "easy"
+    }
+  ],
+  "animales": [
+    {
+      "question": "¿Cuál es el animal terrestre más grande?",
+      "answers": ["Elefante africano", "Rinoceronte", "Hipopótamo", "Jirafa"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuántas patas tiene una araña?",
+      "answers": ["8", "6", "10", "4"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es el mamífero más pequeño del mundo?",
+      "answers": ["Musaraña etrusca", "Murciélago abejorro", "Ratón doméstico", "Lemur ratón"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Qué tipo de animal es una orca?",
+      "answers": ["Mamífero marino", "Pez", "Reptil", "Anfibio"],
+      "correct": 0,
+      "difficulty": "medium"
+    }
+  ],
+  "videojuegos": [
+    {
+      "question": "¿Cuál es el personaje principal de la saga 'Mario'?",
+      "answers": ["Mario", "Luigi", "Peach", "Bowser"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿En qué año se lanzó el primer 'Tetris'?",
+      "answers": ["1984", "1985", "1986", "1987"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué empresa desarrolló 'Minecraft'?",
+      "answers": ["Mojang", "Microsoft", "Sony", "Nintendo"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es el nombre del protagonista de 'The Legend of Zelda'?",
+      "answers": ["Link", "Zelda", "Ganondorf", "Epona"],
+      "correct": 0,
+      "difficulty": "easy"
+    }
+  ],
+  "libros": [
+    {
+      "question": "¿Quién escribió 'Cien años de soledad'?",
+      "answers": ["Gabriel García Márquez", "Mario Vargas Llosa", "Julio Cortázar", "Isabel Allende"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es el primer libro de la saga 'Harry Potter'?",
+      "answers": ["La Piedra Filosofal", "La Cámara Secreta", "El Prisionero de Azkaban", "El Cáliz de Fuego"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Quién escribió '1984'?",
+      "answers": ["George Orwell", "Aldous Huxley", "Ray Bradbury", "Philip K. Dick"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es la primera novela de Miguel de Cervantes?",
+      "answers": ["Don Quijote de la Mancha", "La Galatea", "Novelas Ejemplares", "Los Trabajos de Persiles"],
+      "correct": 0,
+      "difficulty": "hard"
+    }
+  ],
+  "television": [
+    {
+      "question": "¿Cuál es la serie de televisión más larga de la historia?",
+      "answers": ["General Hospital", "Los Simpson", "Days of Our Lives", "Coronation Street"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿En qué año se estrenó 'Friends'?",
+      "answers": ["1994", "1995", "1993", "1996"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es el nombre del protagonista de 'Breaking Bad'?",
+      "answers": ["Walter White", "Jesse Pinkman", "Hank Schrader", "Saul Goodman"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Qué serie popularizó la frase 'Winter is coming'?",
+      "answers": ["Game of Thrones", "Vikings", "The Witcher", "The Last Kingdom"],
+      "correct": 0,
+      "difficulty": "easy"
+    }
+  ],
+  "mitologia": [
+    {
+      "question": "¿Quién es el dios del trueno en la mitología nórdica?",
+      "answers": ["Thor", "Odín", "Loki", "Balder"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es el nombre del rey de los dioses en la mitología griega?",
+      "answers": ["Zeus", "Poseidón", "Hades", "Apolo"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Qué criatura tenía cabeza de mujer y cuerpo de ave?",
+      "answers": ["Sirena", "Arpía", "Quimera", "Medusa"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es el nombre del caballo de ocho patas de Odín?",
+      "answers": ["Sleipnir", "Fenrir", "Jörmungandr", "Huginn"],
+      "correct": 0,
+      "difficulty": "hard"
+    }
+  ],
+  "politica": [
+    {
+      "question": "¿Cuántos países miembros tiene la Unión Europea?",
+      "answers": ["27", "28", "26", "25"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es la capital de la Unión Europea?",
+      "answers": ["Bruselas", "Estrasburgo", "Luxemburgo", "La Haya"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuántos años dura el mandato de un presidente en Estados Unidos?",
+      "answers": ["4 años", "6 años", "8 años", "2 años"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Qué organización internacional tiene su sede en Ginebra?",
+      "answers": ["Organización Mundial de la Salud", "UNICEF", "UNESCO", "FAO"],
+      "correct": 0,
+      "difficulty": "hard"
+    }
+  ],
+  "celebridades": [
+    {
+      "question": "¿Quién es conocido como 'El Rey del Pop'?",
+      "answers": ["Michael Jackson", "Elvis Presley", "Prince", "David Bowie"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es el nombre real de Lady Gaga?",
+      "answers": ["Stefani Germanotta", "Stephanie Johnson", "Stella Gomez", "Sandra Gonzalez"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué actor interpretó a Iron Man en el MCU?",
+      "answers": ["Robert Downey Jr.", "Chris Evans", "Mark Ruffalo", "Chris Hemsworth"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es el nombre real de The Rock?",
+      "answers": ["Dwayne Johnson", "Rocky Maivia", "Dave Johnson", "Daniel Johnson"],
+      "correct": 0,
+      "difficulty": "medium"
+    }
+  ],
+  "vehiculos": [
+    {
+      "question": "¿Cuál es la marca de automóviles más vendida en el mundo?",
+      "answers": ["Toyota", "Volkswagen", "Ford", "Honda"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿En qué año se inventó el primer automóvil?",
+      "answers": ["1885", "1890", "1880", "1895"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Cuál es el coche más rápido del mundo?",
+      "answers": ["Bugatti Chiron", "McLaren F1", "Ferrari LaFerrari", "Koenigsegg One:1"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Qué significa 'SUV' en automóviles?",
+      "answers": ["Sport Utility Vehicle", "Super Urban Vehicle", "Special Use Vehicle", "Standard Utility Vehicle"],
+      "correct": 0,
+      "difficulty": "medium"
+    }
+  ],
+  "comics": [
+    {
+      "question": "¿Cuál es el nombre real de Batman?",
+      "answers": ["Bruce Wayne", "Clark Kent", "Peter Parker", "Tony Stark"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Quién creó a Spider-Man?",
+      "answers": ["Stan Lee", "Jack Kirby", "Steve Ditko", "Bob Kane"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es el planeta natal de Superman?",
+      "answers": ["Krypton", "Asgard", "Gallifrey", "Vulcano"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cómo se llama el martillo de Thor?",
+      "answers": ["Mjolnir", "Stormbreaker", "Gungnir", "Gram"],
+      "correct": 0,
+      "difficulty": "medium"
+    }
+  ],
+  "gadgets": [
+    {
+      "question": "¿Cuál fue el primer iPhone lanzado por Apple?",
+      "answers": ["iPhone original (2007)", "iPhone 3G", "iPhone 3GS", "iPhone 4"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Qué significa 'GPS'?",
+      "answers": ["Global Positioning System", "General Purpose System", "Geographic Position System", "Global Protection System"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es la resolución de pantalla 4K?",
+      "answers": ["3840 x 2160", "1920 x 1080", "2560 x 1440", "4096 x 2160"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Qué empresa fabricó la primera tablet comercial exitosa?",
+      "answers": ["Apple", "Microsoft", "Samsung", "Amazon"],
+      "correct": 0,
+      "difficulty": "medium"
+    }
+  ],
+  "anime-manga": [
+    {
+      "question": "¿Cuál es el manga más vendido de todos los tiempos?",
+      "answers": ["One Piece", "Dragon Ball", "Naruto", "Detective Conan"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién es el protagonista de 'Death Note'?",
+      "answers": ["Light Yagami", "L", "Near", "Mello"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es el nombre del ninja protagonista de Naruto?",
+      "answers": ["Naruto Uzumaki", "Sasuke Uchiha", "Sakura Haruno", "Kakashi Hatake"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿En qué año se estrenó el anime 'Dragon Ball'?",
+      "answers": ["1986", "1985", "1987", "1984"],
+      "correct": 0,
+      "difficulty": "hard"
+    }
+  ],
+  "animacion": [
+    {
+      "question": "¿Cuál fue la primera película de animación de Disney?",
+      "answers": ["Blancanieves y los siete enanitos", "Pinocho", "Fantasía", "Bambi"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién creó a Mickey Mouse?",
+      "answers": ["Walt Disney", "Ub Iwerks", "Roy Disney", "Carl Barks"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es el nombre del estudio de animación fundado por Hayao Miyazaki?",
+      "answers": ["Studio Ghibli", "Toei Animation", "Madhouse", "Pierrot"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es la primera película de Pixar?",
+      "answers": ["Toy Story", "A Bug's Life", "Monsters, Inc.", "Finding Nemo"],
+      "correct": 0,
+      "difficulty": "easy"
+    }
+  ],
+  "musicales-teatro": [
+    {
+      "question": "¿Quién compuso la música de 'El Fantasma de la Ópera'?",
+      "answers": ["Andrew Lloyd Webber", "Stephen Sondheim", "Lin-Manuel Miranda", "Jonathan Larson"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuál es el musical más representado en Broadway?",
+      "answers": ["El Rey León", "Chicago", "Cats", "Les Misérables"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿En qué ciudad se encuentra el famoso teatro West End?",
+      "answers": ["Londres", "Nueva York", "París", "Viena"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Quién escribió 'Romeo y Julieta'?",
+      "answers": ["William Shakespeare", "Christopher Marlowe", "Ben Jonson", "John Webster"],
+      "correct": 0,
+      "difficulty": "easy"
+    }
+  ],
+  "juegos-mesa": [
+    {
+      "question": "¿Cuántas casillas tiene un tablero de ajedrez?",
+      "answers": ["64", "32", "81", "100"],
+      "correct": 0,
+      "difficulty": "easy"
+    },
+    {
+      "question": "¿Cuál es la propiedad más cara del Monopoly clásico?",
+      "answers": ["Boardwalk", "Park Place", "Pennsylvania Avenue", "New York Avenue"],
+      "correct": 0,
+      "difficulty": "medium"
+    },
+    {
+      "question": "¿Cuántos puntos vale la letra 'Q' en Scrabble?",
+      "answers": ["10", "8", "12", "15"],
+      "correct": 0,
+      "difficulty": "hard"
+    },
+    {
+      "question": "¿Cuál es el objetivo principal en el juego Risk?",
+      "answers": ["Conquista mundial", "Acumular dinero", "Construir ciudades", "Comerciar recursos"],
       "correct": 0,
       "difficulty": "easy"
     }

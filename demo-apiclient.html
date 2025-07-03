@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo ApiClient - Todas las Categorías</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .category-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .category-card h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        
+        .category-card p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .controls button {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .controls button:hover {
+            background: #2980b9;
+        }
+        
+        .controls select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .question-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+        
+        .question-container h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .answers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .answer {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .answer.correct {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .search-container {
+            margin-bottom: 20px;
+        }
+        
+        .search-container input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .search-results {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .search-result {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Demo ApiClient - Todas las Categorías</h1>
+        
+        <!-- Estadísticas -->
+        <div class="section">
+            <h2>📊 Estadísticas de Categorías</h2>
+            <div class="stats" id="stats">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- Categorías principales -->
+        <div class="section">
+            <h2>🎮 Categorías Principales del Juego</h2>
+            <div class="category-grid" id="mainCategories">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- Todas las categorías -->
+        <div class="section">
+            <h2>🌟 Todas las Categorías Disponibles</h2>
+            <div class="category-grid" id="allCategories">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- Búsqueda de categorías -->
+        <div class="section">
+            <h2>🔍 Búsqueda de Categorías</h2>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Buscar categorías..." />
+            </div>
+            <div class="search-results" id="searchResults">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- Probador de preguntas -->
+        <div class="section">
+            <h2>❓ Probador de Preguntas</h2>
+            <div class="controls">
+                <select id="categorySelect">
+                    <option value="">Seleccionar categoría...</option>
+                </select>
+                <select id="difficultySelect">
+                    <option value="easy">Fácil</option>
+                    <option value="medium">Medio</option>
+                    <option value="hard">Difícil</option>
+                </select>
+                <button onclick="getQuestion()">Obtener Pregunta</button>
+                <button onclick="toggleTranslation()">Alternar Traducción</button>
+            </div>
+            <div id="questionContainer">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- Log de eventos -->
+        <div class="section">
+            <h2>📝 Log de Eventos</h2>
+            <div class="log" id="eventLog">
+                Inicializando ApiClient...
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils/ApiClient.js"></script>
+    <script>
+        // Inicializar ApiClient
+        const apiClient = new ApiClient();
+        let translationEnabled = true;
+        
+        // Configurar event listeners
+        apiClient.on('translationStarted', (data) => {
+            logEvent(`🔄 Iniciando traducción de pregunta: ${data.category}`);
+        });
+        
+        apiClient.on('translationCompleted', (data) => {
+            logEvent(`✅ Traducción completada: ${data.category}`);
+        });
+        
+        apiClient.on('translationError', (data) => {
+            logEvent(`❌ Error en traducción: ${data.error.message}`);
+        });
+        
+        // Función para logging
+        function logEvent(message) {
+            const log = document.getElementById('eventLog');
+            const timestamp = new Date().toLocaleTimeString();
+            log.innerHTML += `\n[${timestamp}] ${message}`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Inicializar demo
+        async function initDemo() {
+            try {
+                // Mostrar estadísticas
+                displayStats();
+                
+                // Mostrar categorías principales
+                displayMainCategories();
+                
+                // Mostrar todas las categorías
+                displayAllCategories();
+                
+                // Poblar selector de categorías
+                populateCategorySelect();
+                
+                // Configurar búsqueda
+                setupSearch();
+                
+                // Verificar disponibilidad de API
+                const apiAvailable = await apiClient.checkApiAvailability();
+                logEvent(`🌐 API disponible: ${apiAvailable ? 'Sí' : 'No'}`);
+                
+                logEvent('✅ Demo inicializada correctamente');
+                
+            } catch (error) {
+                logEvent(`❌ Error inicializando demo: ${error.message}`);
+            }
+        }
+        
+        // Mostrar estadísticas
+        function displayStats() {
+            const stats = apiClient.getCategoryStats();
+            const statsContainer = document.getElementById('stats');
+            
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${stats.total}</div>
+                    <div class="stat-label">Categorías Totales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.main}</div>
+                    <div class="stat-label">Categorías Principales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.additional}</div>
+                    <div class="stat-label">Categorías Adicionales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.byTheme.entertainment}</div>
+                    <div class="stat-label">Entretenimiento</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.byTheme.science}</div>
+                    <div class="stat-label">Ciencia</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.byTheme.culture}</div>
+                    <div class="stat-label">Cultura</div>
+                </div>
+            `;
+        }
+        
+        // Mostrar categorías principales
+        function displayMainCategories() {
+            const categories = apiClient.getAvailableCategories();
+            const container = document.getElementById('mainCategories');
+            
+            container.innerHTML = categories.main.map(category => `
+                <div class="category-card">
+                    <h3>${apiClient.getCategoryDisplayName(category)}</h3>
+                    <p><strong>Clave:</strong> ${category}</p>
+                    <p><strong>ID API:</strong> ${apiClient.categoryMap[category]}</p>
+                    <p><strong>Relacionadas:</strong> ${apiClient.getRelatedCategories(category).length}</p>
+                </div>
+            `).join('');
+        }
+        
+        // Mostrar todas las categorías
+        function displayAllCategories() {
+            const categories = apiClient.getAvailableCategories();
+            const container = document.getElementById('allCategories');
+            
+            container.innerHTML = categories.all.map(category => `
+                <div class="category-card">
+                    <h3>${apiClient.getCategoryDisplayName(category)}</h3>
+                    <p><strong>Clave:</strong> ${category}</p>
+                    <p><strong>ID API:</strong> ${apiClient.categoryMap[category]}</p>
+                    <p><strong>Grupo:</strong> ${getCategoryGroup(category)}</p>
+                </div>
+            `).join('');
+        }
+        
+        // Obtener grupo de categoría
+        function getCategoryGroup(category) {
+            const categories = apiClient.getAvailableCategories();
+            for (const [groupName, groupCategories] of Object.entries(categories)) {
+                if (groupName !== 'main' && groupName !== 'all' && groupCategories.includes(category)) {
+                    return groupName;
+                }
+            }
+            return 'main';
+        }
+        
+        // Poblar selector de categorías
+        function populateCategorySelect() {
+            const select = document.getElementById('categorySelect');
+            const categories = apiClient.getAvailableCategories();
+            
+            categories.all.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = apiClient.getCategoryDisplayName(category);
+                select.appendChild(option);
+            });
+        }
+        
+        // Configurar búsqueda
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.trim();
+                if (term.length > 0) {
+                    const results = apiClient.searchCategories(term);
+                    displaySearchResults(results);
+                } else {
+                    searchResults.innerHTML = '';
+                }
+            });
+        }
+        
+        // Mostrar resultados de búsqueda
+        function displaySearchResults(results) {
+            const container = document.getElementById('searchResults');
+            
+            if (results.length === 0) {
+                container.innerHTML = '<p>No se encontraron categorías.</p>';
+                return;
+            }
+            
+            container.innerHTML = results.map(result => `
+                <div class="search-result">
+                    <h4>${result.displayName}</h4>
+                    <p><strong>Clave:</strong> ${result.key}</p>
+                    <p><strong>ID:</strong> ${result.id}</p>
+                </div>
+            `).join('');
+        }
+        
+        // Obtener pregunta
+        async function getQuestion() {
+            const categorySelect = document.getElementById('categorySelect');
+            const difficultySelect = document.getElementById('difficultySelect');
+            const questionContainer = document.getElementById('questionContainer');
+            
+            const category = categorySelect.value;
+            const difficulty = difficultySelect.value;
+            
+            if (!category) {
+                alert('Por favor selecciona una categoría');
+                return;
+            }
+            
+            try {
+                questionContainer.innerHTML = '<div class="loading">Cargando pregunta...</div>';
+                logEvent(`📥 Solicitando pregunta: ${category} - ${difficulty}`);
+                
+                const questions = await apiClient.getQuestions(category, difficulty, 1);
+                
+                if (questions && questions.length > 0) {
+                    const question = questions[0];
+                    displayQuestion(question);
+                    logEvent(`✅ Pregunta obtenida: ${question.source}`);
+                } else {
+                    questionContainer.innerHTML = '<div class="error">No se pudieron obtener preguntas</div>';
+                    logEvent(`❌ No se pudieron obtener preguntas para ${category}`);
+                }
+                
+            } catch (error) {
+                questionContainer.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                logEvent(`❌ Error obteniendo pregunta: ${error.message}`);
+            }
+        }
+        
+        // Mostrar pregunta
+        function displayQuestion(question) {
+            const container = document.getElementById('questionContainer');
+            
+            container.innerHTML = `
+                <div class="question-container">
+                    <h3>${question.question}</h3>
+                    <p><strong>Categoría:</strong> ${apiClient.getCategoryDisplayName(question.category)}</p>
+                    <p><strong>Dificultad:</strong> ${question.difficulty}</p>
+                    <p><strong>Fuente:</strong> ${question.source}</p>
+                    ${question.originalQuestion ? `<p><strong>Original:</strong> ${question.originalQuestion}</p>` : ''}
+                    
+                    <div class="answers">
+                        ${question.answers.map((answer, index) => `
+                            <div class="answer ${index === question.correct ? 'correct' : ''}">
+                                ${index + 1}. ${answer}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Alternar traducción
+        function toggleTranslation() {
+            translationEnabled = !translationEnabled;
+            apiClient.setTranslationEnabled(translationEnabled);
+            logEvent(`🌐 Traducción ${translationEnabled ? 'activada' : 'desactivada'}`);
+        }
+        
+        // Inicializar cuando se carga la página
+        window.addEventListener('load', initDemo);
+    </script>
+</body>
+</html>

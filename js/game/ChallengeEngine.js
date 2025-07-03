@@ -4,17 +4,39 @@
  */
 class ChallengeEngine {
     constructor() {
-        this.isActive = false;        this.config = {
+        this.isActive = false;        // Configuración por defecto con todas las categorías disponibles
+        this.config = {
             difficulty: 'medium',
             timer: 20,
             mode: 'survival', // Modo supervivencia por defecto
             categories: {
-                historia: true,
-                ciencia: true,
-                deportes: true,
-                arte: true,
-                geografia: true,
-                entretenimiento: true
+                // Categorías principales
+                'historia': true,
+                'ciencia': true,
+                'deportes': true,
+                'arte': true,
+                'geografia': true,
+                'entretenimiento': true,
+                
+                // Categorías adicionales - inicialmente desactivadas
+                'conocimiento-general': false,
+                'libros': false,
+                'musica': false,
+                'television': false,
+                'videojuegos': false,
+                'comics': false,
+                'anime-manga': false,
+                'animacion': false,
+                'musicales-teatro': false,
+                'juegos-mesa': false,
+                'informatica': false,
+                'matematicas': false,
+                'gadgets': false,
+                'mitologia': false,
+                'politica': false,
+                'celebridades': false,
+                'animales': false,
+                'vehiculos': false
             }
         };        this.gameState = {
             currentQuestion: null,
@@ -55,14 +77,21 @@ class ChallengeEngine {
             this.apiClient = new ApiClient();
         }
         
-        // Probar conexión con la API
-        //const apiWorking = await this.testApiConnection();
-        //console.log(`📡 Estado de la API: ${apiWorking ? 'Funcionando' : 'Con problemas'}`);
+        // Mostrar estadísticas de categorías
+        const categoryStats = this.getCategoryStats();
+        console.log('� Estadísticas de categorías:', categoryStats);
+        
+        // Validar que hay categorías habilitadas
+        if (categoryStats.enabled === 0) {
+            throw new Error('No hay categorías habilitadas para el desafío');
+        }
         
         // Resetear estado del juego
         this.resetGameState();
         
-        console.log('✅ Modo Desafío inicializado:', this.config);
+        console.log('✅ Modo Desafío inicializado con', categoryStats.enabled, 'categorías');
+        console.log('🎯 Categorías activas:', categoryStats.list);
+        
         return true;
     }/**
      * Resetea el estado del juego a valores iniciales
@@ -132,18 +161,25 @@ class ChallengeEngine {
      */
     async loadNextQuestion() {
         try {
-            // Obtener categorías habilitadas
-            const enabledCategories = Object.keys(this.config.categories)
-                .filter(cat => this.config.categories[cat]);
+            // Obtener categorías habilitadas usando el nuevo método
+            const enabledCategories = this.getEnabledCategories();
 
             if (enabledCategories.length === 0) {
                 throw new Error('No hay categorías seleccionadas');
-            }            // Seleccionar categoría aleatoria
+            }
+
+            // Seleccionar categoría aleatoria
             const randomCategory = enabledCategories[Math.floor(Math.random() * enabledCategories.length)];
             
             // Obtener dificultad efectiva (puede ser aleatoria)
             const effectiveDifficulty = this.getEffectiveDifficulty();
             console.log(`🎲 Categoría seleccionada: ${randomCategory}, dificultad: ${effectiveDifficulty}`);
+            
+            // Mostrar nombre de categoría en español si está disponible
+            if (this.apiClient && this.apiClient.getCategoryDisplayName) {
+                const displayName = this.apiClient.getCategoryDisplayName(randomCategory);
+                console.log(`📚 Categoría (mostrar): ${displayName}`);
+            }
             
             let question = null;
 
@@ -152,7 +188,8 @@ class ChallengeEngine {
                 console.log('🔄 Solicitando pregunta a la API...');
                 const questions = await this.apiClient.getQuestions(randomCategory, effectiveDifficulty, 1);
                 console.log('📦 Respuesta de la API:', questions);
-                  if (questions && questions.length > 0) {
+                  
+                if (questions && questions.length > 0) {
                     const apiQuestion = questions[0];
                     console.log('🔧 Pregunta antes de conversión:', apiQuestion);
                     question = this.convertApiQuestionToChallengeFormat(apiQuestion, effectiveDifficulty);
@@ -160,11 +197,15 @@ class ChallengeEngine {
                 }
             } catch (apiError) {
                 console.warn('⚠️ Error de API, intentando con pregunta de prueba:', apiError);
-            }            // Si no se pudo obtener de la API, usar pregunta de prueba
+            }
+
+            // Si no se pudo obtener de la API, usar pregunta de prueba
             if (!question) {
                 console.log('🧪 Usando pregunta de prueba...');
                 question = this.createTestQuestion(effectiveDifficulty);
-            }this.gameState.currentQuestion = question;
+            }
+
+            this.gameState.currentQuestion = question;
             this.gameState.timeRemaining = this.config.timer || 0; // 0 para tiempo ilimitado
 
             // Disparar evento de nueva pregunta
@@ -178,7 +219,8 @@ class ChallengeEngine {
         } catch (error) {
             console.error('❌ Error crítico al cargar pregunta:', error);
             console.error('Stack trace:', error.stack);
-              // Como último recurso, usar una pregunta de emergencia
+              
+            // Como último recurso, usar una pregunta de emergencia
             const emergencyQuestion = {
                 pregunta: "¿Funciona el modo desafío?",
                 opciones: ["Sí", "No", "Tal vez", "Error"],
@@ -186,7 +228,9 @@ class ChallengeEngine {
                 categoria: "test",
                 dificultad: effectiveDifficulty || "easy",
                 fuente: "emergency"
-            };this.gameState.currentQuestion = emergencyQuestion;
+            };
+
+            this.gameState.currentQuestion = emergencyQuestion;
             this.gameState.timeRemaining = this.config.timer || 0; // 0 para tiempo ilimitado
 
             this.dispatchEvent('newChallengeQuestion', {
@@ -678,8 +722,10 @@ class ChallengeEngine {
         }
     }    /**
      * Crea una pregunta de prueba para testing
-     */    createTestQuestion(effectiveDifficulty = 'medium') {
+     */    
+    createTestQuestion(effectiveDifficulty = 'medium') {
         const testQuestions = [
+            // Preguntas principales
             {
                 pregunta: "¿Cuál es la capital de Francia?",
                 opciones: ["París", "Londres", "Madrid", "Roma"],
@@ -687,7 +733,6 @@ class ChallengeEngine {
                 categoria: "geografia",
                 dificultad: effectiveDifficulty,
                 fuente: "test",
-                // Incluir versión original en inglés para testing
                 originalQuestion: "What is the capital of France?",
                 originalAnswers: ["Paris", "London", "Madrid", "Rome"]
             },
@@ -698,19 +743,90 @@ class ChallengeEngine {
                 categoria: "historia",
                 dificultad: effectiveDifficulty,
                 fuente: "test",
-                // Incluir versión original en inglés para testing
                 originalQuestion: "In what year did World War II end?",
                 originalAnswers: ["1945", "1944", "1946", "1943"]
             },
             {
                 pregunta: "¿Cuál es el planeta más grande del sistema solar?",
                 opciones: ["Júpiter", "Saturno", "Tierra", "Marte"],
-                respuesta_correcta: "Júpiter",                categoria: "ciencia",
+                respuesta_correcta: "Júpiter",
+                categoria: "ciencia",
                 dificultad: effectiveDifficulty,
                 fuente: "test",
-                // Incluir versión original en inglés para testing
                 originalQuestion: "What is the largest planet in the solar system?",
                 originalAnswers: ["Jupiter", "Saturn", "Earth", "Mars"]
+            },
+            
+            // Preguntas de nuevas categorías
+            {
+                pregunta: "¿Qué significa HTML?",
+                opciones: ["HyperText Markup Language", "High Tech Modern Language", "Home Tool Markup Language", "Hyper Transfer Markup Language"],
+                respuesta_correcta: "HyperText Markup Language",
+                categoria: "informatica",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "What does HTML stand for?",
+                originalAnswers: ["HyperText Markup Language", "High Tech Modern Language", "Home Tool Markup Language", "Hyper Transfer Markup Language"]
+            },
+            {
+                pregunta: "¿Cuál es el nombre del protagonista de 'The Legend of Zelda'?",
+                opciones: ["Link", "Zelda", "Ganondorf", "Epona"],
+                respuesta_correcta: "Link",
+                categoria: "videojuegos",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "What is the name of the main character in 'The Legend of Zelda'?",
+                originalAnswers: ["Link", "Zelda", "Ganondorf", "Epona"]
+            },
+            {
+                pregunta: "¿Cuántas cuerdas tiene una guitarra estándar?",
+                opciones: ["6", "4", "8", "12"],
+                respuesta_correcta: "6",
+                categoria: "musica",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "How many strings does a standard guitar have?",
+                originalAnswers: ["6", "4", "8", "12"]
+            },
+            {
+                pregunta: "¿Cuál es el animal terrestre más grande?",
+                opciones: ["Elefante africano", "Rinoceronte", "Hipopótamo", "Jirafa"],
+                respuesta_correcta: "Elefante africano",
+                categoria: "animales",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "What is the largest land animal?",
+                originalAnswers: ["African elephant", "Rhinoceros", "Hippopotamus", "Giraffe"]
+            },
+            {
+                pregunta: "¿Quién es el dios del trueno en la mitología nórdica?",
+                opciones: ["Thor", "Odín", "Loki", "Balder"],
+                respuesta_correcta: "Thor",
+                categoria: "mitologia",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "Who is the god of thunder in Norse mythology?",
+                originalAnswers: ["Thor", "Odin", "Loki", "Balder"]
+            },
+            {
+                pregunta: "¿Cuál es la resolución de pantalla 4K?",
+                opciones: ["3840 x 2160", "1920 x 1080", "2560 x 1440", "4096 x 2160"],
+                respuesta_correcta: "3840 x 2160",
+                categoria: "gadgets",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "What is the resolution of 4K screen?",
+                originalAnswers: ["3840 x 2160", "1920 x 1080", "2560 x 1440", "4096 x 2160"]
+            },
+            {
+                pregunta: "¿Cuál es el manga más vendido de todos los tiempos?",
+                opciones: ["One Piece", "Dragon Ball", "Naruto", "Detective Conan"],
+                respuesta_correcta: "One Piece",
+                categoria: "anime-manga",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "What is the best-selling manga of all time?",
+                originalAnswers: ["One Piece", "Dragon Ball", "Naruto", "Detective Conan"]
             }
         ];
         
@@ -790,6 +906,80 @@ class ChallengeEngine {
                 finalScore: this.gameState.score
             });
         }
+    }
+
+    /**
+     * Valida y filtra las categorías disponibles usando el ApiClient
+     */
+    validateAndFilterCategories() {
+        if (!this.apiClient) {
+            console.warn('⚠️ ApiClient no disponible para validar categorías');
+            return Object.keys(this.config.categories);
+        }
+
+        // Obtener categorías disponibles del ApiClient
+        const availableCategories = this.apiClient.getAvailableCategories();
+        const allApiCategories = availableCategories.all;
+        
+        // Filtrar solo las categorías que están disponibles en el API
+        const validCategories = Object.keys(this.config.categories)
+            .filter(category => {
+                const isValid = allApiCategories.includes(category);
+                if (!isValid) {
+                    console.warn(`⚠️ Categoría ${category} no disponible en API`);
+                }
+                return isValid;
+            });
+
+        console.log(`✅ Categorías validadas: ${validCategories.length}/${Object.keys(this.config.categories).length}`);
+        return validCategories;
+    }
+
+    /**
+     * Obtiene las categorías habilitadas y válidas
+     */
+    getEnabledCategories() {
+        const validCategories = this.validateAndFilterCategories();
+        
+        // Filtrar solo las categorías que están habilitadas
+        const enabledCategories = validCategories.filter(category => 
+            this.config.categories[category] === true
+        );
+        
+        console.log(`🎯 Categorías habilitadas: ${enabledCategories.length}`, enabledCategories);
+        return enabledCategories;
+    }
+
+    /**
+     * Obtiene estadísticas de categorías
+     */
+    getCategoryStats() {
+        const validCategories = this.validateAndFilterCategories();
+        const enabledCategories = this.getEnabledCategories();
+        
+        // Agrupar por tipo usando ApiClient si está disponible
+        let categoryGroups = {
+            main: [],
+            additional: []
+        };
+
+        if (this.apiClient) {
+            const apiCategories = this.apiClient.getAvailableCategories();
+            categoryGroups = {
+                main: enabledCategories.filter(cat => apiCategories.main.includes(cat)),
+                entertainment: enabledCategories.filter(cat => apiCategories.entertainment.includes(cat)),
+                science: enabledCategories.filter(cat => apiCategories.science.includes(cat)),
+                culture: enabledCategories.filter(cat => apiCategories.culture.includes(cat)),
+                leisure: enabledCategories.filter(cat => apiCategories.leisure.includes(cat))
+            };
+        }
+
+        return {
+            total: validCategories.length,
+            enabled: enabledCategories.length,
+            groups: categoryGroups,
+            list: enabledCategories
+        };
     }
 }
 

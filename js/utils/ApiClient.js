@@ -11,13 +11,93 @@ class ApiClient {
         this.translationCache = new Map(); // Cache para traducciones
         this.translationUrl = 'https://api.mymemory.translated.net/get'; // API de traducción
         this.translationEnabled = true; // Por defecto está activada la traducción
+        // Mapeo completo de categorías Open Trivia DB (inglés -> español)
         this.categoryMap = {
-            'historia': 23,      // History
-            'ciencia': 17,       // Science & Nature
-            'deportes': 21,      // Sports
-            'arte': 25,          // Art
-            'geografia': 22,     // Geography
-            'entretenimiento': 11 // Entertainment: Film
+            // Categorías principales del juego original
+            'historia': 23,                    // History
+            'ciencia': 17,                     // Science & Nature
+            'deportes': 21,                    // Sports
+            'arte': 25,                        // Art
+            'geografia': 22,                   // Geography
+            'entretenimiento': 11,             // Entertainment: Film
+            
+            // Categorías adicionales disponibles
+            'conocimiento-general': 9,         // General Knowledge
+            'libros': 10,                      // Entertainment: Books
+            'peliculas': 11,                   // Entertainment: Film (alias)
+            'musica': 12,                      // Entertainment: Music
+            'musicales-teatro': 13,            // Entertainment: Musicals & Theatres
+            'television': 14,                  // Entertainment: Television
+            'videojuegos': 15,                 // Entertainment: Video Games
+            'juegos-mesa': 16,                 // Entertainment: Board Games
+            'informatica': 18,                 // Science: Computers
+            'matematicas': 19,                 // Science: Mathematics
+            'mitologia': 20,                   // Mythology
+            'politica': 24,                    // Politics
+            'celebridades': 26,                // Celebrities
+            'animales': 27,                    // Animals
+            'vehiculos': 28,                   // Vehicles
+            'comics': 29,                      // Entertainment: Comics
+            'gadgets': 30,                     // Science: Gadgets
+            'anime-manga': 31,                 // Entertainment: Japanese Anime & Manga
+            'animacion': 32                    // Entertainment: Cartoon & Animations
+        };
+        
+        // Mapeo inverso para obtener nombre español desde ID
+        this.categoryIdToName = {
+            9: 'conocimiento-general',
+            10: 'libros',
+            11: 'entretenimiento',
+            12: 'musica',
+            13: 'musicales-teatro',
+            14: 'television',
+            15: 'videojuegos',
+            16: 'juegos-mesa',
+            17: 'ciencia',
+            18: 'informatica',
+            19: 'matematicas',
+            20: 'mitologia',
+            21: 'deportes',
+            22: 'geografia',
+            23: 'historia',
+            24: 'politica',
+            25: 'arte',
+            26: 'celebridades',
+            27: 'animales',
+            28: 'vehiculos',
+            29: 'comics',
+            30: 'gadgets',
+            31: 'anime-manga',
+            32: 'animacion'
+        };
+        
+        // Nombres en español para mostrar en la UI
+        this.categoryDisplayNames = {
+            'conocimiento-general': 'Conocimiento General',
+            'historia': 'Historia',
+            'ciencia': 'Ciencia y Naturaleza',
+            'deportes': 'Deportes',
+            'arte': 'Arte',
+            'geografia': 'Geografía',
+            'entretenimiento': 'Entretenimiento',
+            'libros': 'Libros',
+            'peliculas': 'Películas',
+            'musica': 'Música',
+            'musicales-teatro': 'Musicales y Teatro',
+            'television': 'Televisión',
+            'videojuegos': 'Videojuegos',
+            'juegos-mesa': 'Juegos de Mesa',
+            'informatica': 'Informática',
+            'matematicas': 'Matemáticas',
+            'mitologia': 'Mitología',
+            'politica': 'Política',
+            'celebridades': 'Celebridades',
+            'animales': 'Animales',
+            'vehiculos': 'Vehículos',
+            'comics': 'Cómics',
+            'gadgets': 'Gadgets y Tecnología',
+            'anime-manga': 'Anime y Manga',
+            'animacion': 'Animación'
         };
         this.difficultyMap = {
             'easy': 'easy',
@@ -66,6 +146,20 @@ class ApiClient {
      */
     generateBasicFallback() {
         this.fallbackQuestions = {
+            'conocimiento-general': [
+                {
+                    question: "¿Cuál es el océano más grande del mundo?",
+                    answers: ["Pacífico", "Atlántico", "Índico", "Ártico"],
+                    correct: 0,
+                    difficulty: "easy"
+                },
+                {
+                    question: "¿En qué continente se encuentra Egipto?",
+                    answers: ["África", "Asia", "Europa", "América"],
+                    correct: 0,
+                    difficulty: "easy"
+                }
+            ],
             historia: [
                 {
                     question: "¿En qué año terminó la Segunda Guerra Mundial?",
@@ -148,6 +242,76 @@ class ApiClient {
                     answers: ["Harry Potter", "Ron Weasley", "Hermione Granger", "Draco Malfoy"],
                     correct: 0,
                     difficulty: "easy"
+                }
+            ],
+            informatica: [
+                {
+                    question: "¿Qué significa 'HTML'?",
+                    answers: ["HyperText Markup Language", "High Tech Modern Language", "Home Tool Markup Language", "Hyper Transfer Markup Language"],
+                    correct: 0,
+                    difficulty: "medium"
+                },
+                {
+                    question: "¿Cuál es la extensión de archivo para JavaScript?",
+                    answers: [".js", ".java", ".jsx", ".script"],
+                    correct: 0,
+                    difficulty: "easy"
+                }
+            ],
+            matematicas: [
+                {
+                    question: "¿Cuál es el valor de π (pi) aproximadamente?",
+                    answers: ["3.14159", "3.15926", "3.12345", "3.16789"],
+                    correct: 0,
+                    difficulty: "easy"
+                },
+                {
+                    question: "¿Cuántos grados tiene un círculo completo?",
+                    answers: ["360°", "180°", "90°", "270°"],
+                    correct: 0,
+                    difficulty: "easy"
+                }
+            ],
+            musica: [
+                {
+                    question: "¿Cuántas cuerdas tiene una guitarra estándar?",
+                    answers: ["6", "4", "8", "12"],
+                    correct: 0,
+                    difficulty: "easy"
+                },
+                {
+                    question: "¿Quién compuso 'La Novena Sinfonía'?",
+                    answers: ["Beethoven", "Mozart", "Bach", "Chopin"],
+                    correct: 0,
+                    difficulty: "medium"
+                }
+            ],
+            animales: [
+                {
+                    question: "¿Cuál es el animal terrestre más grande?",
+                    answers: ["Elefante africano", "Rinoceronte", "Hipopótamo", "Jirafa"],
+                    correct: 0,
+                    difficulty: "easy"
+                },
+                {
+                    question: "¿Cuántas patas tiene una araña?",
+                    answers: ["8", "6", "10", "4"],
+                    correct: 0,
+                    difficulty: "easy"
+                }
+            ],
+            videojuegos: [
+                {
+                    question: "¿Cuál es el personaje principal de la saga 'Mario'?",
+                    answers: ["Mario", "Luigi", "Peach", "Bowser"],
+                    correct: 0,
+                    difficulty: "easy"
+                },
+                {
+                    question: "¿En qué año se lanzó el primer 'Tetris'?",
+                    answers: ["1984", "1985", "1986", "1987"],
+                    correct: 0,
+                    difficulty: "medium"
                 }
             ]
         };
@@ -445,5 +609,113 @@ class ApiClient {
                 }
             });
         }
+    }
+
+    /**
+     * Obtiene todas las categorías disponibles
+     * @returns {Object} Objeto con todas las categorías disponibles
+     */
+    getAvailableCategories() {
+        return {
+            // Categorías principales (originales del juego)
+            main: ['historia', 'ciencia', 'deportes', 'arte', 'geografia', 'entretenimiento'],
+            
+            // Todas las categorías disponibles
+            all: Object.keys(this.categoryMap),
+            
+            // Categorías por grupos temáticos
+            entertainment: ['entretenimiento', 'peliculas', 'musica', 'television', 'videojuegos', 'libros', 'comics', 'anime-manga', 'animacion'],
+            science: ['ciencia', 'informatica', 'matematicas', 'gadgets'],
+            culture: ['historia', 'arte', 'geografia', 'mitologia', 'politica'],
+            leisure: ['deportes', 'celebridades', 'animales', 'vehiculos', 'juegos-mesa']
+        };
+    }
+
+    /**
+     * Obtiene el nombre para mostrar de una categoría
+     * @param {string} categoryKey - Clave de la categoría
+     * @returns {string} Nombre para mostrar
+     */
+    getCategoryDisplayName(categoryKey) {
+        return this.categoryDisplayNames[categoryKey] || categoryKey;
+    }
+
+    /**
+     * Obtiene la clave de categoría desde un ID de Open Trivia DB
+     * @param {number} categoryId - ID de la categoría en Open Trivia DB
+     * @returns {string} Clave de la categoría
+     */
+    getCategoryFromId(categoryId) {
+        return this.categoryIdToName[categoryId] || 'conocimiento-general';
+    }
+
+    /**
+     * Valida si una categoría existe
+     * @param {string} category - Nombre de la categoría a validar
+     * @returns {boolean} True si la categoría existe
+     */
+    isValidCategory(category) {
+        return this.categoryMap.hasOwnProperty(category.toLowerCase());
+    }
+
+    /**
+     * Obtiene categorías relacionadas por tema
+     * @param {string} category - Categoría base
+     * @returns {string[]} Array de categorías relacionadas
+     */
+    getRelatedCategories(category) {
+        const categories = this.getAvailableCategories();
+        
+        // Buscar en qué grupo temático está la categoría
+        for (const [groupName, groupCategories] of Object.entries(categories)) {
+            if (groupName !== 'main' && groupName !== 'all' && groupCategories.includes(category)) {
+                return groupCategories.filter(cat => cat !== category);
+            }
+        }
+        
+        return [];
+    }
+
+    /**
+     * Obtiene estadísticas de categorías disponibles
+     * @returns {Object} Estadísticas de categorías
+     */
+    getCategoryStats() {
+        const allCategories = Object.keys(this.categoryMap);
+        const mainCategories = this.getAvailableCategories().main;
+        
+        return {
+            total: allCategories.length,
+            main: mainCategories.length,
+            additional: allCategories.length - mainCategories.length,
+            byTheme: {
+                entertainment: this.getAvailableCategories().entertainment.length,
+                science: this.getAvailableCategories().science.length,
+                culture: this.getAvailableCategories().culture.length,
+                leisure: this.getAvailableCategories().leisure.length
+            }
+        };
+    }
+
+    /**
+     * Busca categorías por nombre o término
+     * @param {string} searchTerm - Término de búsqueda
+     * @returns {Object[]} Array de categorías que coinciden con la búsqueda
+     */
+    searchCategories(searchTerm) {
+        const term = searchTerm.toLowerCase();
+        const results = [];
+        
+        for (const [key, displayName] of Object.entries(this.categoryDisplayNames)) {
+            if (key.includes(term) || displayName.toLowerCase().includes(term)) {
+                results.push({
+                    key: key,
+                    displayName: displayName,
+                    id: this.categoryMap[key]
+                });
+            }
+        }
+        
+        return results;
     }
 }
