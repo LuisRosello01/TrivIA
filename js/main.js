@@ -29,9 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
  * Inicializa la aplicación cuando todos los módulos están cargados
  */
 document.addEventListener('modulesReady', () => {
-    console.log('Módulos cargados, inicializando aplicación...');
+    console.log('Módulos cargados, iniciando aplicación...');
     
-    // Pequeña demora para asegurar que todos los elementos estén disponibles
+    // Inicializar la aplicación directamente
     setTimeout(() => {
         attemptInitialization();
     }, 100);
@@ -449,17 +449,32 @@ function checkBrowserCompatibility() {
 function showInitialScreen() {
     // Verificar si hay un juego guardado
     if (gameEngine.hasSavedGame()) {
-        // Mostrar notificación de juego guardado
+        // Mostrar notificación de juego guardado después de la transición
         setTimeout(() => {
             showNotification('Tienes una partida guardada. Puedes continuarla desde el menú principal.', 'info');
-        }, 1000);
+        }, 2000);
     }
     
     // Actualizar variables de viewport
     updateViewportVariables();
     
+    // Asegurar que MenuTransitionManager esté disponible y configure el estado inicial
+    if (window.menuTransitionManager) {
+        console.log('🎭 Configurando estado inicial del menú antes de mostrarlo...');
+        // Forzar la configuración del estado inicial
+        window.menuTransitionManager.forceSetupInitialState();
+    }
+    
     // Mostrar menú principal
     menuUI.showMenuScreen();
+    
+    // Activar transiciones del menú cuando todo esté listo
+    if (window.menuTransitionManager) {
+        console.log('🚀 Activando transiciones después de mostrar el menú...');
+        window.menuTransitionManager.activateTransitions();
+    } else {
+        console.warn('MenuTransitionManager no está disponible');
+    }
 }
 
 /**

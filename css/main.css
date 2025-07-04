@@ -1,0 +1,59 @@
+/* ========================================
+   HOJA DE ESTILOS PRINCIPAL - TRIVIAL GAME
+   Archivo principal que importa toda la estructura CSS
+   ======================================== */
+
+/* === IMPORTACIONES ORDENADAS POR PRIORIDAD === */
+
+/* 1. Variables y configuración base */
+@import url('./base/variables.css');
+@import url('./base/reset.css');
+@import url('./base/typography.css');
+
+/* 2. Componentes fundamentales */
+@import url('./components/buttons.css');
+@import url('./components/modals.css');
+@import url('./components/forms.css');
+@import url('./components/notifications.css');
+@import url('./components/loading.css');
+
+/* 3. Layouts y pantallas */
+@import url('./layouts/screens.css');
+@import url('./layouts/game.css');
+@import url('./layouts/menu.css');
+
+/* 4. Funcionalidades específicas */
+@import url('./themes/categories.css');
+@import url('./themes/challenge-mode.css');
+@import url('./themes/players.css');
+
+/* 5. Utilidades y responsive */
+@import url('./utilities/animations.css');
+/*
+@import url('./utilities/responsive.css');
+*/
+@import url('./utilities/mobile.css');
+@import url('./utilities/accessibility.css');
+
+/* === ESTILOS CRÍTICOS PARA CARGA INICIAL === */
+
+/* Control de scroll inicial */
+html {
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html.loaded {
+    overflow: auto;
+}
+
+/* Indicador de estilos cargados */
+body::before {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--primary-color);
+}

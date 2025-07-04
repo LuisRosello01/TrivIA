@@ -1,0 +1,395 @@
+/* ========================================
+   MENÚ PRINCIPAL Y NAVEGACIÓN
+   Estilos unificados para menú principal, animaciones de carga
+   y transiciones sin duplicación de código
+   
+   FUNCIONALIDADES INCLUIDAS:
+   - Menú estático base (.menu-container)
+   - Estados de animación (.initializing, .ready)  
+   - Transiciones de título (.game-title default centrado, .positioned final)
+   - Animaciones de botones (.visible, .hidden)
+   - Responsive design optimizado
+   - Prevención de scroll en móviles
+   - Soporte para accesibilidad
+   
+   CLASES DE ESTADO:
+   - .menu-container.initializing: Pantalla de carga inicial
+   - .menu-container.ready: Menú preparado para mostrar
+   - .game-title: Estado por defecto (centrado, pantalla de carga)
+   - .game-title.positioned: Título en posición final (arriba del menú)
+   - .menu-options.hidden: Botones ocultos (transición)
+   - .menu-options.visible: Botones visibles con animación
+   ======================================== */
+
+/* === CONTENEDOR DEL MENÚ === */
+
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: var(--spacing-xl);
+}
+
+/* === ESTADOS ESPECIALES DEL CONTENEDOR === */
+
+.menu-container.initializing,
+.menu-container.ready {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    /* Prevenir scroll táctil */
+    touch-action: none;
+    overscroll-behavior: none;
+    z-index: 1000;
+}
+
+/* === TÍTULO DEL JUEGO === */
+
+.game-title {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    font-size: clamp(3rem, 8vw, 10rem);
+    font-weight: bold;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 auto 5rem auto;
+    text-align: center;
+    text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+    animation: titlePulseGentle 1s ease-in-out infinite alternate;
+    /* Transición suave para cambios de estado */
+    transition: font-size 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* === ESTADO POSICIONADO DEL TÍTULO === */
+
+.game-title.positioned {
+    font-size: clamp(3rem, 6vw, 5rem);
+}
+
+/* === ANIMACIÓN DEL TÍTULO === */
+
+@keyframes titlePulseGentle {
+    0% {
+        filter: brightness(1) drop-shadow(0 0 30px rgba(102, 126, 234, 0.5));
+    }
+    100% {
+        filter: brightness(1.05) drop-shadow(0 0 40px rgba(102, 126, 234, 0.8));
+    }
+}
+
+/* === OPCIONES DEL MENÚ === */
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    width: 100%;
+    min-width: 300px;
+    max-width: 400px;
+    transition: 
+        opacity 0.6s ease,
+        max-height 1s cubic-bezier(0.4, 0, 1, 1);
+    z-index: 5;
+    /* Estados por defecto: oculto */
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+    overflow: hidden;
+}
+
+/* === ESTADOS DE ANIMACIÓN DE LAS OPCIONES === */
+
+.menu-options.visible {
+    opacity: 1;
+    visibility: visible;
+    max-height: 1000px;
+}
+
+/* === ANIMACIONES DE BOTONES === */
+
+@keyframes buttonSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Animación secuencial de botones */
+.menu-options.visible .btn,
+.menu-options.visible .menu-option {
+    animation: buttonSlideIn 0.6s ease-out both;
+    width: 100%;
+    margin: 0.5rem 0;
+    box-sizing: border-box;
+}
+
+.menu-options.visible .btn:nth-child(1),
+.menu-options.visible .menu-option:nth-child(1) { animation-delay: 0.1s; }
+.menu-options.visible .btn:nth-child(2),
+.menu-options.visible .menu-option:nth-child(2) { animation-delay: 0.2s; }
+.menu-options.visible .btn:nth-child(3),
+.menu-options.visible .menu-option:nth-child(3) { animation-delay: 0.3s; }
+.menu-options.visible .btn:nth-child(4),
+.menu-options.visible .menu-option:nth-child(4) { animation-delay: 0.4s; }
+.menu-options.visible .btn:nth-child(5),
+.menu-options.visible .menu-option:nth-child(5) { animation-delay: 0.5s; }
+
+.menu-option {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    box-shadow: var(--shadow-md);
+    
+    /* Touch optimizations */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    min-height: 44px;
+}
+
+.menu-option:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+}
+
+/* === CONFIGURACIÓN === */
+
+.config-container {
+    max-width: 600px;
+    padding: var(--spacing-xl);
+    background: var(--bg-card);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-xl);
+}
+
+.config-container h2 {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    color: var(--primary-color);
+}
+
+.config-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+}
+
+/* === TUTORIAL === */
+
+.tutorial-container {
+    max-width: 800px;
+    margin: var(--spacing-xxl) auto;
+    padding: var(--spacing-xl);
+    background: var(--bg-card);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-xl);
+}
+
+.tutorial-container h2 {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    color: var(--primary-color);
+}
+
+.tutorial-step {
+    display: none;
+    text-align: center;
+}
+
+.tutorial-step.active {
+    display: block;
+}
+
+.tutorial-step h3 {
+    margin-bottom: var(--spacing-lg);
+    color: var(--accent-color);
+}
+
+.tutorial-step p {
+    margin-bottom: var(--spacing-md);
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.categories-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+    margin: var(--spacing-xl) 0;
+}
+
+.category {
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+}
+
+.tutorial-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-xl);
+    gap: var(--spacing-md);
+}
+
+#tutorial-progress {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* === RESPONSIVE MENU === */
+
+@media (max-width: 768px) {
+    .menu-container {
+        padding: var(--spacing-md);
+    }
+    
+    .menu-container.initializing,
+    .menu-container.ready {
+        padding: 16px;
+    }
+    
+    .menu-options {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .menu-options.hidden,
+    .menu-options.visible {
+        max-width: calc(100% - 32px);
+    }
+    
+    .menu-option {
+        padding: 18px 24px;
+        font-size: 1.1rem;
+        margin: 8px 0;
+        border-radius: 12px;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .config-container,
+    .tutorial-container {
+        margin: var(--spacing-lg) auto;
+        padding: var(--spacing-lg);
+    }
+    
+    .categories-preview {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: var(--spacing-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-container.initializing,
+    .menu-container.ready {
+        padding: 12px;
+    }
+    
+    .menu-option {
+        padding: 20px 16px;
+        font-size: 1rem;
+        min-height: 60px;
+        margin: 10px 0;
+    }
+    
+    .menu-options {
+        min-width: 200px;
+    }
+    
+    .menu-options.hidden,
+    .menu-options.visible {
+        max-width: calc(100% - 24px);
+    }
+}
+
+@media (max-height: 600px) {
+    .menu-container {
+        padding: var(--spacing-md);
+    }
+}
+
+/* === ESTADOS TOUCH === */
+
+@media (pointer: coarse) {
+    .menu-option:active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transform: scale(0.98);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    }
+    
+    .menu-option:hover {
+        transform: none;
+    }
+    
+    .game-title {
+        pointer-events: none;
+    }
+    
+    .game-title.positioned {
+        pointer-events: auto;
+    }
+}
+
+/* === SOPORTE PARA REDUCE MOTION === */
+
+@media (prefers-reduced-motion: reduce) {
+    .game-title,
+    .menu-option {
+        transition-duration: 0.1s;
+    }
+    
+    .game-title,
+    .game-title.positioned {
+        transition-duration: 0.3s;
+        animation: none;
+    }
+    
+    .menu-options.visible,
+    .menu-options.hidden {
+        transition-duration: 0.3s;
+    }
+    
+    .menu-options.visible .btn,
+    .menu-options.visible .menu-option {
+        animation: none;
+    }
+}

@@ -1,0 +1,168 @@
+/* ========================================
+   NOTIFICACIONES Y ALERTAS
+   Sistema de notificaciones del juego
+   ======================================== */
+
+/* === NOTIFICACIONES === */
+
+.notification {
+    position: fixed;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-notification);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    max-width: 400px;
+}
+
+.notification.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.notification-content {
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.notification-message {
+    flex: 1;
+    color: var(--text-primary);
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+    transition: background-color 0.3s ease;
+}
+
+.notification-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+/* === TIPOS DE NOTIFICACIONES === */
+
+.notification-success {
+    border-left: 4px solid var(--success-color);
+}
+
+.notification-error {
+    border-left: 4px solid var(--error-color);
+}
+
+.notification-warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+/* === INDICADOR OFFLINE === */
+
+.offline-indicator {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    background: var(--warning-color);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    font-weight: 600;
+    z-index: var(--z-modal);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(100%);
+    transition: all 0.3s ease;
+}
+
+.offline-indicator.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* === MODO DEBUG === */
+
+.debug-info {
+    position: fixed;
+    top: var(--spacing-lg);
+    left: var(--spacing-lg);
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--success-color);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    font-family: monospace;
+    font-size: 0.8rem;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.debug-mode .debug-info {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* === ERRORES CRÍTICOS === */
+
+.critical-error {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-critical);
+}
+
+.error-content {
+    text-align: center;
+    max-width: 500px;
+    padding: var(--spacing-xl);
+}
+
+.error-content h2 {
+    color: var(--error-color);
+    margin-bottom: var(--spacing-lg);
+}
+
+.error-content p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* === RESPONSIVE NOTIFICATIONS === */
+
+@media (max-width: 768px) {
+    .notification {
+        top: var(--spacing-sm);
+        right: var(--spacing-sm);
+        left: var(--spacing-sm);
+        max-width: none;
+    }
+    
+    .offline-indicator {
+        bottom: var(--spacing-sm);
+        right: var(--spacing-sm);
+        left: var(--spacing-sm);
+        text-align: center;
+    }
+    
+    .error-content {
+        padding: var(--spacing-lg);
+    }
+}

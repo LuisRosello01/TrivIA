@@ -1,0 +1,112 @@
+/* ========================================
+   SISTEMA DE PANTALLAS
+   Layout base para las diferentes pantallas
+   ======================================== */
+
+/* === SISTEMA DE PANTALLAS BASE === */
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    overflow-y: auto;
+    /* Variables dinámicas de viewport */
+    height: 100dvh;
+}
+
+.screen.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* === PANTALLA DE JUEGO ESPECÍFICA === */
+
+#game-screen {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#game-screen .game-header {
+    flex-shrink: 0;
+}
+
+#game-screen .game-main {
+    flex: 1;
+    min-height: 0;
+    /* Ajuste para viewport dinámico */
+    min-height: calc(100dvh - 80px);
+}
+
+/* === CONTENEDORES PRINCIPALES === */
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.container-fluid {
+    width: 100%;
+    padding: 0 var(--spacing-lg);
+}
+
+.container-narrow {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+/* === CENTRADO VERTICAL === */
+
+.center-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+}
+
+/* === RESPONSIVE CONTAINERS === */
+
+@media (max-width: 768px) {
+    .container,
+    .container-fluid,
+    .container-narrow {
+        padding: 0 var(--spacing-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .container,
+    .container-fluid,
+    .container-narrow {
+        padding: 0 var(--spacing-sm);
+    }
+}
+
+/* === HEIGHTS PARA MOBILE === */
+
+.mobile-device {
+    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
+}
+
+/* === SAFE AREAS === */
+
+@supports (padding: max(0px)) {
+    .screen {
+        padding-top: max(0px, env(safe-area-inset-top));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+}

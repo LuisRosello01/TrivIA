@@ -1,0 +1,394 @@
+/* ========================================
+   LAYOUT DEL JUEGO
+   Estructura principal del juego y componentes del tablero
+   ======================================== */
+
+/* === HEADER DEL JUEGO === */
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-md);
+    height: 80px;
+    flex-shrink: 0;
+}
+
+.current-player {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    font-weight: 600;
+}
+
+#current-player-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.player-token {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: var(--shadow-md);
+}
+
+.game-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+/* === LAYOUT PRINCIPAL DEL JUEGO === */
+
+.game-main {
+    display: grid;
+    grid-template-columns: 250px 1fr 280px;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    flex: 1;
+    min-height: 0;
+    max-width: 100vw;
+    overflow: hidden;
+    /* Ajuste para viewport dinámico */
+    min-height: calc(100dvh - 80px);
+}
+
+/* === CONTENEDOR DEL TABLERO === */
+
+.board-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+#game-board {
+    border-radius: var(--border-radius-lg);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* === CONTENEDOR DEL DADO === */
+
+.dice-container {
+    position: absolute;
+    bottom: var(--spacing-lg);
+    left: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: var(--bg-card);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    z-index: 50;
+}
+
+.dice-container:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+.dice {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--bg-primary);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid var(--border-color);
+    user-select: none;
+}
+
+.dice:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+}
+
+.dice-face {
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+}
+
+/* === ESTADOS DEL DADO === */
+
+.dice.rolling {
+    animation: diceRollSuspense 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-style: preserve-3d;
+}
+
+.dice.landed {
+    animation: diceLanded 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.dice.glowing {
+    animation: diceGlow 0.8s ease-in-out;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.6), 0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+.dice.countdown-active {
+    animation: diceCountdownPulse 1s ease-in-out infinite;
+}
+
+.dice-container.rolling {
+    animation: containerShake 2.5s ease-in-out;
+}
+
+/* === PANELES LATERALES === */
+
+.questions-history-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    overflow-y: auto;
+    max-height: 100%;
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.questions-history-panel h3 {
+    margin-bottom: var(--spacing-lg);
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.players-panel {
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    overflow-y: auto;
+    max-height: 100%;
+}
+
+.players-panel h3 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+}
+
+/* === INFORMACIÓN DEL JUEGO === */
+
+.game-info {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    border-top: 2px solid var(--primary-color);
+}
+
+.game-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.game-stats h4 {
+    margin-bottom: var(--spacing-md);
+    color: var(--primary-color);
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    transition: background-color 0.3s ease;
+}
+
+.stat-item:last-child {
+    margin-bottom: 0;
+}
+
+.stat-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.stat-value {
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1rem;
+    min-width: 2.5rem;
+    text-align: right;
+    transition: all 0.3s ease;
+}
+
+.stat-value.updated {
+    animation: statPulse 0.5s ease-in-out;
+    color: var(--accent-color);
+}
+
+/* === RESPONSIVE GAME LAYOUT === */
+
+@media (max-width: 1200px) {
+    .game-main {
+        grid-template-columns: 220px 1fr 250px;
+        gap: var(--spacing-md);
+    }
+    
+    .questions-history-panel,
+    .players-panel {
+        padding: var(--spacing-md);
+    }
+}
+
+@media (max-width: 1024px) {
+    .game-main {
+        grid-template-columns: 200px 1fr 220px;
+        gap: var(--spacing-md);
+    }
+    
+    .players-panel {
+        order: -1;
+        max-height: 150px;
+    }
+    
+    .questions-history-panel {
+        order: 1;
+        max-height: 200px;
+    }
+    
+    .dice-container {
+        bottom: var(--spacing-sm);
+        left: var(--spacing-sm);
+        padding: var(--spacing-md);
+    }
+    
+    .dice {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-header {
+        flex-direction: column;
+        height: auto;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md);
+    }
+    
+    .game-main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        padding: var(--spacing-md);
+        gap: var(--spacing-sm);
+    }
+    
+    .questions-history-panel {
+        order: 3;
+        max-height: 200px;
+    }
+    
+    .board-container {
+        order: 1;
+    }
+    
+    .players-panel {
+        order: 2;
+        max-height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-main {
+        padding: var(--spacing-sm);
+    }
+    
+    .dice-container {
+        bottom: var(--spacing-xs);
+        left: var(--spacing-xs);
+        padding: var(--spacing-sm);
+    }
+    
+    .dice {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .stat-item {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        text-align: center;
+    }
+    
+    .stat-value {
+        text-align: center;
+    }
+}
+
+/* === ORIENTACIÓN LANDSCAPE EN TABLETS === */
+
+@media screen and (orientation: landscape) and (max-width: 1024px) {
+    .game-main {
+        grid-template-columns: 180px 1fr 220px;
+        grid-template-rows: 1fr;
+    }
+    
+    .players-panel,
+    .questions-history-panel {
+        order: unset;
+        max-height: 100%;
+    }
+}
+
+/* === ORIENTACIÓN PORTRAIT EN MÓVILES === */
+
+@media screen and (orientation: portrait) and (max-width: 768px) {
+    .game-main {
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    .players-panel {
+        max-height: 120px;
+    }
+    
+    .questions-history-panel {
+        max-height: 150px;
+    }
+}

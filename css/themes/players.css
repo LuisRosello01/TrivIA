@@ -1,0 +1,352 @@
+/* ========================================
+   JUGADORES Y ELEMENTOS DE JUEGO
+   Estilos para jugadores, historial y estadísticas
+   ======================================== */
+
+/* === INFORMACIÓN DE JUGADORES === */
+
+.player-info {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.player-info.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+}
+
+.player-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.player-wedges {
+    display: flex;
+    gap: 4px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+.player-stats {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: var(--spacing-sm);
+}
+
+/* === HISTORIAL DE PREGUNTAS === */
+
+.history-empty {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.history-question {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    border-left: 4px solid var(--border-color);
+    transition: all 0.3s ease;
+    opacity: 0.9;
+}
+
+.history-question:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-md);
+    opacity: 1;
+}
+
+.history-question.new {
+    animation: slideInLeft 0.4s ease-out, highlight 1.5s ease-out;
+}
+
+.history-question.correct {
+    border-left-color: var(--success-color);
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.history-question.incorrect {
+    border-left-color: var(--error-color);
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.history-question.skipped {
+    border-left-color: var(--warning-color);
+    background: rgba(255, 152, 0, 0.1);
+}
+
+.question-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+    line-height: 1.4;
+}
+
+.question-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.8rem;
+}
+
+.question-player {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.question-answer {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid var(--border-color);
+}
+
+/* === ESTADÍSTICAS DEL JUEGO === */
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    transition: background-color 0.3s ease;
+    text-align: center;
+    min-width: 80px;
+}
+
+.stat-item:last-child {
+    margin-bottom: 0;
+}
+
+.stat-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1rem;
+    min-width: 2.5rem;
+    text-align: right;
+    transition: all 0.3s ease;
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #f093fb;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.stat-value.updated {
+    animation: statPulse 0.5s ease-in-out;
+    color: var(--accent-color);
+}
+
+/* === CATEGORÍAS EXPANDIDAS === */
+
+.categories-group {
+    margin-bottom: 25px;
+}
+
+.categories-group h4 {
+    color: #ffffff;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 8px;
+}
+
+.categories-expandable {
+    margin-top: 20px;
+}
+
+.expand-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+    text-align: center;
+    user-select: none;
+}
+
+.expand-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.expand-toggle span {
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.additional-categories {
+    animation: slideDown 0.3s ease-out;
+}
+
+.category-subgroup {
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.category-subgroup h5 {
+    color: #f093fb;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.category-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.category-row:last-child {
+    margin-bottom: 0;
+}
+
+.additional-categories .checkbox-label {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 12px 15px;
+    font-size: 14px;
+    border-radius: 8px;
+}
+
+.additional-categories .checkbox-label:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.additional-categories .checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+}
+
+/* === CONTROLES DE SELECCIÓN MASIVA === */
+
+.category-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.category-controls .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    min-width: 140px;
+}
+
+.btn-small {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.btn-small:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+/* === RESPONSIVE PLAYERS === */
+
+@media (max-width: 768px) {
+    .category-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .category-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .category-controls .btn {
+        min-width: unset;
+    }
+    
+    .category-subgroup {
+        padding: 15px;
+    }
+    
+    .categories-group h4 {
+        font-size: 16px;
+    }
+    
+    .category-subgroup h5 {
+        font-size: 14px;
+    }
+    
+    .stat-item {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        text-align: center;
+    }
+    
+    .stat-value {
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .additional-categories .checkbox-label {
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+    
+    .expand-toggle {
+        padding: 10px 15px;
+    }
+    
+    .expand-toggle span {
+        font-size: 14px;
+    }
+}
+
+@media (pointer: coarse) {
+    .final-stat {
+        min-height: 44px;
+        padding: 12px 0;
+    }
+}

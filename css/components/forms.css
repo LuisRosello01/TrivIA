@@ -1,0 +1,204 @@
+/* ========================================
+   FORMULARIOS Y ELEMENTOS INTERACTIVOS
+   Select, checkboxes, inputs y formularios
+   ======================================== */
+
+/* === ESTILOS GENERALES DE FORMULARIOS === */
+
+form {
+    max-width: 100%;
+}
+
+label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* === INPUTS Y SELECTS === */
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 2px solid var(--bg-secondary);
+    border-radius: var(--border-radius);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: border-color var(--transition-normal);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-md) center;
+    background-size: 1rem;
+    padding-right: calc(var(--spacing-xl) + var(--spacing-md));
+}
+
+/* === CHECKBOXES PERSONALIZADOS === */
+
+.checkbox-label {
+    display: flex !important;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s ease;
+    font-weight: 500;
+}
+
+.checkbox-label:hover {
+    background-color: var(--surface-hover);
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--primary-color);
+    border-radius: 4px;
+    margin-right: var(--spacing-md);
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background: var(--gradient-primary);
+    border-color: var(--primary-color);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark:after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    display: block;
+}
+
+/* === CONFIGURACIÓN ESPECIAL PARA TRADUCCIÓN === */
+
+.config-option label.checkbox-label[for="translation-enabled"] {
+    border: 2px solid transparent;
+    background: var(--gradient-secondary);
+}
+
+.config-option label.checkbox-label[for="translation-enabled"]:has(input:checked) {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+}
+
+/* === OPCIONES DE CONFIGURACIÓN === */
+
+.config-option {
+    margin-bottom: var(--spacing-lg);
+}
+
+.config-option label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.config-option select {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 2px solid var(--bg-secondary);
+    border-radius: var(--border-radius);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.config-option select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* === ESTILO ESPECIAL PARA LA OPCIÓN DE DIFICULTAD ALEATORIA === */
+
+#challenge-difficulty option[value="random"] {
+    background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #45B7D1);
+    color: white;
+    font-weight: bold;
+}
+
+#challenge-difficulty:focus option[value="random"]:hover {
+    background: linear-gradient(90deg, #FF5252, #26A69A, #1976D2);
+}
+
+/* === INFORMACIÓN DE DIFICULTAD ALEATORIA === */
+
+.difficulty-info {
+    display: none;
+    background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #45B7D1);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.difficulty-info.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.difficulty-info::before {
+    content: '💡';
+    margin-right: 8px;
+}
+
+/* === RESPONSIVE FORMS === */
+
+@media (max-width: 768px) {
+    .checkbox-label {
+        padding: var(--spacing-md);
+        font-size: 0.9rem;
+    }
+    
+    .config-option select {
+        padding: var(--spacing-md);
+        font-size: 0.9rem;
+    }
+}
+
+@media (pointer: coarse) {
+    .checkbox-label {
+        min-height: 44px;
+        padding: var(--spacing-md);
+        touch-action: manipulation;
+    }
+    
+    .config-option select {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+}

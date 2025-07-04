@@ -1,0 +1,383 @@
+/* ========================================
+   OPTIMIZACIONES MÓVILES
+   Mejoras específicas para dispositivos móviles
+   ======================================== */
+
+/* === CONFIGURACIÓN BASE MÓVIL === */
+
+.mobile-layout {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+/* === VIEWPORT DINÁMICO === */
+
+.mobile-device {
+    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
+}
+
+/* Fix para teclados virtuales */
+@media screen and (max-height: 500px) {
+    .challenge-game-container,
+    .menu-container {
+        padding: 8px;
+    }
+    
+    .btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+}
+
+/* === SAFE AREAS (iPhone X+) === */
+
+@supports (padding: max(0px)) {
+    .screen {
+        padding-top: max(0px, env(safe-area-inset-top));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+    
+    #challenge-config-screen {
+        padding-top: max(20px, env(safe-area-inset-top));
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+        padding-left: max(15px, env(safe-area-inset-left));
+        padding-right: max(15px, env(safe-area-inset-right));
+    }
+}
+
+/* === OPTIMIZACIONES TÁCTILES === */
+
+/* Área de toque mínima recomendada (44px) */
+.btn,
+button,
+[role="button"],
+.menu-option,
+.challenge-answer-btn,
+.answer-option {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* === ESTADOS ACTIVOS MÓVILES === */
+
+@media (pointer: coarse) {
+    .btn:active,
+    button:active,
+    [role="button"]:active,
+    .menu-option:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+    
+    /* Mejoras táctiles para el panel de configuración del desafío */
+    .challenge-categories .checkbox-label {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(240, 147, 251, 0.2);
+    }
+    
+    .challenge-categories .checkbox-label:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+    
+    .config-option select {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+    
+    .config-buttons .btn {
+        min-height: 48px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+    }
+    
+    .config-buttons .btn:active {
+        transform: scale(0.97);
+    }
+    
+    /* Desactivar hover en pantallas táctiles */
+    .btn:hover,
+    button:hover,
+    [role="button"]:hover,
+    .menu-option:hover {
+        transform: none;
+        background: initial;
+        box-shadow: initial;
+    }
+}
+
+/* === MEJORAS ESPECÍFICAS PARA EL MENÚ === */
+
+@media screen and (max-width: 768px) {
+    .menu-option {
+        padding: 18px 24px;
+        font-size: 1.1rem;
+        margin: 8px 0;
+        border-radius: 12px;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(102, 126, 234, 0.3);
+        cursor: pointer;
+    }
+    
+    .menu-option:active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transform: scale(0.98);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn {
+        min-height: 48px;
+        padding: 14px 20px;
+        font-size: 1rem;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .menu-option {
+        padding: 20px 16px;
+        font-size: 1rem;
+        min-height: 60px;
+        margin: 10px 0;
+    }
+    
+    .btn {
+        min-height: 52px;
+        padding: 16px 20px;
+        font-size: 1rem;
+        width: 100%;
+        max-width: none;
+    }
+}
+
+/* === CLASES UTILITARIAS TOUCH === */
+
+.touch-active {
+    transform: scale(0.95) !important;
+    opacity: 0.8 !important;
+    transition: all 0.1s ease !important;
+}
+
+.menu-option.touch-active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4) !important;
+}
+
+.btn.touch-active {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* === OPTIMIZACIONES PARA iOS === */
+
+@supports (-webkit-touch-callout: none) {
+    .btn,
+    .menu-option,
+    .challenge-answer-btn,
+    .gameover-buttons .btn {
+        -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+        -webkit-touch-callout: none;
+    }
+    
+    #play-again-btn {
+        -webkit-tap-highlight-color: rgba(76, 175, 80, 0.2);
+    }
+    
+    #back-to-menu-btn {
+        -webkit-tap-highlight-color: rgba(102, 102, 102, 0.2);
+    }
+}
+
+/* === OPTIMIZACIONES PARA ANDROID === */
+
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+    .btn,
+    .menu-option,
+    .challenge-answer-btn,
+    .gameover-buttons .btn {
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+/* === NOTIFICACIONES MÓVILES === */
+
+.mobile-layout .notification {
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    left: var(--spacing-sm);
+    max-width: none;
+}
+
+.mobile-layout .loading-content {
+    padding: var(--spacing-lg);
+}
+
+.mobile-layout .error-content {
+    padding: var(--spacing-lg);
+}
+
+/* === SOLUCIÓN PARA DOBLE TAP EN iOS === */
+
+.btn,
+.menu-option,
+button,
+[role="button"] {
+    cursor: pointer;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .btn:hover,
+    .menu-option:hover,
+    button:hover,
+    [role="button"]:hover {
+        transform: none;
+        background: initial;
+    }
+}
+
+/* === PANTALLAS ESPECÍFICAS CON NOTCH/DYNAMIC ISLAND === */
+
+@media screen and (max-width: 768px) and (orientation: portrait) {
+    #challenge-config-screen {
+        padding-top: max(25px, env(safe-area-inset-top, 25px));
+        padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+    }
+    
+    #challenge-config-screen .config-container {
+        margin-top: 0;
+        max-height: calc(100vh - env(safe-area-inset-top, 25px) - env(safe-area-inset-bottom, 20px) - 40px);
+        overflow-y: auto;
+    }
+}
+
+/* === OPTIMIZACIONES TÁCTILES PARA GAME OVER === */
+
+@media (pointer: coarse) {
+    .gameover-buttons .btn {
+        min-height: 48px;
+        min-width: 120px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(76, 175, 80, 0.2);
+    }
+    
+    .gameover-buttons .btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+    
+    #play-again-btn:active {
+        background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+    }
+    
+    #play-again-btn.loading:active {
+        transform: none;
+        background: linear-gradient(135deg, #ccc 0%, #999 100%);
+    }
+    
+    #back-to-menu-btn:active {
+        background: linear-gradient(135deg, #555 0%, #666 100%);
+    }
+    
+    .final-stat {
+        min-height: 44px;
+        padding: 12px 0;
+    }
+}
+
+/* === ORIENTACIÓN Y TECLADO VIRTUAL === */
+
+/* Landscape en móviles con teclado virtual */
+@media screen and (orientation: landscape) and (max-height: 600px) {
+    .challenge-game-container,
+    .menu-container {
+        padding: 8px;
+    }
+    
+    .btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+}
+
+/* === PERFORMANCE MÓVIL === */
+
+/* Optimizaciones de rendimiento para móviles */
+.mobile-optimized {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+/* Reducir uso de GPU en dispositivos de bajo rendimiento */
+@media (max-width: 768px) {
+    .reduced-gpu * {
+        -webkit-transform: none !important;
+        transform: none !important;
+        will-change: auto !important;
+    }
+}
+
+/* === UTILIDADES ESPECÍFICAS MÓVILES === */
+
+/* Clase para mejorar scroll en iOS */
+.ios-scroll {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Prevenir zoom en inputs en iOS */
+.prevent-zoom {
+    font-size: 16px !important;
+}
+
+/* Mejorar tap targets en elementos pequeños */
+.tap-target {
+    position: relative;
+}
+
+.tap-target::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    bottom: -10px;
+    left: -10px;
+    z-index: -1;
+}
+
+/* === VARIABLES MÓVILES === */
+
+@media (max-width: 768px) {
+    :root {
+        --spacing-xs: 0.125rem;
+        --spacing-sm: 0.25rem;
+        --spacing-md: 0.75rem;
+        --spacing-lg: 1rem;
+        --spacing-xl: 1.25rem;
+        --spacing-xxl: 2rem;
+    }
+}

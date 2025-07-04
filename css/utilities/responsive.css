@@ -1,0 +1,367 @@
+/* ========================================
+   RESPONSIVE DESIGN
+   Media queries y adaptaciones responsive
+   ======================================== */
+
+/* === BREAKPOINTS === */
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    
+    .menu-options {
+        min-width: 350px;
+    }
+    
+    .config-container {
+        max-width: 700px;
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (max-width: 1199px) and (min-width: 992px) {
+    .game-main {
+        grid-template-columns: 240px 1fr 260px;
+    }
+    
+    .game-title {
+        font-size: 3.5rem;
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (max-width: 991px) and (min-width: 768px) {
+    .game-main {
+        grid-template-columns: 200px 1fr 240px;
+        gap: var(--spacing-md);
+    }
+    
+    .game-title {
+        font-size: 3rem;
+    }
+    
+    .modal-content {
+        width: 85%;
+        max-width: 500px;
+    }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (max-width: 767px) and (min-width: 576px) {
+    .game-header {
+        padding: var(--spacing-md);
+        height: auto;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+    
+    .current-player {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .game-controls {
+        flex: 0 0 auto;
+    }
+    
+    .game-title {
+        font-size: 2.5rem;
+        margin-bottom: var(--spacing-xl);
+    }
+    
+    .menu-options {
+        min-width: 280px;
+    }
+}
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 575px) {
+    .game-header {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--spacing-sm);
+        gap: var(--spacing-xs);
+    }
+    
+    .menu-container {
+        padding: var(--spacing-sm);
+    }
+    
+    .menu-options {
+        min-width: 250px;
+        gap: var(--spacing-md);
+    }
+    
+    .btn {
+        font-size: 0.9rem;
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+}
+
+/* === ORIENTACIÓN === */
+
+/* Landscape orientation */
+@media screen and (orientation: landscape) {
+    /* Tablets en landscape */
+    @media (max-width: 1024px) and (min-width: 768px) {
+        .game-main {
+            grid-template-columns: 180px 1fr 200px;
+        }
+        
+        .dice-container {
+            bottom: var(--spacing-md);
+            left: var(--spacing-md);
+        }
+        
+        .dice {
+            width: 70px;
+            height: 70px;
+            font-size: 2.2rem;
+        }
+    }
+    
+    /* Móviles en landscape */
+    @media (max-height: 600px) {
+        .menu-container {
+            padding: var(--spacing-sm);
+        }
+        
+        .game-title {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .menu-options {
+            gap: var(--spacing-sm);
+        }
+        
+        .modal-content {
+            max-height: 90vh;
+            padding: var(--spacing-md);
+        }
+    }
+}
+
+/* Portrait orientation */
+@media screen and (orientation: portrait) {
+    /* Tablets en portrait */
+    @media (max-width: 768px) and (min-width: 481px) {
+        .game-main {
+            grid-template-rows: auto 1fr auto;
+            gap: var(--spacing-md);
+        }
+        
+        .players-panel {
+            max-height: 140px;
+        }
+        
+        .questions-history-panel {
+            max-height: 180px;
+        }
+    }
+    
+    /* Móviles en portrait */
+    @media (max-width: 480px) {
+        .players-panel {
+            max-height: 120px;
+        }
+        
+        .questions-history-panel {
+            max-height: 150px;
+        }
+    }
+}
+
+/* === ALTURA DE PANTALLA === */
+
+/* Pantallas muy altas */
+@media (min-height: 900px) {
+    .menu-container {
+        padding: var(--spacing-xxl);
+    }
+    
+    .game-title {
+        margin-bottom: calc(var(--spacing-xxl) + var(--spacing-xl));
+    }
+}
+
+/* Pantallas bajas */
+@media (max-height: 600px) {
+    .menu-container {
+        padding: var(--spacing-md);
+        justify-content: flex-start;
+        padding-top: var(--spacing-xl);
+    }
+    
+    .game-title {
+        font-size: 2.5rem;
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .menu-options {
+        gap: var(--spacing-sm);
+    }
+    
+    .modal-content {
+        max-height: 90vh;
+        padding: var(--spacing-md);
+    }
+    
+    .config-container,
+    .tutorial-container {
+        padding: var(--spacing-md);
+        margin: var(--spacing-md) auto;
+    }
+}
+
+/* === RESOLUCIÓN Y DENSIDAD === */
+
+/* Pantallas de alta densidad */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .game-title {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .btn,
+    .menu-option {
+        -webkit-font-smoothing: antialiased;
+    }
+}
+
+/* === ANCHO ESPECÍFICO PARA CONTENIDO === */
+
+/* Contenedores muy anchos */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1300px;
+    }
+    
+    .game-main {
+        grid-template-columns: 280px 1fr 320px;
+        gap: var(--spacing-xl);
+    }
+}
+
+/* === HOVER Y PUNTEROS === */
+
+/* Dispositivos que soportan hover */
+@media (hover: hover) and (pointer: fine) {
+    .btn:hover,
+    .menu-option:hover,
+    .answer-btn:hover {
+        transform: translateY(-3px) scale(1.02);
+    }
+    
+    .dice-container:hover {
+        transform: translateY(-2px);
+    }
+    
+    .history-question:hover {
+        transform: translateX(4px);
+    }
+}
+
+/* Dispositivos touch sin hover preciso */
+@media (hover: none) and (pointer: coarse) {
+    .btn:hover,
+    .menu-option:hover,
+    .answer-btn:hover,
+    .dice-container:hover,
+    .history-question:hover {
+        transform: none;
+        background: initial;
+    }
+    
+    /* Estados activos para touch */
+    .btn:active,
+    .menu-option:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+}
+
+/* === ACCESIBILIDAD === */
+
+/* Preferencias de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+    .game-title {
+        text-shadow: none;
+    }
+    
+    .btn,
+    .menu-option {
+        transition: none;
+    }
+    
+    .dice:hover,
+    .dice-container:hover {
+        transform: none;
+    }
+}
+
+/* Alto contraste */
+@media (prefers-contrast: high) {
+    :root {
+        --bg-primary: #000000;
+        --bg-secondary: #1a1a1a;
+        --bg-card: #2a2a2a;
+        --text-primary: #ffffff;
+        --border-color: #ffffff;
+        --primary-color: #0066ff;
+        --accent-color: #ff00ff;
+    }
+    
+    .btn,
+    .menu-option {
+        border: 2px solid var(--border-color);
+    }
+}
+
+/* === GRID RESPONSIVE === */
+
+/* Ajustes automáticos del grid */
+.responsive-grid {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+@media (min-width: 1200px) {
+    .responsive-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+@media (max-width: 1199px) and (min-width: 768px) {
+    .responsive-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .responsive-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+}
+
+/* === UTILIDADES RESPONSIVE === */
+
+/* Clases de visibilidad */
+.d-none { display: none !important; }
+.d-block { display: block !important; }
+.d-flex { display: flex !important; }
+.d-grid { display: grid !important; }
+
+/* Mobile only */
+@media (max-width: 767px) {
+    .d-md-none { display: none !important; }
+    .d-sm-block { display: block !important; }
+    .d-sm-flex { display: flex !important; }
+}
+
+/* Desktop only */
+@media (min-width: 768px) {
+    .d-sm-none { display: none !important; }
+    .d-md-block { display: block !important; }
+    .d-md-flex { display: flex !important; }
+}

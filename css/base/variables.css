@@ -1,0 +1,74 @@
+/* ========================================
+   VARIABLES CSS Y CONFIGURACIÓN
+   Todas las variables CSS del proyecto
+   ======================================== */
+
+:root {
+    /* === COLORES PRINCIPALES === */
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --accent-color: #f093fb;
+    --success-color: #4CAF50;
+    --error-color: #f44336;
+    --warning-color: #ff9800;
+    
+    /* === COLORES DE CATEGORÍAS === */
+    --historia-color: #FF6B6B;
+    --ciencia-color: #4ECDC4;
+    --deportes-color: #45B7D1;
+    --arte-color: #96CEB4;
+    --geografia-color: #FECA57;
+    --entretenimiento-color: #FF9FF3;
+    
+    /* === COLORES DE FONDO === */
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: #0f3460;
+    --bg-modal: rgba(0, 0, 0, 0.8);
+    
+    /* === COLORES ADICIONALES PARA UI === */
+    --surface-color: #2c3e50;
+    --surface-hover: #34495e;
+    --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    --gradient-secondary: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    --primary-dark: #5a67d8;
+    
+    /* === COLORES DE TEXTO === */
+    --text-primary: #ffffff;
+    --text-secondary: #b0b3c1;
+    --text-muted: #8a8ca8;
+    --text-light: #e0e0e0;
+    
+    /* === ESPACIADO === */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-xxl: 3rem;
+    
+    /* === BORDES === */
+    --border-radius: 8px;
+    --border-radius-sm: 4px;
+    --border-radius-lg: 12px;
+    --border-radius-xl: 16px;
+    --border-color: rgba(255, 255, 255, 0.1);
+    
+    /* === SOMBRAS === */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.25);
+    --shadow-medium: 0 6px 12px rgba(0, 0, 0, 0.18);
+    
+    /* === TRANSICIONES === */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* === Z-INDEX === */
+    --z-dropdown: 100;
+    --z-modal: 1000;
+    --z-notification: 1500;
+    --z-critical: 9999;
+}

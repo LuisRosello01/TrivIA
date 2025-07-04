@@ -513,15 +513,6 @@
     }
 }
 
-/* Animaciones de transición entre pantallas */
-.screen.entering {
-    animation: slideInFromRight 0.5s ease-out;
-}
-
-.screen.leaving {
-    animation: slideInFromLeft 0.5s ease-out reverse;
-}
-
 /* Efectos de partículas para celebraciones */
 @keyframes confetti {
     0% {
