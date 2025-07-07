@@ -8,19 +8,12 @@
 #challenge-config-screen {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
 }
 
 #challenge-config-screen .config-container {
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(15px);
     border-radius: 20px;
-    padding: 40px;
-    max-width: 700px;
     width: 100%;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -119,9 +112,10 @@
 }
 
 .challenge-game-container {
+    min-width: 50%;
     max-width: 1200px;
-    margin: 0 auto;
-    height: 97vh;
+    padding: 30px 0;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
 }
@@ -197,7 +191,6 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-height: 400px;
 }
 
 /* === ESTADÍSTICAS SIMPLIFICADAS === */
@@ -287,82 +280,20 @@
     flex-shrink: 0;
 }
 
-.question-controls .btn-small {
-    padding: 6px 12px;
-    font-size: 12px;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-    opacity: 0.8;
-}
-
-.question-controls .btn-small:hover {
-    opacity: 1;
-    transform: translateY(-1px);
-}
-
 /* === OPCIONES DE RESPUESTA === */
 
 .challenge-answers {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
     gap: 15px;
     margin-bottom: 30px;
 }
 
-.challenge-answer-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 20px;
-    border-radius: 15px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: left;
-    min-height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    backdrop-filter: blur(5px);
-}
-
-.challenge-answer-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.challenge-answer-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.challenge-answer-btn.selected {
-    background: rgba(102, 126, 234, 0.3);
-    border-color: #667eea;
-    color: #667eea;
-}
-
-.challenge-answer-btn.correct {
-    background: rgba(76, 175, 80, 0.3);
-    border-color: #4CAF50;
-    color: #4CAF50;
-    animation: correctAnswer 0.5s ease;
-}
-
-.challenge-answer-btn.incorrect {
-    background: rgba(244, 67, 54, 0.3);
-    border-color: #f44336;
-    color: #f44336;
-    animation: incorrectAnswer 0.5s ease;
-}
-
-.challenge-answer-btn.timeout {
-    background: rgba(158, 158, 158, 0.3);
-    border-color: #9e9e9e;
-    color: #9e9e9e;
+/* Mostrar respuestas en columna en móviles */
+@media (max-width: 600px) {
+    .challenge-answers {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* === CONTROLES DEL JUEGO === */
@@ -372,12 +303,6 @@
     justify-content: center;
     gap: 20px;
     margin-top: auto;
-}
-
-.challenge-controls .btn {
-    min-width: 140px;
-    font-size: 16px;
-    font-weight: 600;
 }
 
 /* === MODAL DE GAME OVER === */
@@ -411,7 +336,7 @@
     padding: 40px;
     max-width: 500px;
     width: 90%;
-    max-height: 85vh;
+    max-height: 85dvh;
     overflow-y: auto;
     box-shadow: 
         0 20px 40px rgba(255, 68, 68, 0.3),
@@ -513,84 +438,9 @@
     text-align: right;
 }
 
-.gameover-buttons {
-    display: flex;
-    gap: 15px;
-    margin-top: 30px;
-    flex-direction: column;
-}
-
-.gameover-buttons .btn {
-    padding: 15px 25px;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.gameover-buttons .btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.gameover-buttons .btn:hover::before {
-    left: 100%;
-}
-
-#play-again-btn {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    border: 2px solid #4CAF50;
-    color: white;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-}
-
-#play-again-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-    background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
-}
-
-#back-to-menu-btn {
-    background: linear-gradient(135deg, #666 0%, #555 100%);
-    border: 2px solid #666;
-    color: white;
-    box-shadow: 0 4px 15px rgba(102, 102, 102, 0.3);
-}
-
-#back-to-menu-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(102, 102, 102, 0.4);
-    background: linear-gradient(135deg, #555 0%, #666 100%);
-}
-
 /* === RESPONSIVE CHALLENGE MODE === */
 
 @media (max-width: 768px) {
-    #challenge-config-screen {
-        padding: 15px;
-        min-height: 100vh;
-        min-height: 100dvh;
-        align-items: flex-start;
-        padding-top: 20px;
-        overflow-y: auto;
-    }
-    
-    #challenge-config-screen .config-container {
-        padding: 25px 20px;
-        max-width: none;
-        width: 100%;
-        margin: 0 auto;
-        border-radius: 15px;
-        margin-top: 0;
-    }
     
     .challenge-categories {
         grid-template-columns: 1fr;
@@ -622,3 +472,244 @@
         line-height: 1.3;
     }
 }
+
+/* === CATEGORÍAS EXPANDIDAS === */
+
+.categories-group {
+    margin-bottom: 25px;
+}
+
+.categories-group h4 {
+    color: #ffffff;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 8px;
+}
+
+.categories-expandable {
+    margin-top: 20px;
+}
+
+.expand-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+    text-align: center;
+    user-select: none;
+    touch-action: manipulation;
+    /* Mejoras para eventos táctiles */
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.expand-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.expand-toggle:active,
+.expand-toggle.touch-active {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(0.98);
+}
+
+.expand-toggle span {
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.additional-categories {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.3s ease-out, 
+                padding 0.3s ease-out,
+                transform 0.3s ease-out;
+    padding: 0;
+    transform: translateY(-10px);
+}
+
+.additional-categories.show {
+    max-height: 2000px; /* Valor suficientemente alto para todo el contenido */
+    opacity: 1;
+    padding: 15px 0;
+    transform: translateY(0);
+}
+
+.additional-categories.hidden {
+    max-height: 0;
+    padding: 0;
+    transform: translateY(-10px);
+}
+
+.category-subgroup {
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.category-subgroup h5 {
+    color: #f093fb;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.category-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.category-row:last-child {
+    margin-bottom: 0;
+}
+
+.additional-categories .checkbox-label {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 12px 15px;
+    font-size: 14px;
+    border-radius: 8px;
+}
+
+.additional-categories .checkbox-label:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.additional-categories .checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+}
+
+/* === CONTROLES DE SELECCIÓN MASIVA === */
+
+.category-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* === RESPONSIVE PARA CATEGORÍAS === */
+
+@media (max-width: 768px) {
+    .category-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .category-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .category-subgroup {
+        padding: 15px;
+    }
+    
+    .categories-group h4 {
+        font-size: 16px;
+    }
+    
+    .category-subgroup h5 {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .additional-categories .checkbox-label {
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+    
+    .expand-toggle {
+        padding: 10px 15px;
+    }
+    
+    .expand-toggle span {
+        font-size: 14px;
+    }
+}
+
+/* Optimizaciones básicas para dispositivos táctiles */
+@media (pointer: coarse) {
+    .expand-toggle {
+        min-height: 44px;
+    }
+}
+
+/* === ANIMACIONES === */
+
+@keyframes slideDown {
+    from {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        max-height: 2000px;
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes gameOverPulse {
+    from {
+        transform: scale(1);
+        text-shadow: 
+            0 0 10px rgba(255, 68, 68, 0.5),
+            0 0 20px rgba(255, 68, 68, 0.3),
+            0 0 30px rgba(255, 68, 68, 0.2);
+    }
+    to {
+        transform: scale(1.05);
+        text-shadow: 
+            0 0 15px rgba(255, 68, 68, 0.8),
+            0 0 25px rgba(255, 68, 68, 0.5),
+            0 0 35px rgba(255, 68, 68, 0.3);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    to {
+        box-shadow: 0 4px 25px rgba(102, 126, 234, 0.6);
+    }
+}
+
+/* === CATEGORÍAS DEL DESAFÍO === */

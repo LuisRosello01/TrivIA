@@ -51,7 +51,7 @@ class Storage {
             );
             
             // Track guardado de partida
-            if (window.trivialAnalytics) {
+            if (window.trivialAnalytics && typeof window.trivialAnalytics.trackTechnicalEvent === 'function') {
                 window.trivialAnalytics.trackTechnicalEvent('game_saved', {
                     dataSize: JSON.stringify(stateToSave).length,
                     playerCount: gameState.players?.length || 0,
@@ -66,7 +66,7 @@ class Storage {
             console.error('Error al guardar el estado del juego:', error);
             
             // Track error de guardado
-            if (window.trivialAnalytics) {
+            if (window.trivialAnalytics && typeof window.trivialAnalytics.trackError === 'function') {
                 window.trivialAnalytics.trackError('SAVE_ERROR', error.message);
             }
             
@@ -94,7 +94,7 @@ class Storage {
             }
 
             // Track carga de partida
-            if (window.trivialAnalytics) {
+            if (window.trivialAnalytics && typeof window.trivialAnalytics.trackTechnicalEvent === 'function') {
                 window.trivialAnalytics.trackTechnicalEvent('game_loaded', {
                     dataSize: saved.length,
                     playerCount: gameState.players?.length || 0,
@@ -109,7 +109,7 @@ class Storage {
             console.error('Error al cargar el estado del juego:', error);
             
             // Track error de carga
-            if (window.trivialAnalytics) {
+            if (window.trivialAnalytics && typeof window.trivialAnalytics.trackError === 'function') {
                 window.trivialAnalytics.trackError('LOAD_ERROR', error.message);
             }
             

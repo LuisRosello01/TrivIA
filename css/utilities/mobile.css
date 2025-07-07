@@ -14,8 +14,7 @@
 /* === VIEWPORT DINÁMICO === */
 
 .mobile-device {
-    min-height: 100vh;
-    min-height: calc(var(--vh, 1vh) * 100);
+    min-height: 100dvh;
 }
 
 /* Fix para teclados virtuales */
@@ -51,42 +50,32 @@
 
 /* === OPTIMIZACIONES TÁCTILES === */
 
-/* Área de toque mínima recomendada (44px) */
-.btn,
-button,
-[role="button"],
-.menu-option,
-.challenge-answer-btn,
-.answer-option {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    min-height: 44px;
-    min-width: 44px;
-}
-
 /* === ESTADOS ACTIVOS MÓVILES === */
 
-@media (pointer: coarse) {
+/* Aplicar optimizaciones básicas para dispositivos móviles y tablets */
+@media (max-width: 1024px) {
+    .btn,
+    button,
+    [role="button"],
+    .menu-option {
+        cursor: pointer;
+    }
+    
     .btn:active,
     button:active,
     [role="button"]:active,
     .menu-option:active {
         transform: scale(0.95);
         transition: transform 0.1s ease;
+        opacity: 0.8;
     }
     
-    /* Mejoras táctiles para el panel de configuración del desafío */
+    /* Mejoras básicas para el panel de configuración del desafío */
     .challenge-categories .checkbox-label {
         min-height: 44px;
         display: flex;
         align-items: center;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: rgba(240, 147, 251, 0.2);
+        cursor: pointer;
     }
     
     .challenge-categories .checkbox-label:active {
@@ -96,27 +85,40 @@ button,
     
     .config-option select {
         min-height: 44px;
-        touch-action: manipulation;
     }
     
     .config-buttons .btn {
         min-height: 48px;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
     }
     
     .config-buttons .btn:active {
-        transform: scale(0.97);
+        transform: scale(0.97) !important;
     }
     
-    /* Desactivar hover en pantallas táctiles */
+    /* Optimizaciones básicas para botones de selección masiva */
+    .category-controls .btn {
+        min-height: 48px;
+        min-width: 120px;
+        cursor: pointer;
+    }
+    
+    .category-controls .btn:active,
+    .category-controls .btn.touch-active {
+        transform: scale(0.96);
+        opacity: 0.8;
+        transition: all 0.1s ease;
+    }
+}
+
+/* Desactivar hover solo en dispositivos realmente táctiles */
+@media (hover: none) {
     .btn:hover,
     button:hover,
     [role="button"]:hover,
     .menu-option:hover {
-        transform: none;
-        background: initial;
-        box-shadow: initial;
+        transform: none !important;
+        background: initial !important;
+        box-shadow: initial !important;
     }
 }
 
@@ -171,6 +173,18 @@ button,
         font-size: 1rem;
         width: 100%;
         max-width: none;
+    }
+}
+
+/* === ESPACIADO ESPECÍFICO PARA MÓVIL EN LANDSCAPE === */
+
+/* Mejorar espaciado entre botones del menú principal cuando un dispositivo móvil está en modo landscape */
+@media (max-width: 1200px) and (orientation: landscape) {
+    .game-title {
+        margin-bottom: var(--spacing-md);
+    }
+    .menu-options {
+        gap: var(--spacing-sm);
     }
 }
 
@@ -276,7 +290,7 @@ button,
 
 /* === OPTIMIZACIONES TÁCTILES PARA GAME OVER === */
 
-@media (pointer: coarse) {
+@media (max-width: 1024px) {
     .gameover-buttons .btn {
         min-height: 48px;
         min-width: 120px;
@@ -285,8 +299,8 @@ button,
     }
     
     .gameover-buttons .btn:active {
-        transform: scale(0.95);
-        transition: transform 0.1s ease;
+        transform: scale(0.95) !important;
+        transition: transform 0.1s ease !important;
     }
     
     #play-again-btn:active {
@@ -294,7 +308,7 @@ button,
     }
     
     #play-again-btn.loading:active {
-        transform: none;
+        transform: none !important;
         background: linear-gradient(135deg, #ccc 0%, #999 100%);
     }
     

@@ -147,7 +147,7 @@ function setupGlobalEventListeners() {
                 `${event.message} at ${event.filename}:${event.lineno}`);
         }
         
-        showError('Se produjo un error inesperado. El juego continuará funcionando.');
+        //showError('Se produjo un error inesperado. El juego continuará funcionando.');
     });
     
     // Manejar promesas rechazadas

@@ -68,7 +68,6 @@
              */
             async loadModule(module) {
                 try {
-                    console.log(`🔄 Cargando módulo: ${module.file}`);
                     const response = await fetch(module.file);
                     if (!response.ok) {
                         throw new Error(`Error cargando ${module.file}: ${response.status}`);
@@ -79,7 +78,6 @@
                     
                     if (container) {
                         container.innerHTML = content;
-                        console.log(`✅ Módulo cargado: ${module.file}`);
                         
                         // Verificar que se cargaron elementos importantes
                         if (module.id === 'menu-module') {

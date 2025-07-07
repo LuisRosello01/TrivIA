@@ -248,6 +248,11 @@ class TrivialAnalytics {
         });
     }
 
+    // Alias para compatibilidad
+    trackChallengeAbandon(challengeType, questionsAnswered, timeElapsed) {
+        return this.trackChallengeAbandoned(challengeType, questionsAnswered, timeElapsed);
+    }
+
     trackChallengeStreak(challengeType, streakLength, streakType) {
         gtag('event', 'challenge_streak', {
             event_category: 'Challenge_Achievement',
@@ -548,6 +553,70 @@ class TrivialAnalytics {
             value: timeMs,
             event_category: 'Performance'
         });
+    }
+
+    trackTechnicalEvent(eventName, data = {}) {
+        gtag('event', 'technical_event', {
+            event_category: 'Technical',
+            event_label: eventName,
+            custom_parameter_1: eventName,
+            custom_parameter_2: data.dataSize || 0,
+            custom_parameter_3: data.playerCount || 0,
+            value: data.gameProgress || 0
+        });
+    }
+
+    /**
+     * Método genérico para trackear interacciones de UI
+     * Acepta dos formas de uso:
+     * 1. trackUIInteraction(action, elementId, additionalData) - forma legacy
+     * 2. trackUIInteraction(elementType, action, elementId, additionalData) - forma nueva
+     */
+    trackUIInteraction(actionOrType, elementIdOrAction, additionalDataOrElementId, additionalData = {}) {
+        // Detectar si se está usando la forma legacy (2 parámetros) o nueva (3-4 parámetros)
+        let elementType, action, elementId, data;
+        
+        if (arguments.length <= 3 && typeof additionalDataOrElementId !== 'string') {
+            // Forma legacy: trackUIInteraction(action, elementId, additionalData)
+            action = actionOrType;
+            elementId = elementIdOrAction;
+            data = additionalDataOrElementId || {};
+            elementType = this.inferElementType(action, elementId);
+        } else {
+            // Forma nueva: trackUIInteraction(elementType, action, elementId, additionalData)
+            elementType = actionOrType;
+            action = elementIdOrAction;
+            elementId = additionalDataOrElementId;
+            data = additionalData || {};
+        }
+
+        gtag('event', 'ui_interaction', {
+            event_category: 'UI_Interaction',
+            event_label: `${elementType}_${action}_${elementId}`,
+            custom_parameter_1: elementType,
+            custom_parameter_2: action,
+            custom_parameter_3: elementId,
+            value: data.value || 1
+        });
+    }
+
+    /**
+     * Infiere el tipo de elemento basado en la acción y el ID
+     */
+    inferElementType(action, elementId) {
+        if (action.includes('button') || elementId.includes('btn') || elementId.includes('button')) {
+            return 'button';
+        } else if (action.includes('modal') || elementId.includes('modal')) {
+            return 'modal';
+        } else if (action.includes('form') || elementId.includes('form')) {
+            return 'form';
+        } else if (action.includes('answer') || elementId.includes('answer')) {
+            return 'answer';
+        } else if (action.includes('indicator') || elementId.includes('indicator')) {
+            return 'indicator';
+        } else {
+            return 'element';
+        }
     }
 
     // Engagement automático
@@ -1258,6 +1327,43 @@ class TrivialAnalytics {
 // Inicializar sistema de analytics
 window.trivialAnalytics = new TrivialAnalytics();
 
+// Crear un Proxy para capturar métodos faltantes y evitar errores
+window.trivialAnalytics = new Proxy(window.trivialAnalytics, {
+    get(target, prop, receiver) {
+        // Si el método existe, devolverlo normalmente
+        if (prop in target) {
+            return Reflect.get(target, prop, receiver);
+        }
+        
+        // Si es un método track* que no existe, crear uno genérico
+        if (typeof prop === 'string' && prop.startsWith('track')) {
+            console.warn(`⚠️ Método de analytics no encontrado: ${prop}. Usando trackear genérico.`);
+            
+            return function(...args) {
+                // Crear un evento genérico basado en el nombre del método
+                const eventName = prop.replace('track', '').toLowerCase();
+                
+                gtag('event', 'generic_analytics', {
+                    event_category: 'Generic_Tracking',
+                    event_label: `${eventName}_${args[0] || 'unknown'}`,
+                    custom_parameter_1: eventName,
+                    custom_parameter_2: args[0] || 'unknown',
+                    custom_parameter_3: args[1] || '',
+                    value: 1
+                });
+                
+                // Log para debugging
+                if (window.gaDebug) {
+                    console.log(`📊 Generic Analytics: ${prop}(${args.join(', ')})`);
+                }
+            };
+        }
+        
+        // Para cualquier otra propiedad, devolver undefined
+        return Reflect.get(target, prop, receiver);
+    }
+});
+
 // Funciones globales para fácil acceso desde otros scripts
 window.trackGameEvent = (action, category = 'Game', label = '', value = null) => {
     gtag('event', action, {
@@ -1265,6 +1371,26 @@ window.trackGameEvent = (action, category = 'Game', label = '', value = null) =>
         event_label: label,
         value: value
     });
+};
+
+// Función de utilidad para verificar si Analytics está disponible
+window.isAnalyticsReady = () => {
+    return !!(window.trivialAnalytics && typeof window.trivialAnalytics.trackPageView === 'function');
+};
+
+// Función de utilidad para realizar tracking seguro
+window.safeTrack = (methodName, ...args) => {
+    try {
+        if (window.trivialAnalytics && typeof window.trivialAnalytics[methodName] === 'function') {
+            return window.trivialAnalytics[methodName](...args);
+        } else {
+            console.warn(`🔍 Analytics method '${methodName}' not available`);
+            return false;
+        }
+    } catch (error) {
+        console.error(`❌ Error in analytics tracking for '${methodName}':`, error);
+        return false;
+    }
 };
 
 // Debug mode para desarrollo (solo en localhost)
@@ -1275,7 +1401,7 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
     // Override para logging en desarrollo
     const originalGtag = gtag;
     window.gtag = function(...args) {
-        console.log('📊 GA Event:', args);
+        //console.log('📊 GA Event:', args);
         return originalGtag.apply(this, args);
     };
 }

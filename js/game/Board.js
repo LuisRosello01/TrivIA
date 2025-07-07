@@ -461,7 +461,7 @@ class Board {
             const toSpace = this.getSpaceById(toPosition);
             
             // Track animación de movimiento
-            if (window.trivialAnalytics) {
+            if (window.trivialAnalytics && typeof window.trivialAnalytics.trackUIInteraction === 'function') {
                 window.trivialAnalytics.trackUIInteraction('animation_start', 'player_movement', {
                     playerId: player.id,
                     fromPosition: fromPosition,
@@ -472,7 +472,7 @@ class Board {
             
             if (!fromSpace || !toSpace) {
                 // Track error de animación
-                if (window.trivialAnalytics) {
+                if (window.trivialAnalytics && typeof window.trivialAnalytics.trackError === 'function') {
                     window.trivialAnalytics.trackError('ANIMATION_ERROR', `Invalid spaces: from=${fromPosition}, to=${toPosition}`);
                 }
                 resolve();
@@ -508,7 +508,7 @@ class Board {
                     this.animationFrame = requestAnimationFrame(animate);
                 } else {
                     // Track finalización de animación
-                    if (window.trivialAnalytics) {
+                    if (window.trivialAnalytics && typeof window.trivialAnalytics.trackUIInteraction === 'function') {
                         window.trivialAnalytics.trackUIInteraction('animation_complete', 'player_movement', {
                             playerId: player.id,
                             actualDuration: elapsed
@@ -583,7 +583,7 @@ class Board {
         const sizeChange = Math.abs(this.width - oldWidth) + Math.abs(this.height - oldHeight);
         if (sizeChange > 50) {
             // Track redimensionamiento significativo
-            if (window.trivialAnalytics) {
+            if (window.trivialAnalytics && typeof window.trivialAnalytics.trackTechnicalEvent === 'function') {
                 window.trivialAnalytics.trackTechnicalEvent('board_resize', {
                     oldDimensions: `${oldWidth}x${oldHeight}`,
                     newDimensions: `${this.width}x${this.height}`,

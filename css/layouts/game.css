@@ -54,7 +54,7 @@
     max-width: 100vw;
     overflow: hidden;
     /* Ajuste para viewport dinámico */
-    min-height: calc(100dvh - 80px);
+    min-height: 100dvh;
 }
 
 /* === CONTENEDOR DEL TABLERO === */

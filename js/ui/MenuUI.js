@@ -182,7 +182,8 @@ class MenuUI {
                 }
                 this.showMenuScreen();
             });
-        }        // Escuchar cambios en configuración
+        }
+        // Escuchar cambios en configuración
         Object.values(this.configElements).forEach(element => {
             if (element && (element.tagName === 'SELECT' || element.tagName === 'INPUT')) {
                 element.addEventListener('change', () => this.updateConfigPreview());
@@ -741,43 +742,26 @@ class MenuUI {
         this.hideLoadingIndicator();    }
 
     /**
-     * Añade event listener optimizado para móviles
+     * Añade event listener simple sin optimizaciones
      * @param {Element} element - Elemento DOM
      * @param {Function} callback - Función callback
      */
     addMobileOptimizedListener(element, callback) {
         if (!element) return;
         
-        let touchStartTime = 0;
-        let touchMoved = false;
-        
-        // Touch events para móviles
+        // Touch events - ejecutar siempre
         element.addEventListener('touchstart', (e) => {
-            touchStartTime = Date.now();
-            touchMoved = false;
             element.classList.add('touch-active');
-        }, { passive: true });
-        
-        element.addEventListener('touchmove', () => {
-            touchMoved = true;
         }, { passive: true });
         
         element.addEventListener('touchend', (e) => {
             element.classList.remove('touch-active');
-            
-            // Solo ejecutar si fue un tap rápido y sin movimiento
-            if (!touchMoved && (Date.now() - touchStartTime) < 300) {
-                e.preventDefault();
-                callback();
-            }
+            // Ejecutar siempre sin condiciones
+            callback();
         });
         
-        // Click events para desktop
+        // Click events - ejecutar siempre
         element.addEventListener('click', (e) => {
-            // Evitar doble ejecución si ya se ejecutó en touchend
-            if (touchStartTime && (Date.now() - touchStartTime) < 500) {
-                return;
-            }
             callback();
         });
     }

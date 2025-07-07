@@ -28,7 +28,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 100dvh;
     padding: var(--spacing-xl);
 }
 
@@ -187,24 +187,47 @@
 /* === CONFIGURACIÓN === */
 
 .config-container {
-    max-width: 600px;
-    padding: var(--spacing-xl);
     background: var(--bg-card);
     border-radius: var(--border-radius-xl);
     box-shadow: var(--shadow-xl);
+    display: flex;
+    flex-direction: column;
+    min-width: 30%;
+    max-width: 700px;
+    height: 90dvh;
+    z-index: 1001;
+    overflow: hidden; /* Evita scroll en el contenedor principal */
+}
+
+/* Header fijo del modal de configuración */
+.config-header {
+    padding: var(--spacing-xl) var(--spacing-xl) 0 var(--spacing-xl);
 }
 
 .config-container h2 {
     text-align: center;
     margin-bottom: var(--spacing-xl);
     color: var(--primary-color);
+    margin-top: 0;
+}
+
+/* Contenido scrolleable */
+.config-content {
+    flex: 1;
+    padding: 0 var(--spacing-xl);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Footer fijo con botones */
+.config-footer {
+    padding: var(--spacing-xl);
 }
 
 .config-buttons {
     display: flex;
     justify-content: space-between;
     gap: var(--spacing-md);
-    margin-top: var(--spacing-xl);
 }
 
 /* === TUTORIAL === */
@@ -212,16 +235,49 @@
 .tutorial-container {
     max-width: 800px;
     margin: var(--spacing-xxl) auto;
-    padding: var(--spacing-xl);
     background: var(--bg-card);
     border-radius: var(--border-radius-xl);
     box-shadow: var(--shadow-xl);
+    display: flex;
+    flex-direction: column;
+    max-height: 90dvh;
+    overflow: hidden; /* Evita scroll en el contenedor principal */
+}
+
+/* Header fijo del tutorial */
+.tutorial-header {
+    position: sticky;
+    top: 0;
+    background: var(--bg-card);
+    padding: var(--spacing-xl) var(--spacing-xl) 0 var(--spacing-xl);
+    border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+    z-index: 10;
 }
 
 .tutorial-container h2 {
     text-align: center;
     margin-bottom: var(--spacing-xl);
     color: var(--primary-color);
+    margin-top: 0;
+}
+
+/* Contenido scrolleable del tutorial */
+.tutorial-content {
+    flex: 1;
+    padding: 0 var(--spacing-xl);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Footer fijo del tutorial con navegación */
+.tutorial-footer {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg-card);
+    padding: var(--spacing-xl);
+    border-radius: 0 0 var(--border-radius-xl) var(--border-radius-xl);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 10;
 }
 
 .tutorial-step {
@@ -264,8 +320,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: var(--spacing-xl);
     gap: var(--spacing-md);
+    margin: 0; /* Removemos el margin-top ya que está en el footer */
 }
 
 #tutorial-progress {
@@ -306,15 +362,22 @@
         justify-content: center;
     }
     
-    .config-container,
-    .tutorial-container {
-        margin: var(--spacing-lg) auto;
-        padding: var(--spacing-lg);
-    }
-    
     .categories-preview {
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: var(--spacing-sm);
+    }
+    
+    /* Ajustes para elementos fijos en móviles */
+    .config-header,
+    .config-footer,
+    .tutorial-header,
+    .tutorial-footer {
+        padding: var(--spacing-md);
+    }
+    
+    .config-content,
+    .tutorial-content {
+        padding: 0 var(--spacing-md);
     }
 }
 
@@ -338,6 +401,23 @@
     .menu-options.hidden,
     .menu-options.visible {
         max-width: calc(100% - 24px);
+    }
+    
+    /* Ajustes adicionales para pantallas muy pequeñas */
+    .config-header,
+    .config-footer,
+    .tutorial-header,
+    .tutorial-footer {
+        padding: var(--spacing-sm);
+    }
+    
+    .config-content,
+    .tutorial-content {
+        padding: 0 var(--spacing-sm);
+    }
+    
+    .config-container {
+        padding: var(--spacing-md);
     }
 }
 

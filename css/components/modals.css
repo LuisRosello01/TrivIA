@@ -32,7 +32,7 @@
     padding: var(--spacing-xl);
     max-width: 600px;
     width: 90%;
-    max-height: 80vh;
+    max-height: 80dvh;
     overflow-y: auto;
     box-shadow: var(--shadow-xl);
     transform: scale(0.9);

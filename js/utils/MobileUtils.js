@@ -6,39 +6,60 @@ class MobileUtils {
     constructor() {
         this.isMobile = this.detectMobile();
         this.isTouch = this.detectTouch();
+        
         this.init();
     }
     
     /**
-     * Detecta si es un dispositivo móvil
+     * Detecta si es un dispositivo móvil de forma precisa
      */
     detectMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-               window.innerWidth <= 768;
+        // Combinar múltiples factores para una detección más precisa
+        const hasSmallScreen = window.screen.width <= 768 || window.screen.height <= 768;
+        const hasMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const hasMobileAPI = navigator.userAgentData?.mobile === true;
+        const hasLimitedMemory = navigator.deviceMemory && navigator.deviceMemory <= 4;
+        const hasTouch = ('ontouchstart' in window || navigator.maxTouchPoints > 0) && 
+                        !/Windows NT/i.test(navigator.userAgent);
+        
+        // Excluir explícitamente sistemas de escritorio
+        const isDesktop = /Windows NT|Macintosh|Linux/i.test(navigator.userAgent) && 
+                         !hasMobileUserAgent && 
+                         !hasMobileAPI;
+        
+        if (isDesktop && !hasMobileUserAgent) {
+            return false;
+        }
+        
+        return hasMobileUserAgent || hasMobileAPI || (hasSmallScreen && hasTouch);
     }
     
     /**
-     * Detecta si soporta eventos táctiles
+     * Detecta si soporta eventos táctiles (pero no es suficiente para determinar si es móvil)
      */
     detectTouch() {
-        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        return ('ontouchstart' in window || navigator.maxTouchPoints > 0) && 
+               !/Windows NT/i.test(navigator.userAgent); // Excluir Windows táctiles de escritorio
     }
     
     /**
      * Inicializa las optimizaciones móviles
      */
     init() {
-        if (this.isMobile || this.isTouch) {
+        // Usar la detección mejorada para aplicar optimizaciones
+        if (this.isMobile) {
             console.log('📱 Dispositivo móvil detectado, aplicando optimizaciones...');
             
             // Track detección de dispositivo móvil
-            if (window.trivialAnalytics) {
+            if (window.trivialAnalytics && typeof window.trivialAnalytics.trackTechnicalEvent === 'function') {
                 window.trivialAnalytics.trackTechnicalEvent('mobile_detected', {
                     isMobile: this.isMobile,
                     isTouch: this.isTouch,
                     userAgent: navigator.userAgent.substring(0, 100), // Limitar longitud
                     windowWidth: window.innerWidth,
-                    windowHeight: window.innerHeight
+                    windowHeight: window.innerHeight,
+                    screenWidth: window.screen.width,
+                    screenHeight: window.screen.height
                 });
             }
             
@@ -136,7 +157,7 @@ class MobileUtils {
     handleOrientationChange() {
         window.addEventListener('orientationchange', () => {
             // Track cambio de orientación
-            if (window.trivialAnalytics) {
+            if (window.trivialAnalytics && typeof window.trivialAnalytics.trackAccessibilityFeature === 'function') {
                 window.trivialAnalytics.trackAccessibilityFeature('orientation_change', 'device_rotation', {
                     orientation: screen.orientation?.type || 'unknown',
                     windowWidth: window.innerWidth,

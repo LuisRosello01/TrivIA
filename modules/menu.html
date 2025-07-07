@@ -20,145 +20,165 @@
 <!-- Pantalla de configuración multijugador -->
 <div id="config-screen" class="screen">
     <div class="config-container">
-        <h2>⚙️ Configuración Multijugador</h2>
+        <div class="config-header">
+            <h2>⚙️ Configuración Multijugador</h2>
+        </div>
         
-        <!-- Configuración de jugadores -->
-        <div class="config-section">
-            <h3>👥 Jugadores</h3>
-            <div class="config-option">
-                <label for="player-count">Número de jugadores:</label>
-                <select id="player-count">
-                    <option value="2">2 jugadores</option>
-                    <option value="3">3 jugadores</option>
-                    <option value="4" selected>4 jugadores</option>
-                    <option value="5">5 jugadores</option>
-                    <option value="6">6 jugadores</option>
-                </select>
+        <div class="config-content">
+            <!-- Configuración de jugadores -->
+            <div class="config-section">
+                <h3>👥 Jugadores</h3>
+                <div class="config-option">
+                    <label for="player-count">Número de jugadores:</label>
+                    <select id="player-count">
+                        <option value="2">2 jugadores</option>
+                        <option value="3">3 jugadores</option>
+                        <option value="4" selected>4 jugadores</option>
+                        <option value="5">5 jugadores</option>
+                        <option value="6">6 jugadores</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Configuración de dificultad -->
+            <div class="config-section">
+                <h3>🎯 Dificultad</h3>
+                <div class="config-option">
+                    <label for="difficulty">Nivel de dificultad:</label>
+                    <select id="difficulty">
+                        <option value="easy">🟢 Fácil</option>
+                        <option value="medium" selected>🟡 Medio</option>
+                        <option value="hard">🔴 Difícil</option>
+                    </select>
+                </div>
+                <div class="config-option">
+                    <label for="timer">Tiempo por pregunta:</label>
+                    <select id="timer">
+                        <option value="0">⏳ Sin límite</option>
+                        <option value="15">⏱️ 15 segundos</option>
+                        <option value="30" selected>⏰ 30 segundos</option>
+                        <option value="45">🕐 45 segundos</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Configuración de audio y traducción -->
+            <div class="config-section">
+                <h3>🔧 Preferencias</h3>
+                <div class="config-option">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="sound-enabled" checked>
+                        <span class="checkmark"></span>
+                        🔊 Sonidos activados
+                    </label>
+                </div>
+                <div class="config-option">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="translation-enabled" checked>
+                        <span class="checkmark"></span>
+                        🌐 Traducir preguntas automáticamente
+                    </label>
+                </div>
             </div>
         </div>
-
-        <!-- Configuración de dificultad -->
-        <div class="config-section">
-            <h3>🎯 Dificultad</h3>
-            <div class="config-option">
-                <label for="difficulty">Nivel de dificultad:</label>
-                <select id="difficulty">
-                    <option value="easy">🟢 Fácil</option>
-                    <option value="medium" selected>🟡 Medio</option>
-                    <option value="hard">🔴 Difícil</option>
-                </select>
-            </div>
-            <div class="config-option">
-                <label for="timer">Tiempo por pregunta:</label>
-                <select id="timer">
-                    <option value="0">⏳ Sin límite</option>
-                    <option value="15">⏱️ 15 segundos</option>
-                    <option value="30" selected>⏰ 30 segundos</option>
-                    <option value="45">🕐 45 segundos</option>
-                </select>
+        
+        <div class="config-footer">
+            <div class="config-buttons">
+                <button id="config-back-btn" class="btn btn-secondary">⬅️ Volver</button>
+                <button id="config-save-btn" class="btn btn-primary">🎮 Iniciar Juego Multijugador</button>
             </div>
         </div>
-
-        <!-- Configuración de audio y traducción -->
-        <div class="config-section">
-            <h3>🔧 Preferencias</h3>
-            <div class="config-option">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="sound-enabled" checked>
-                    <span class="checkmark"></span>
-                    🔊 Sonidos activados
-                </label>
-            </div>
-            <div class="config-option">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="translation-enabled" checked>
-                    <span class="checkmark"></span>
-                    🌐 Traducir preguntas automáticamente
-                </label>
-            </div>
-        </div>        <div class="config-buttons">
-            <button id="config-back-btn" class="btn btn-secondary">⬅️ Volver</button>
-            <button id="config-save-btn" class="btn btn-primary">🎮 Iniciar Juego Multijugador</button>
-        </div></div>
+    </div>
 </div>
 
 <!-- Pantalla de tutorial -->
 <div id="tutorial-screen" class="screen">
     <div class="tutorial-container">
-        <h2>📚 Cómo Jugar al Trivial</h2>
+        <div class="tutorial-header">
+            <h2>📚 Cómo Jugar al Trivial</h2>
+        </div>
         
-        <!-- Paso 1: Objetivo del juego -->
-        <div class="tutorial-step active" id="tutorial-step-1">
-            <h3>🎯 Objetivo del Juego</h3>
-            <p>Sé el primero en recopilar una cuña de cada una de las 6 categorías y responder correctamente la pregunta final en el centro del tablero.</p>
+        <div class="tutorial-content">
+            <!-- Paso 1: Objetivo del juego -->
+            <div class="tutorial-step active" id="tutorial-step-1">
+                <h3>🎯 Objetivo del Juego</h3>
+                <p>Sé el primero en recopilar una cuña de cada una de las 6 categorías y responder correctamente la pregunta final en el centro del tablero.</p>
+                
+                <div class="categories-preview">
+                    <h4>📋 Categorías del Juego:</h4>
+                    <div class="categories-grid">
+                        <div class="category" style="background-color: #FF6B6B;">📚 Historia</div>
+                        <div class="category" style="background-color: #4ECDC4;">🔬 Ciencia</div>
+                        <div class="category" style="background-color: #45B7D1;">⚽ Deportes</div>
+                        <div class="category" style="background-color: #96CEB4;">🎨 Arte</div>
+                        <div class="category" style="background-color: #FECA57;">🌍 Geografía</div>
+                        <div class="category" style="background-color: #FF9FF3;">🎬 Entretenimiento</div>
+                    </div>
+                </div>
+            </div>
             
-            <div class="categories-preview">
-                <h4>📋 Categorías del Juego:</h4>
-                <div class="categories-grid">
-                    <div class="category" style="background-color: #FF6B6B;">📚 Historia</div>
-                    <div class="category" style="background-color: #4ECDC4;">🔬 Ciencia</div>
-                    <div class="category" style="background-color: #45B7D1;">⚽ Deportes</div>
-                    <div class="category" style="background-color: #96CEB4;">🎨 Arte</div>
-                    <div class="category" style="background-color: #FECA57;">🌍 Geografía</div>
-                    <div class="category" style="background-color: #FF9FF3;">🎬 Entretenimiento</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Paso 2: Mecánica del juego -->
-        <div class="tutorial-step" id="tutorial-step-2">
-            <h3>🎲 Mecánica del Juego</h3>
-            <div class="tutorial-steps-list">
-                <div class="tutorial-step-item">
-                    <span class="step-number">1</span>
-                    <p><strong>Tirar el dado:</strong> Muévete por el tablero según el número que salga</p>
-                </div>
-                <div class="tutorial-step-item">
-                    <span class="step-number">2</span>
-                    <p><strong>Responder pregunta:</strong> Contesta la pregunta de la categoría donde caigas</p>
-                </div>
-                <div class="tutorial-step-item">
-                    <span class="step-number">3</span>
-                    <p><strong>Ganar cuñas:</strong> Si aciertas en una casilla de cuña (centro), obtienes esa cuña</p>
-                </div>
-                <div class="tutorial-step-item">
-                    <span class="step-number">4</span>
-                    <p><strong>Pregunta final:</strong> Con todas las cuñas, ve al centro para la pregunta final</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Paso 3: Tipos de casillas -->
-        <div class="tutorial-step" id="tutorial-step-3">
-            <h3>🎯 Tipos de Casillas</h3>
-            <div class="casillas-types">
-                <div class="casilla-type">
-                    <div class="casilla-icon normal">⭕</div>
-                    <div class="casilla-info">
-                        <h4>Casillas Normales</h4>
-                        <p>Pregunta de la categoría correspondiente. Si aciertas, puedes volver a tirar.</p>
+            <!-- Paso 2: Mecánica del juego -->
+            <div class="tutorial-step" id="tutorial-step-2">
+                <h3>🎲 Mecánica del Juego</h3>
+                <div class="tutorial-steps-list">
+                    <div class="tutorial-step-item">
+                        <span class="step-number">1</span>
+                        <p><strong>Tirar el dado:</strong> Muévete por el tablero según el número que salga</p>
+                    </div>
+                    <div class="tutorial-step-item">
+                        <span class="step-number">2</span>
+                        <p><strong>Responder pregunta:</strong> Contesta la pregunta de la categoría donde caigas</p>
+                    </div>
+                    <div class="tutorial-step-item">
+                        <span class="step-number">3</span>
+                        <p><strong>Ganar cuñas:</strong> Si aciertas en una casilla de cuña (centro), obtienes esa cuña</p>
+                    </div>
+                    <div class="tutorial-step-item">
+                        <span class="step-number">4</span>
+                        <p><strong>Pregunta final:</strong> Con todas las cuñas, ve al centro para la pregunta final</p>
                     </div>
                 </div>
-                <div class="casilla-type">
-                    <div class="casilla-icon cuña">🏆</div>
-                    <div class="casilla-info">
-                        <h4>Casillas de Cuña</h4>
-                        <p>Pregunta para ganar cuña de esa categoría. ¡Estas son las más importantes!</p>
+            </div>
+            
+            <!-- Paso 3: Tipos de casillas -->
+            <div class="tutorial-step" id="tutorial-step-3">
+                <h3>🎯 Tipos de Casillas</h3>
+                <div class="casillas-types">
+                    <div class="casilla-type">
+                        <div class="casilla-icon normal">⭕</div>
+                        <div class="casilla-info">
+                            <h4>Casillas Normales</h4>
+                            <p>Pregunta de la categoría correspondiente. Si aciertas, puedes volver a tirar.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="casilla-type">
-                    <div class="casilla-icon especial">⭐</div>
-                    <div class="casilla-info">
-                        <h4>Casillas Especiales</h4>
-                        <p>Efectos especiales como volver a tirar o elegir categoría.</p>
+                    <div class="casilla-type">
+                        <div class="casilla-icon cuña">🏆</div>
+                        <div class="casilla-info">
+                            <h4>Casillas de Cuña</h4>
+                            <p>Pregunta para ganar cuña de esa categoría. ¡Estas son las más importantes!</p>
+                        </div>
+                    </div>
+                    <div class="casilla-type">
+                        <div class="casilla-icon especial">⭐</div>
+                        <div class="casilla-info">
+                            <h4>Casillas Especiales</h4>
+                            <p>Efectos especiales como volver a tirar o elegir categoría.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Navegación del tutorial -->
-        <div class="tutorial-navigation">
-            <button id="tutorial-prev-btn" class="btn btn-secondary" disabled>⬅️ Anterior</button>
+        <div class="tutorial-footer">
+            <!-- Navegación del tutorial -->
+            <div class="tutorial-navigation">
+                <button id="tutorial-prev-btn" class="btn btn-secondary" disabled>⬅️ Anterior</button>
+                <span id="tutorial-progress">1 / 3</span>
+                <button id="tutorial-next-btn" class="btn btn-primary">➡️ Siguiente</button>
+                <button id="tutorial-close-btn" class="btn btn-secondary">❌ Cerrar</button>
+            </div>
+        </div>
+    </div>
             <span id="tutorial-progress">1 / 3</span>
             <button id="tutorial-next-btn" class="btn btn-primary">➡️ Siguiente</button>
             <button id="tutorial-close-btn" class="btn btn-secondary">❌ Cerrar</button>
@@ -169,218 +189,226 @@
 <!-- Pantalla de configuración del modo Desafío -->
 <div id="challenge-config-screen" class="screen">
     <div class="config-container">
-        <h2>⚡ Configuración Modo Desafío</h2>
-
-        <!-- Configuración básica del desafío -->
-        <div class="config-section">
-            <h3>⚙️ Configuración Básica</h3>
-            <div class="config-option">
-                <label for="challenge-difficulty">Nivel de dificultad:</label>                <select id="challenge-difficulty">
-                    <option value="easy">🟢 Principiante</option>
-                    <option value="medium" selected>🟡 Intermedio</option>
-                    <option value="hard">🔴 Experto</option>
-                    <option value="random">🎲 Dificultad Aleatoria</option>
-                </select>
-            </div>
-            <div class="config-option">
-                <label for="challenge-timer">Tiempo límite:</label>
-                <select id="challenge-timer">
-                    <option value="0">⏳ Sin límite</option>
-                    <option value="10">⏱️ 10 segundos</option>
-                    <option value="15">⏰ 15 segundos</option>
-                    <option value="20" selected>🕐 20 segundos</option>
-                    <option value="30">⏳ 30 segundos</option>
-                </select>
-            </div>
+        <div class="config-header">
+            <h2>⚡ Configuración Modo Desafío</h2>
         </div>
+        
+        <div class="config-content">
 
-        <!-- Configuración de categorías para el desafío -->
-        <div class="config-section">
-            <h3>📚 Categorías a Incluir</h3>
-            
-            <!-- Categorías principales -->
-            <div class="categories-group">
-                <h4>🎯 Categorías Principales</h4>
-                <div class="challenge-categories">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="challenge-historia" checked>
-                        <span class="checkmark"></span>
-                        📚 Historia
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="challenge-ciencia" checked>
-                        <span class="checkmark"></span>
-                        🔬 Ciencia
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="challenge-deportes" checked>
-                        <span class="checkmark"></span>
-                        ⚽ Deportes
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="challenge-arte" checked>
-                        <span class="checkmark"></span>
-                        🎨 Arte
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="challenge-geografia" checked>
-                        <span class="checkmark"></span>
-                        🌍 Geografía
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="challenge-entretenimiento" checked>
-                        <span class="checkmark"></span>
-                        🎬 Entretenimiento
-                    </label>
+            <!-- Configuración básica del desafío -->
+            <div class="config-section">
+                <h3>⚙️ Configuración Básica</h3>
+                <div class="config-option">
+                    <label for="challenge-difficulty">Nivel de dificultad:</label>
+                    <select id="challenge-difficulty">
+                        <option value="easy">🟢 Principiante</option>
+                        <option value="medium" selected>🟡 Intermedio</option>
+                        <option value="hard">🔴 Experto</option>
+                        <option value="random">🎲 Dificultad Aleatoria</option>
+                    </select>
+                </div>
+                <div class="config-option">
+                    <label for="challenge-timer">Tiempo límite:</label>
+                    <select id="challenge-timer">
+                        <option value="0">⏳ Sin límite</option>
+                        <option value="10">⏱️ 10 segundos</option>
+                        <option value="15">⏰ 15 segundos</option>
+                        <option value="20" selected>🕐 20 segundos</option>
+                        <option value="30">⏳ 30 segundos</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Categorías adicionales -->
-            <div class="categories-group">
-                <h4>🌟 Categorías Adicionales</h4>
-                <div class="categories-expandable">
-                    <div class="expand-toggle" id="additional-categories-toggle">
-                        <span>▼ Mostrar categorías adicionales</span>
-                    </div>
-                    <div class="challenge-categories additional-categories" id="additional-categories" style="display: none;">
-                        
-                        <!-- Entretenimiento -->
-                        <div class="category-subgroup">
-                            <h5>🎭 Entretenimiento</h5>
-                            <div class="category-row">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-conocimiento-general">
-                                    <span class="checkmark"></span>
-                                    🧠 Conocimiento General
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-libros">
-                                    <span class="checkmark"></span>
-                                    📖 Libros
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-musica">
-                                    <span class="checkmark"></span>
-                                    🎵 Música
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-television">
-                                    <span class="checkmark"></span>
-                                    📺 Televisión
-                                </label>
-                            </div>
-                            <div class="category-row">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-videojuegos">
-                                    <span class="checkmark"></span>
-                                    🎮 Videojuegos
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-comics">
-                                    <span class="checkmark"></span>
-                                    💥 Cómics
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-anime-manga">
-                                    <span class="checkmark"></span>
-                                    🌸 Anime/Manga
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-animacion">
-                                    <span class="checkmark"></span>
-                                    🎞️ Animación
-                                </label>
-                            </div>
-                            <div class="category-row">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-musicales-teatro">
-                                    <span class="checkmark"></span>
-                                    🎪 Musicales/Teatro
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-juegos-mesa">
-                                    <span class="checkmark"></span>
-                                    🎲 Juegos de Mesa
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Ciencia y Tecnología -->
-                        <div class="category-subgroup">
-                            <h5>🔬 Ciencia y Tecnología</h5>
-                            <div class="category-row">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-informatica">
-                                    <span class="checkmark"></span>
-                                    💻 Informática
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-matematicas">
-                                    <span class="checkmark"></span>
-                                    🧮 Matemáticas
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-gadgets">
-                                    <span class="checkmark"></span>
-                                    📱 Gadgets
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Cultura -->
-                        <div class="category-subgroup">
-                            <h5>🏛️ Cultura</h5>
-                            <div class="category-row">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-mitologia">
-                                    <span class="checkmark"></span>
-                                    ⚡ Mitología
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-politica">
-                                    <span class="checkmark"></span>
-                                    🏛️ Política
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Ocio -->
-                        <div class="category-subgroup">
-                            <h5>🎯 Ocio</h5>
-                            <div class="category-row">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-celebridades">
-                                    <span class="checkmark"></span>
-                                    ⭐ Celebridades
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-animales">
-                                    <span class="checkmark"></span>
-                                    🐾 Animales
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="challenge-vehiculos">
-                                    <span class="checkmark"></span>
-                                    🚗 Vehículos
-                                </label>
-                            </div>
-                        </div>
-
+            <!-- Configuración de categorías para el desafío -->
+            <div class="config-section">
+                <h3>📚 Categorías a Incluir</h3>
+                
+                <!-- Categorías principales -->
+                <div class="categories-group">
+                    <h4>🎯 Categorías Principales</h4>
+                    <div class="challenge-categories">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="challenge-historia" checked>
+                            <span class="checkmark"></span>
+                            📚 Historia
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="challenge-ciencia" checked>
+                            <span class="checkmark"></span>
+                            🔬 Ciencia
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="challenge-deportes" checked>
+                            <span class="checkmark"></span>
+                            ⚽ Deportes
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="challenge-arte" checked>
+                            <span class="checkmark"></span>
+                            🎨 Arte
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="challenge-geografia" checked>
+                            <span class="checkmark"></span>
+                            🌍 Geografía
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="challenge-entretenimiento" checked>
+                            <span class="checkmark"></span>
+                            🎬 Entretenimiento
+                        </label>
                     </div>
                 </div>
-            </div>
 
-            <!-- Controles de selección masiva -->
-            <div class="category-controls">
-                <button type="button" id="select-all-categories" class="btn btn-small">✅ Seleccionar Todo</button>
-                <button type="button" id="deselect-all-categories" class="btn btn-small">❌ Deseleccionar Todo</button>
-                <button type="button" id="select-main-categories" class="btn btn-small">🎯 Solo Principales</button>
+                <!-- Categorías adicionales -->
+                <div class="categories-group">
+                    <h4>🌟 Categorías Adicionales</h4>
+                    <div class="categories-expandable">
+                        <div class="expand-toggle" id="additional-categories-toggle">
+                            <span>▼ Mostrar categorías adicionales</span>
+                        </div>
+                        <div class="challenge-categories additional-categories" id="additional-categories">
+                            
+                            <!-- Entretenimiento -->
+                            <div class="category-subgroup">
+                                <h5>🎭 Entretenimiento</h5>
+                                <div class="category-row">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-conocimiento-general">
+                                        <span class="checkmark"></span>
+                                        🧠 Conocimiento General
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-libros">
+                                        <span class="checkmark"></span>
+                                        📖 Libros
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-musica">
+                                        <span class="checkmark"></span>
+                                        🎵 Música
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-television">
+                                        <span class="checkmark"></span>
+                                        📺 Televisión
+                                    </label>
+                                </div>
+                                <div class="category-row">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-videojuegos">
+                                        <span class="checkmark"></span>
+                                        🎮 Videojuegos
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-comics">
+                                        <span class="checkmark"></span>
+                                        💥 Cómics
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-anime-manga">
+                                        <span class="checkmark"></span>
+                                        🌸 Anime/Manga
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-animacion">
+                                        <span class="checkmark"></span>
+                                        🎞️ Animación
+                                    </label>
+                                </div>
+                                <div class="category-row">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-musicales-teatro">
+                                        <span class="checkmark"></span>
+                                        🎪 Musicales/Teatro
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-juegos-mesa">
+                                        <span class="checkmark"></span>
+                                        🎲 Juegos de Mesa
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Ciencia y Tecnología -->
+                            <div class="category-subgroup">
+                                <h5>🔬 Ciencia y Tecnología</h5>
+                                <div class="category-row">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-informatica">
+                                        <span class="checkmark"></span>
+                                        💻 Informática
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-matematicas">
+                                        <span class="checkmark"></span>
+                                        🧮 Matemáticas
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-gadgets">
+                                        <span class="checkmark"></span>
+                                        📱 Gadgets
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Cultura -->
+                            <div class="category-subgroup">
+                                <h5>🏛️ Cultura</h5>
+                                <div class="category-row">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-mitologia">
+                                        <span class="checkmark"></span>
+                                        ⚡ Mitología
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-politica">
+                                        <span class="checkmark"></span>
+                                        🏛️ Política
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Ocio -->
+                            <div class="category-subgroup">
+                                <h5>🎯 Ocio</h5>
+                                <div class="category-row">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-celebridades">
+                                        <span class="checkmark"></span>
+                                        ⭐ Celebridades
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-animales">
+                                        <span class="checkmark"></span>
+                                        🐾 Animales
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="challenge-vehiculos">
+                                        <span class="checkmark"></span>
+                                        🚗 Vehículos
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controles de selección masiva -->
+                <div class="category-controls">
+                    <button type="button" id="select-all-categories" class="btn btn-small">✅ Seleccionar Todo</button>
+                    <button type="button" id="deselect-all-categories" class="btn btn-small">❌ Deseleccionar Todo</button>
+                    <button type="button" id="select-main-categories" class="btn btn-small">🎯 Solo Principales</button>
+                </div>
             </div>
         </div>
-
-        <div class="config-buttons">
-            <button id="challenge-back-btn" class="btn btn-secondary">⬅️ Volver</button>
-            <button id="challenge-start-btn" class="btn btn-highlight">⚡ Iniciar Desafío</button>
+        
+        <div class="config-footer">
+            <div class="config-buttons">
+                <button id="challenge-back-btn" class="btn btn-secondary">⬅️ Volver</button>
+                <button id="challenge-start-btn" class="btn btn-highlight">⚡ Iniciar Desafío</button>
+            </div>
         </div>
     </div>
 </div>
@@ -388,67 +416,73 @@
 <!-- Pantalla de configuración general -->
 <div id="settings-screen" class="screen">
     <div class="config-container">
-        <h2>⚙️ Configuración General</h2>
+        <div class="config-header">
+            <h2>⚙️ Configuración General</h2>
+        </div>
         
-        <!-- Configuración de jugadores -->
-        <div class="config-section">
-            <h3>👥 Jugadores</h3>
-            <div class="config-option">
-                <label for="settings-player-count">Número de jugadores por defecto:</label>
-                <select id="settings-player-count">
-                    <option value="2">2 jugadores</option>
-                    <option value="3">3 jugadores</option>
-                    <option value="4" selected>4 jugadores</option>
-                    <option value="5">5 jugadores</option>
-                    <option value="6">6 jugadores</option>
-                </select>
+        <div class="config-content">
+            <!-- Configuración de jugadores -->
+            <div class="config-section">
+                <h3>👥 Jugadores</h3>
+                <div class="config-option">
+                    <label for="settings-player-count">Número de jugadores por defecto:</label>
+                    <select id="settings-player-count">
+                        <option value="2">2 jugadores</option>
+                        <option value="3">3 jugadores</option>
+                        <option value="4" selected>4 jugadores</option>
+                        <option value="5">5 jugadores</option>
+                        <option value="6">6 jugadores</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Configuración de dificultad -->
+            <div class="config-section">
+                <h3>🎯 Dificultad</h3>
+                <div class="config-option">
+                    <label for="settings-difficulty">Nivel de dificultad por defecto:</label>
+                    <select id="settings-difficulty">
+                        <option value="easy">🟢 Fácil</option>
+                        <option value="medium" selected>🟡 Medio</option>
+                        <option value="hard">🔴 Difícil</option>
+                    </select>
+                </div>
+                <div class="config-option">
+                    <label for="settings-timer">Tiempo por pregunta por defecto:</label>
+                    <select id="settings-timer">
+                        <option value="0">⏳ Sin límite</option>
+                        <option value="15">⏱️ 15 segundos</option>
+                        <option value="30" selected>⏰ 30 segundos</option>
+                        <option value="45">🕐 45 segundos</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Configuración de audio y traducción -->
+            <div class="config-section">
+                <h3>🔧 Preferencias</h3>
+                <div class="config-option">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="settings-sound-enabled" checked>
+                        <span class="checkmark"></span>
+                        🔊 Sonidos activados
+                    </label>
+                </div>
+                <div class="config-option">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="settings-translation-enabled" checked>
+                        <span class="checkmark"></span>
+                        🌐 Traducir preguntas automáticamente
+                    </label>
+                </div>
             </div>
         </div>
-
-        <!-- Configuración de dificultad -->
-        <div class="config-section">
-            <h3>🎯 Dificultad</h3>
-            <div class="config-option">
-                <label for="settings-difficulty">Nivel de dificultad por defecto:</label>
-                <select id="settings-difficulty">
-                    <option value="easy">🟢 Fácil</option>
-                    <option value="medium" selected>🟡 Medio</option>
-                    <option value="hard">🔴 Difícil</option>
-                </select>
+        
+        <div class="config-footer">
+            <div class="config-buttons">
+                <button id="settings-back-btn" class="btn btn-secondary">⬅️ Volver</button>
+                <button id="settings-save-btn" class="btn btn-primary">💾 Guardar Configuración</button>
             </div>
-            <div class="config-option">
-                <label for="settings-timer">Tiempo por pregunta por defecto:</label>
-                <select id="settings-timer">
-                    <option value="0">⏳ Sin límite</option>
-                    <option value="15">⏱️ 15 segundos</option>
-                    <option value="30" selected>⏰ 30 segundos</option>
-                    <option value="45">🕐 45 segundos</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Configuración de audio y traducción -->
-        <div class="config-section">
-            <h3>🔧 Preferencias</h3>
-            <div class="config-option">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="settings-sound-enabled" checked>
-                    <span class="checkmark"></span>
-                    🔊 Sonidos activados
-                </label>
-            </div>
-            <div class="config-option">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="settings-translation-enabled" checked>
-                    <span class="checkmark"></span>
-                    🌐 Traducir preguntas automáticamente
-                </label>
-            </div>
-        </div>
-
-        <div class="config-buttons">
-            <button id="settings-back-btn" class="btn btn-secondary">⬅️ Volver</button>
-            <button id="settings-save-btn" class="btn btn-primary">💾 Guardar Configuración</button>
         </div>
     </div>
 </div>

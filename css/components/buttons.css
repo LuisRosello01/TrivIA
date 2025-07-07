@@ -19,11 +19,6 @@
     position: relative;
     overflow: hidden;
     touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
     min-height: 44px;
     min-width: 44px;
@@ -260,4 +255,196 @@
     transform: scale(0.95) !important;
     opacity: 0.8 !important;
     transition: all 0.1s ease !important;
+}
+
+/* === BOTONES ESPECÍFICOS DEL MODO DESAFÍO === */
+
+/* Botón pequeño para controles de pregunta */
+.question-controls .btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+.question-controls .btn-small:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+/* Botones de respuesta del desafío */
+.challenge-answer-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 15px;
+    border-radius: 15px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    touch-action: manipulation;
+}
+
+.challenge-answer-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.challenge-answer-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.challenge-answer-btn.selected {
+    background: rgba(102, 126, 234, 0.3);
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.challenge-answer-btn.correct {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: #4CAF50;
+    color: #4CAF50;
+    animation: correctAnswer 0.5s ease;
+}
+
+.challenge-answer-btn.incorrect {
+    background: rgba(244, 67, 54, 0.3);
+    border-color: #f44336;
+    color: #f44336;
+    animation: incorrectAnswer 0.5s ease;
+}
+
+.challenge-answer-btn.timeout {
+    background: rgba(158, 158, 158, 0.3);
+    border-color: #9e9e9e;
+    color: #9e9e9e;
+}
+
+/* Controles del juego de desafío */
+.challenge-controls .btn {
+    min-width: 140px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Botones del modal de game over */
+.gameover-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    flex-direction: column;
+}
+
+.gameover-buttons .btn {
+    padding: 15px 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.gameover-buttons .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.gameover-buttons .btn:hover::before {
+    left: 100%;
+}
+
+#play-again-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    border: 2px solid #4CAF50;
+    color: white;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+#play-again-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+}
+
+#back-to-menu-btn {
+    background: linear-gradient(135deg, #666 0%, #555 100%);
+    border: 2px solid #666;
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 102, 102, 0.3);
+}
+
+#back-to-menu-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(102, 102, 102, 0.4);
+    background: linear-gradient(135deg, #555 0%, #666 100%);
+}
+
+/* Botón pequeño para controles de categorías */
+.btn-small {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transition: all 0.3s ease;
+    touch-action: manipulation;
+}
+
+.btn-small:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-small:active,
+.btn-small.touch-active {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(0.96);
+    transition: all 0.1s ease;
+}
+
+/* Botones de control de categorías */
+.category-controls .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    min-width: 140px;
+}
+
+/* === RESPONSIVE PARA BOTONES DE DESAFÍO === */
+
+/* Mejorar visibilidad en dispositivos táctiles */
+
+@media (max-width: 768px) {
+    .category-controls .btn {
+        min-width: unset;
+        min-height: 48px;
+        padding: 14px 20px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Optimizaciones adicionales para botones de selección masiva en pantallas pequeñas */
+    .category-controls .btn {
+        min-height: 52px;
+        font-size: 14px;
+        padding: 16px 24px;
+        margin-bottom: 8px;
+    }
 }

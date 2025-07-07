@@ -124,21 +124,21 @@ class ChallengeUI {    constructor() {
             this.elements.challengeDifficulty.addEventListener('change', (e) => this.onDifficultyChange(e));
         }
 
-        // Event listeners para categorías adicionales
+        // Event listeners para categorías adicionales - usando simple click para evitar problemas
         if (this.elements.additionalCategoriesToggle) {
-            this.elements.additionalCategoriesToggle.addEventListener('click', () => this.toggleAdditionalCategories());
+            this.addSimpleClickListener(this.elements.additionalCategoriesToggle, () => this.toggleAdditionalCategories());
         }
 
         if (this.elements.selectAllCategoriesBtn) {
-            this.elements.selectAllCategoriesBtn.addEventListener('click', () => this.selectAllCategories());
+            this.addMobileOptimizedListener(this.elements.selectAllCategoriesBtn, () => this.selectAllCategories());
         }
 
         if (this.elements.deselectAllCategoriesBtn) {
-            this.elements.deselectAllCategoriesBtn.addEventListener('click', () => this.deselectAllCategories());
+            this.addMobileOptimizedListener(this.elements.deselectAllCategoriesBtn, () => this.deselectAllCategories());
         }
 
         if (this.elements.selectMainCategoriesBtn) {
-            this.elements.selectMainCategoriesBtn.addEventListener('click', () => this.selectMainCategories());
+            this.addMobileOptimizedListener(this.elements.selectMainCategoriesBtn, () => this.selectMainCategories());
         }
     }    /**
      * Configura los listeners de eventos del motor de desafío
@@ -177,10 +177,6 @@ class ChallengeUI {    constructor() {
      * Inicializa los controles de categorías adicionales
      */
     initializeCategoryControls() {
-        // Asegurar que las categorías adicionales estén ocultas inicialmente
-        if (this.elements.additionalCategories) {
-            this.elements.additionalCategories.style.display = 'none';
-        }
         
         // Restaurar texto del toggle
         if (this.elements.additionalCategoriesToggle) {
@@ -238,8 +234,6 @@ class ChallengeUI {    constructor() {
 
             // Inicializar y comenzar desafío
             if (this.challengeEngine.initialize(config)) {
-                // Mostrar progreso de carga
-                this.showLoadingProgress();
                 await this.challengeEngine.startChallenge();
             } else {
                 this.showButtonLoading(false);
@@ -251,22 +245,7 @@ class ChallengeUI {    constructor() {
         }
     }
 
-    /**
-     * Muestra el progreso de carga con diferentes estados
-     */
-    async showLoadingProgress() {
-        const steps = [
-            { status: 'Validando configuración...', delay: 300 },
-            { status: 'Conectando con servidor...', delay: 500 },
-            { status: 'Obteniendo preguntas...', delay: 700 },
-            { status: 'Preparando interfaz...', delay: 400 }
-        ];
 
-        for (const step of steps) {
-            this.updateLoadingStatus(step.status);
-            await new Promise(resolve => setTimeout(resolve, step.delay));
-        }
-    }
 
     /**
      * Recopila la configuración del formulario
@@ -1175,25 +1154,23 @@ class ChallengeUI {    constructor() {
                 this.elements.challengeStartBtn.dataset.originalText = this.elements.challengeStartBtn.textContent;
             }
 
-            // Mostrar estado de carga
+            // Mostrar estado de carga usando clases CSS
             this.elements.challengeStartBtn.innerHTML = `
-                <div class="loading-spinner small" style="display: inline-block; width: 16px; height: 16px; margin-right: 8px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%;"></div>
+                <div class="loading-spinner small"></div>
                 Iniciando...
             `;
             this.elements.challengeStartBtn.disabled = true;
             this.elements.challengeStartBtn.classList.add('loading');
-
-            console.log('⏳ Indicador de carga mostrado en botón de inicio');
         } else {
             // Restaurar texto original
             const originalText = this.elements.challengeStartBtn.dataset.originalText || '🚀 Iniciar Desafío';
             this.elements.challengeStartBtn.innerHTML = originalText;
             this.elements.challengeStartBtn.disabled = false;
             this.elements.challengeStartBtn.classList.remove('loading');
-
-            console.log('✅ Indicador de carga ocultado del botón de inicio');
         }
-    }    /**
+    }
+
+    /**
      * Limpia la UI y libera recursos
      */    cleanup() {
         // Marcar el juego como terminado
@@ -1454,9 +1431,6 @@ class ChallengeUI {    constructor() {
         // Optimizar viewport
         this.setMobileViewport();
         
-        // Configurar eventos táctiles
-        this.setupTouchEvents();
-        
         // Prevenir zoom en inputs
         this.preventZoomOnInputs();
         
@@ -1470,7 +1444,7 @@ class ChallengeUI {    constructor() {
     }
     
     /**
-     * Configura el viewport para móviles
+     * Configura el viewport para móviles sin restricciones
      */
     setMobileViewport() {
         let viewport = document.querySelector('meta[name=viewport]');
@@ -1479,30 +1453,7 @@ class ChallengeUI {    constructor() {
             viewport.name = 'viewport';
             document.head.appendChild(viewport);
         }
-        viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-    }
-    
-    /**
-     * Configura eventos táctiles optimizados
-     */
-    setupTouchEvents() {
-        // Prevenir comportamientos por defecto en elementos de juego
-        document.addEventListener('touchstart', (e) => {
-            if (e.target.classList.contains('challenge-answer-btn') || 
-                e.target.classList.contains('btn')) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        // Manejar doble tap para zoom
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', (e) => {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                e.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
+        viewport.content = 'width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover';
     }
     
     /**
@@ -1513,60 +1464,75 @@ class ChallengeUI {    constructor() {
     addMobileOptimizedListener(element, callback) {
         if (!element) return;
         
+        let touchExecuted = false;
         let touchStartTime = 0;
-        let touchMoved = false;
         
-        // Touch events para móviles
+        // Touch events para dispositivos móviles
         element.addEventListener('touchstart', (e) => {
-            touchStartTime = Date.now();
-            touchMoved = false;
             element.classList.add('touch-active');
-        }, { passive: true });
-        
-        element.addEventListener('touchmove', () => {
-            touchMoved = true;
+            touchStartTime = Date.now();
+            touchExecuted = false;
         }, { passive: true });
         
         element.addEventListener('touchend', (e) => {
             element.classList.remove('touch-active');
             
-            // Solo ejecutar si fue un tap rápido y sin movimiento
-            if (!touchMoved && (Date.now() - touchStartTime) < 300) {
-                e.preventDefault();
+            // Solo ejecutar si es un tap rápido (menos de 500ms)
+            const touchDuration = Date.now() - touchStartTime;
+            if (touchDuration < 500 && !touchExecuted) {
+                touchExecuted = true;
+                callback();
+                
+                // Prevenir el click fantasma que viene después
+                setTimeout(() => {
+                    touchExecuted = false;
+                }, 350);
+            }
+        }, { passive: true });
+        
+        // Click events para dispositivos de escritorio y como fallback
+        element.addEventListener('click', (e) => {
+            // Solo ejecutar si no se ejecutó por touch
+            if (!touchExecuted) {
                 callback();
             }
         });
-        
-        // Click events para desktop
-        element.addEventListener('click', (e) => {
-            // Evitar doble ejecución si ya se ejecutó en touchend
-            if (touchStartTime && (Date.now() - touchStartTime) < 500) {
-                return;
-            }
-            callback();
-        });
-    }    
+    }
     
     /**
-     * Previene el zoom automático en inputs
+     * Añade event listener simple usando solo click events
+     * Útil para elementos que tienen problemas con touch events
+     * @param {Element} element - Elemento DOM
+     * @param {Function} callback - Función callback
+     */
+    addSimpleClickListener(element, callback) {
+        if (!element) return;
+        
+        element.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            callback();
+        });
+        
+        // Añadir efecto visual para touch
+        element.addEventListener('touchstart', (e) => {
+            element.classList.add('touch-active');
+        }, { passive: true });
+        
+        element.addEventListener('touchend', (e) => {
+            element.classList.remove('touch-active');
+        }, { passive: true });
+    }
+
+    /**
+     * Configuración básica de viewport para móviles
      */
     preventZoomOnInputs() {
-        const inputs = document.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                const viewport = document.querySelector('meta[name=viewport]');
-                if (viewport) {
-                    viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-                }
-            });
-            
-            input.addEventListener('blur', () => {
-                const viewport = document.querySelector('meta[name=viewport]');
-                if (viewport) {
-                    viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes';
-                }
-            });
-        });
+        // Configuración básica del viewport sin restricciones excesivas
+        const viewport = document.querySelector('meta[name=viewport]');
+        if (viewport) {
+            viewport.content = 'width=device-width, initial-scale=1.0, user-scalable=yes';
+        }
     }
     
     /**
@@ -1706,20 +1672,41 @@ class ChallengeUI {    constructor() {
      * Alterna la visibilidad de las categorías adicionales
      */
     toggleAdditionalCategories() {
+        console.log('🔄 Ejecutando toggleAdditionalCategories...');
+        
         const toggle = this.elements.additionalCategoriesToggle;
         const categories = this.elements.additionalCategories;
         
-        if (!toggle || !categories) return;
+        if (!toggle || !categories) {
+            console.warn('⚠️ Elementos no encontrados:', { toggle: !!toggle, categories: !!categories });
+            return;
+        }
         
-        const isVisible = categories.style.display !== 'none';
+        const isVisible = categories.classList.contains('show');
+        console.log('📱 Estado actual de categorías adicionales:', { isVisible });
+        
+        const toggleSpan = toggle.querySelector('span');
+        if (!toggleSpan) {
+            console.warn('⚠️ Span del toggle no encontrado');
+            return;
+        }
         
         if (isVisible) {
-            categories.style.display = 'none';
-            toggle.querySelector('span').textContent = '▼ Mostrar categorías adicionales';
+            categories.classList.remove('show');
+            categories.classList.add('hidden');
+            toggleSpan.textContent = '▼ Mostrar categorías adicionales';
+            console.log('✅ Categorías adicionales ocultadas');
         } else {
-            categories.style.display = 'block';
-            toggle.querySelector('span').textContent = '▲ Ocultar categorías adicionales';
+            categories.classList.remove('hidden');
+            categories.classList.add('show');
+            toggleSpan.textContent = '▲ Ocultar categorías adicionales';
+            console.log('✅ Categorías adicionales mostradas');
         }
+        
+        // Actualizar estadísticas después del cambio
+        setTimeout(() => {
+            this.showCategoryStats();
+        }, 100);
     }
 
     /**
@@ -1731,7 +1718,6 @@ class ChallengeUI {    constructor() {
                 checkbox.checked = true;
             }
         });
-        console.log('✅ Todas las categorías seleccionadas');
     }
 
     /**
@@ -1743,7 +1729,6 @@ class ChallengeUI {    constructor() {
                 checkbox.checked = false;
             }
         });
-        console.log('❌ Todas las categorías deseleccionadas');
     }
 
     /**
@@ -1759,8 +1744,6 @@ class ChallengeUI {    constructor() {
                 checkbox.checked = mainCategories.includes(categoryKey);
             }
         });
-        
-        console.log('🎯 Solo categorías principales seleccionadas');
     }
 
     /**

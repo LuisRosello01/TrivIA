@@ -13,14 +13,12 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
     color: var(--text-primary);
-    min-height: 100vh;
-    overflow-x: hidden;
     margin: 0;
     padding: 0;
 }
 
 #app {
-    min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
 }
 
@@ -66,12 +64,14 @@ img {
 ::-webkit-scrollbar-track {
     background: var(--bg-secondary);
     border-radius: 4px;
+    margin: 15px 0; /* Acorta la scrollbar verticalmente */
 }
 
 ::-webkit-scrollbar-thumb {
     background: var(--primary-color);
     border-radius: 4px;
-    border: 2px solid var(--bg-secondary);
+    border: 1px solid var(--bg-secondary);
+    min-height: 40px; /* Altura mínima del thumb */
 }
 
 ::-webkit-scrollbar-thumb:hover {

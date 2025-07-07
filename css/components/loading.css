@@ -157,6 +157,10 @@
     transform: none;
     position: relative;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .btn.loading:hover {
@@ -182,7 +186,8 @@
 
 /* === SPINNER INLINE === */
 
-.spinner-inline {
+.spinner-inline,
+.btn.loading .loading-spinner {
     display: inline-block;
     width: 16px;
     height: 16px;
@@ -190,8 +195,15 @@
     border-radius: 50%;
     border-top-color: rgba(255, 255, 255, 0.8);
     animation: spin 1s linear infinite;
-    margin-right: 8px;
+    margin: 0;
     vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.btn.loading .loading-spinner.small {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
 }
 
 /* === RESPONSIVE LOADING === */

@@ -31,8 +31,9 @@
 @import url('./utilities/animations.css');
 /*
 @import url('./utilities/responsive.css');
-*/
 @import url('./utilities/mobile.css');
+*/
+
 @import url('./utilities/accessibility.css');
 
 /* === ESTILOS CRÍTICOS PARA CARGA INICIAL === */
@@ -41,10 +42,6 @@
 html {
     overflow: hidden;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-html.loaded {
-    overflow: auto;
 }
 
 /* Indicador de estilos cargados */

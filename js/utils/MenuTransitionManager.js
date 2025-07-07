@@ -133,6 +133,10 @@ class MenuTransitionManager {
             this.menuOptions.classList.remove('hidden');
             this.menuOptions.classList.add('visible');
         }
+
+        setTimeout(() => {
+            this.menuOptions.style.overflow = 'auto';
+        }, 1000); // Asegurar que el overflow se aplique después de la animación
         
         // Disparar evento de menú listo
         document.dispatchEvent(new CustomEvent('menuTransitionComplete'));

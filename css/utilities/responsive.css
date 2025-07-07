@@ -135,7 +135,7 @@
         }
         
         .modal-content {
-            max-height: 90vh;
+            max-height: 90dvh;
             padding: var(--spacing-md);
         }
     }
@@ -202,7 +202,7 @@
     }
     
     .modal-content {
-        max-height: 90vh;
+        max-height: 90dvh;
         padding: var(--spacing-md);
     }
     
