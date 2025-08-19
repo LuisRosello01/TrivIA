@@ -567,6 +567,14 @@ class ChallengeUI {    constructor() {
         this.elements.challengeContinueBtn = document.getElementById('challenge-continue-btn');
         this.elements.challengeExitConfirmBtn = document.getElementById('challenge-exit-confirm-btn');
         
+        // Debug de elementos del modal de salida
+        console.log('🔍 Debug elementos modal de salida:', {
+            challengeExitBtn: !!this.elements.challengeExitBtn,
+            challengeExitModal: !!this.elements.challengeExitModal,
+            challengeContinueBtn: !!this.elements.challengeContinueBtn,
+            challengeExitConfirmBtn: !!this.elements.challengeExitConfirmBtn
+        });
+        
         // Elementos del Game Over
         this.elements.survivalGameOverModal = document.getElementById('survival-gameover-modal');
         this.elements.gameOverTitle = document.getElementById('gameover-title');
@@ -619,7 +627,19 @@ class ChallengeUI {    constructor() {
 
         // Eventos de control - usando event listeners optimizados
         if (this.elements.challengeExitBtn) {
-            this.addMobileOptimizedListener(this.elements.challengeExitBtn, () => this.showExitConfirmation());
+            console.log('🔧 Configurando listener para challengeExitBtn');
+            this.addMobileOptimizedListener(this.elements.challengeExitBtn, (event) => {
+                console.log('🚪 Botón de salir presionado');
+                // Prevenir propagación del evento para evitar cierre inmediato
+                if (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                }
+                this.showExitConfirmation();
+            });
+        } else {
+            console.error('❌ challengeExitBtn no encontrado durante la configuración!');
         }
 
         if (this.elements.challengeContinueBtn) {
@@ -657,6 +677,17 @@ class ChallengeUI {    constructor() {
 
         // Prevenir propagación de eventos touch en el modal de confirmación de salida
         if (this.elements.challengeExitModal) {
+            // Flag para prevenir cierre inmediato después de abrir
+            let modalJustOpened = false;
+            
+            // Método para marcar el modal como recién abierto
+            this.markModalAsJustOpened = () => {
+                modalJustOpened = true;
+                setTimeout(() => {
+                    modalJustOpened = false;
+                }, 500); // Evitar cierre por 500ms después de abrir
+            };
+            
             // Prevenir propagación en todo el modal
             this.elements.challengeExitModal.addEventListener('touchstart', (e) => {
                 e.stopPropagation();
@@ -668,8 +699,12 @@ class ChallengeUI {    constructor() {
 
             this.elements.challengeExitModal.addEventListener('click', (e) => {
                 // Si se hace click en el backdrop (no en el contenido), cerrar el modal
-                if (e.target === this.elements.challengeExitModal) {
+                // PERO solo si no se acaba de abrir
+                if (e.target === this.elements.challengeExitModal && !modalJustOpened) {
+                    console.log('🖱️ Click en backdrop - cerrando modal');
                     this.continueChallenge();
+                } else if (modalJustOpened) {
+                    console.log('🚫 Modal recién abierto - ignorando click en backdrop');
                 }
                 e.stopPropagation();
             });
@@ -1017,8 +1052,35 @@ class ChallengeUI {    constructor() {
      * Muestra la confirmación de salida
      */
     showExitConfirmation() {
-        // Solo mostrar el modal, sin pausar el juego
-        this.elements.challengeExitModal.classList.add('active');
+        console.log('🚪 showExitConfirmation llamado');
+        console.log('Modal element:', this.elements.challengeExitModal);
+        
+        if (!this.elements.challengeExitModal) {
+            console.error('❌ challengeExitModal no encontrado!');
+            return;
+        }
+        
+        // Marcar modal como recién abierto para prevenir cierre inmediato
+        if (this.markModalAsJustOpened) {
+            this.markModalAsJustOpened();
+        }
+        
+        // Asegurar que el modal no se cierre inmediatamente
+        setTimeout(() => {
+            // Solo mostrar el modal, sin pausar el juego
+            this.elements.challengeExitModal.classList.add('active');
+            console.log('✅ Modal de salida activado');
+            
+            // Verificar que efectivamente esté activo
+            setTimeout(() => {
+                const isActive = this.elements.challengeExitModal.classList.contains('active');
+                console.log('🔍 Modal sigue activo después de 100ms:', isActive);
+                if (!isActive) {
+                    console.warn('⚠️ El modal fue cerrado inmediatamente - reactivando');
+                    this.elements.challengeExitModal.classList.add('active');
+                }
+            }, 100);
+        }, 10); // Pequeño delay para evitar conflictos con eventos touch
     }
 
     /**
@@ -1460,6 +1522,8 @@ class ChallengeUI {    constructor() {
         // Actualizar texto de la pregunta
         if (this.elements.challengeQuestionText) {
             this.elements.challengeQuestionText.textContent = question;
+            // Ajustar automáticamente el tamaño de la fuente
+            this.adjustQuestionTextSize(this.elements.challengeQuestionText);
         }
 
         // Actualizar opciones de respuesta manteniendo las posiciones
@@ -1956,6 +2020,83 @@ class ChallengeUI {    constructor() {
         console.log('📋 Categorías activas:', Object.keys(selectedCategories).filter(key => selectedCategories[key]));
         
         return { selectedCount, totalCount, selectedCategories };
+    }
+
+    /**
+     * Ajusta automáticamente el tamaño de la fuente del texto de la pregunta
+     * para que quepa en el contenedor
+     * @param {HTMLElement} element - Elemento de texto de la pregunta
+     */
+    adjustQuestionTextSize(element) {
+        if (!element) return;
+
+        // Restaurar tamaño de fuente por defecto
+        element.style.fontSize = '';
+        element.classList.remove('text-small', 'text-smaller', 'text-tiny');
+
+        // Obtener dimensiones del contenedor
+        const containerHeight = element.parentElement.clientHeight;
+        const containerWidth = element.parentElement.clientWidth;
+        
+        // Si el contenedor no tiene dimensiones aún, intentar más tarde
+        if (!containerHeight || !containerWidth) {
+            setTimeout(() => this.adjustQuestionTextSize(element), 100);
+            return;
+        }
+
+        // Verificar si el texto se desborda
+        const textHeight = element.scrollHeight;
+        const textWidth = element.scrollWidth;
+        
+        // Definir los tamaños de fuente disponibles (usando clases CSS)
+        const fontSizeClasses = [
+            { class: '', priority: 0 }, // Tamaño normal
+            { class: 'text-small', priority: 1 }, // Ligeramente más pequeño
+            { class: 'text-smaller', priority: 2 }, // Más pequeño
+            { class: 'text-tiny', priority: 3 } // El más pequeño
+        ];
+
+        // Función para aplicar una clase de tamaño y verificar si cabe
+        const tryFontSize = (fontClass) => {
+            // Limpiar clases anteriores
+            element.classList.remove('text-small', 'text-smaller', 'text-tiny');
+            
+            // Aplicar nueva clase si no es vacía
+            if (fontClass.class) {
+                element.classList.add(fontClass.class);
+            }
+
+            // Verificar si ahora cabe (con un pequeño margen de seguridad)
+            const newHeight = element.scrollHeight;
+            const newWidth = element.scrollWidth;
+            const fitsHeight = newHeight <= containerHeight * 0.95;
+            const fitsWidth = newWidth <= containerWidth * 0.95;
+            
+            return fitsHeight && fitsWidth;
+        };
+
+        // Intentar cada tamaño de fuente hasta encontrar uno que funcione
+        let bestFit = fontSizeClasses[0];
+        
+        for (const fontClass of fontSizeClasses) {
+            if (tryFontSize(fontClass)) {
+                bestFit = fontClass;
+                break;
+            }
+        }
+
+        // Aplicar el mejor tamaño encontrado
+        element.classList.remove('text-small', 'text-smaller', 'text-tiny');
+        if (bestFit.class) {
+            element.classList.add(bestFit.class);
+        }
+
+        console.log(`📏 Texto de pregunta ajustado:`, {
+            originalLength: element.textContent.length,
+            containerSize: { width: containerWidth, height: containerHeight },
+            appliedClass: bestFit.class || 'normal',
+            finalSize: { width: element.scrollWidth, height: element.scrollHeight }
+        });
     }
 
     // ...existing code...
