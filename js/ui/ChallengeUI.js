@@ -936,9 +936,9 @@ class ChallengeUI {    constructor() {
      * Maneja el timeout de una pregunta
      */
     onTimeOut(data) {
-        console.log('⏰ Tiempo agotado!');
+        console.log('⏰ Tiempo agotado - Mostrando respuesta correcta');
         
-        // Marcar todas las respuestas como deshabilitadas
+        // Marcar todas las respuestas como deshabilitadas (igual que timeout)
         this.elements.challengeAnswerBtns.forEach(btn => {
             if (btn) {
                 btn.disabled = true;
@@ -946,14 +946,30 @@ class ChallengeUI {    constructor() {
             }
         });
         
-        // Mostrar respuesta correcta usando las respuestas traducidas
-        const correctIndex = this.questionDisplay.translatedAnswers.indexOf(data.correctAnswer);
+        // USAR EXACTAMENTE LA MISMA LÓGICA QUE onAnswerProcessed
+        const { correctAnswer } = data;
+        
+        console.log('🔍 DEBUG - Buscando respuesta correcta:');
+        console.log('  - correctAnswer:', correctAnswer);
+        console.log('  - translatedAnswers:', this.questionDisplay.translatedAnswers);
+        
+        // Encontrar el índice de la respuesta correcta usando las respuestas traducidas
+        const correctIndex = this.questionDisplay.translatedAnswers.indexOf(correctAnswer);
+        
+        console.log('  - correctIndex encontrado:', correctIndex);
+        
+        // Marcar respuesta correcta (IGUAL QUE onAnswerProcessed)
         if (correctIndex !== -1 && this.elements.challengeAnswerBtns[correctIndex]) {
             this.elements.challengeAnswerBtns[correctIndex].classList.add('correct');
+            console.log(`✅ Respuesta correcta mostrada en índice ${correctIndex}: "${correctAnswer}"`);
+        } else {
+            console.warn(`⚠️ No se encontró la respuesta correcta "${correctAnswer}" en:`, this.questionDisplay.translatedAnswers);
         }
         
         // Actualizar estadísticas
         this.updateStats(data.gameState);
+        
+        console.log('⏰ Tiempo agotado - Respuesta correcta marcada');
         
         // En el nuevo modo continuo, SIEMPRE continuar después del timeout
         console.log('⏰ Tiempo agotado, pero continuamos con la siguiente pregunta');
