@@ -692,7 +692,7 @@ class ChallengeEngine {
      */
     resumeChallenge() {
         if (this.gameState.isGameRunning && this.gameState.currentQuestion) {
-            this.startTimer();
+            this.resumeTimer(); // Cambio: usar resumeTimer en lugar de startTimer
             
             // Track reanudación en analytics
             if (window.trivialAnalytics) {

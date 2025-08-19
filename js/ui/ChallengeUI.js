@@ -635,7 +635,15 @@ class ChallengeUI {    constructor() {
         }
 
         if (this.elements.challengeExitConfirmBtn) {
-            this.addMobileOptimizedListener(this.elements.challengeExitConfirmBtn, () => this.confirmExitChallenge());
+            this.addMobileOptimizedListener(this.elements.challengeExitConfirmBtn, (event) => {
+                // Prevenir propagación del evento
+                if (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                }
+                this.confirmExitChallenge();
+            });
         }
 
         // Eventos del Game Over - usando event listeners optimizados
@@ -700,6 +708,7 @@ class ChallengeUI {    constructor() {
                 btn.disabled = false;
                 btn.classList.remove('selected', 'correct', 'incorrect');
                 btn.blur(); // Limpiar focus especialmente en móviles
+                btn.style.pointerEvents = ''; // Restaurar eventos de pointer
             }
         });
         
@@ -850,12 +859,14 @@ class ChallengeUI {    constructor() {
     selectAnswer(answerIndex) {
         console.log(`📝 Respuesta seleccionada: ${answerIndex}`);
         
-        // Deshabilitar todos los botones
-        this.elements.challengeAnswerBtns.forEach(btn => {
+        // Deshabilitar todos los botones y limpiar focus inmediatamente
+        this.elements.challengeAnswerBtns.forEach((btn, index) => {
             if (btn) {
                 btn.disabled = true;
-                // Quitar focus de los botones para evitar que se mantenga en móviles
+                // Quitar focus de TODOS los botones, no solo del seleccionado
                 btn.blur();
+                // Prevenir cualquier evento residual
+                btn.style.pointerEvents = 'none';
             }
         });
         
@@ -865,8 +876,21 @@ class ChallengeUI {    constructor() {
         }
         
         // Limpiar focus general del documento en dispositivos móviles
-        if (this.isMobileDevice() && document.activeElement) {
+        if (document.activeElement) {
             document.activeElement.blur();
+        }
+        
+        // Forzar que el documento pierda focus en móviles
+        if (this.isMobileDevice()) {
+            // Crear un elemento temporal invisible para cambiar el focus
+            const tempElement = document.createElement('div');
+            tempElement.tabIndex = -1;
+            tempElement.style.position = 'absolute';
+            tempElement.style.left = '-9999px';
+            document.body.appendChild(tempElement);
+            tempElement.focus();
+            tempElement.blur();
+            document.body.removeChild(tempElement);
         }
         
         // Procesar respuesta - SIEMPRE usar las respuestas traducidas para la lógica del juego
@@ -941,7 +965,7 @@ class ChallengeUI {    constructor() {
      * Muestra la confirmación de salida
      */
     showExitConfirmation() {
-        this.challengeEngine.pauseChallenge();
+        // Solo mostrar el modal, sin pausar el juego
         this.elements.challengeExitModal.classList.add('active');
     }
 
@@ -949,15 +973,25 @@ class ChallengeUI {    constructor() {
      * Continúa el desafío (cierra el modal de salida)
      */
     continueChallenge() {
-        this.challengeEngine.resumeChallenge();
+        // Solo cerrar el modal, sin afectar el estado del juego
         this.elements.challengeExitModal.classList.remove('active');
         
-        // Prevenir propagación de eventos después de cerrar el modal
-        // para evitar clicks accidentales en botones de respuesta
+        // Limpiar focus después de cerrar el modal
         setTimeout(() => {
-            // Limpiar cualquier evento pendiente
             if (document.activeElement && document.activeElement.blur) {
                 document.activeElement.blur();
+            }
+            
+            // En móviles, forzar cambio de focus para evitar clicks accidentales
+            if (this.isMobileDevice()) {
+                const tempElement = document.createElement('div');
+                tempElement.tabIndex = -1;
+                tempElement.style.position = 'absolute';
+                tempElement.style.left = '-9999px';
+                document.body.appendChild(tempElement);
+                tempElement.focus();
+                tempElement.blur();
+                document.body.removeChild(tempElement);
             }
         }, 100);
     }
@@ -968,6 +1002,12 @@ class ChallengeUI {    constructor() {
     confirmExitChallenge() {
         this.challengeEngine.endChallenge();
         this.elements.challengeExitModal.classList.remove('active');
+        
+        // Limpiar focus antes de cambiar de pantalla
+        if (document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
+        }
+        
         this.showMainMenu();
     }
 
@@ -1556,7 +1596,7 @@ class ChallengeUI {    constructor() {
             const touchDuration = Date.now() - touchStartTime;
             if (touchDuration < 500 && !touchExecuted) {
                 touchExecuted = true;
-                callback();
+                callback(e);
                 
                 // Prevenir el click fantasma que viene después
                 setTimeout(() => {
@@ -1569,7 +1609,7 @@ class ChallengeUI {    constructor() {
         element.addEventListener('click', (e) => {
             // Solo ejecutar si no se ejecutó por touch
             if (!touchExecuted) {
-                callback();
+                callback(e);
             }
         });
     }
