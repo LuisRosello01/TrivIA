@@ -145,8 +145,8 @@ class ChallengeEngine {
             // Cargar primera pregunta
             await this.loadNextQuestion();
             
-            // Iniciar temporizador
-            this.startTimer();
+            // NO iniciar temporizador aquí - se iniciará cuando la UI esté lista
+            // this.startTimer(); // Movido al UI cuando la pregunta esté completamente mostrada
             
             // Disparar evento de inicio
             this.dispatchEvent('challengeStarted', {
@@ -472,7 +472,8 @@ class ChallengeEngine {
         setTimeout(async () => {
             if (this.gameState.isGameRunning && this.gameState.isAlive) {
                 await this.loadNextQuestion();
-                this.startTimer();
+                // NO iniciar timer aquí - se iniciará cuando la UI esté lista
+                // this.startTimer(); // Movido al UI
             }
         }, 2000);
     }
@@ -516,7 +517,7 @@ class ChallengeEngine {
     }
 
     /**
-     * Inicia el temporizador de la pregunta current
+     * Inicia el temporizador de la pregunta current (método público)
      */
     startTimer() {
         this.stopTimer(); // Asegurarse de limpiar cualquier temporizador previo
@@ -607,7 +608,8 @@ class ChallengeEngine {
         setTimeout(async () => {
             if (this.gameState.isGameRunning && this.gameState.isAlive) {
                 await this.loadNextQuestion();
-                this.startTimer();
+                // NO iniciar timer aquí - se iniciará cuando la UI esté lista
+                // this.startTimer(); // Movido al UI
             }
         }, 2000);
     }

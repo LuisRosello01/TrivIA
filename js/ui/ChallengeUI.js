@@ -341,7 +341,8 @@ class ChallengeUI {    constructor() {
         }
     }    /**
      * Maneja el evento de desafío iniciado
-     */    onChallengeStarted(data) {
+     */    
+    onChallengeStarted(data) {
         console.log('🎯 Desafío iniciado, creando interfaz de juego...');
         
         // Reiniciar el estado del juego
@@ -356,6 +357,22 @@ class ChallengeUI {    constructor() {
         // Esperar a que el DOM se actualice antes de mostrar la pantalla
         setTimeout(() => {
             this.showChallengeGame();
+            
+            // Inicializar el timer basado en la configuración después de que los elementos estén disponibles
+            const timerConfig = data.config && data.config.timer;
+            if (this.elements.challengeTimerText) {
+                if (timerConfig === 0) {
+                    this.elements.challengeTimerText.textContent = '∞';
+                    if (this.elements.challengeTimerCircle) {
+                        this.elements.challengeTimerCircle.className = 'timer-circle timer-unlimited';
+                    }
+                } else {
+                    this.elements.challengeTimerText.textContent = timerConfig || '∞';
+                    if (this.elements.challengeTimerCircle) {
+                        this.elements.challengeTimerCircle.className = 'timer-circle';
+                    }
+                }
+            }
             
             // Mostrar carga inicial después de mostrar la pantalla
             this.showInitialLoading('Preparando primera pregunta...');
@@ -410,7 +427,7 @@ class ChallengeUI {    constructor() {
                             </div>
                             <div class="challenge-timer">
                                 <div id="challenge-timer-circle" class="timer-circle">
-                                    <span id="challenge-timer-text">20</span>
+                                    <span id="challenge-timer-text">∞</span>
                                 </div>
                             </div>
                         </div>
@@ -606,7 +623,15 @@ class ChallengeUI {    constructor() {
         }
 
         if (this.elements.challengeContinueBtn) {
-            this.addMobileOptimizedListener(this.elements.challengeContinueBtn, () => this.continueChallenge());
+            this.addMobileOptimizedListener(this.elements.challengeContinueBtn, (event) => {
+                // Prevenir propagación del evento
+                if (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                }
+                this.continueChallenge();
+            });
         }
 
         if (this.elements.challengeExitConfirmBtn) {
@@ -669,6 +694,20 @@ class ChallengeUI {    constructor() {
     processNewQuestion(data) {
         const question = data.question;
         
+        // Limpiar focus de botones anteriores para nueva pregunta
+        this.elements.challengeAnswerBtns.forEach(btn => {
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('selected', 'correct', 'incorrect');
+                btn.blur(); // Limpiar focus especialmente en móviles
+            }
+        });
+        
+        // Limpiar focus general en móviles
+        if (this.isMobileDevice() && document.activeElement) {
+            document.activeElement.blur();
+        }
+        
         // Verificar que los elementos existen antes de usarlos
         if (!this.elements.challengeQuestionCategory || !this.elements.challengeQuestionText) {
             console.warn('⚠️ Elementos de UI no encontrados, usando recuperación de emergencia...');
@@ -678,7 +717,8 @@ class ChallengeUI {    constructor() {
             setTimeout(() => {
                 this.processNewQuestion(data);
             }, 300);
-            return;        }
+            return;        
+        }
         
         // Almacenar versiones original y traducida
         this.storeQuestionVersions(question);
@@ -710,6 +750,15 @@ class ChallengeUI {    constructor() {
         
         // Actualizar estadísticas
         this.updateStats(data.gameState);
+        
+        // IMPORTANTE: Iniciar el timer solo después de que la pregunta esté completamente mostrada
+        // Esto soluciona el problema de que la cuenta atrás empezaba durante la carga
+        setTimeout(() => {
+            if (this.challengeEngine && this.challengeEngine.gameState.isGameRunning) {
+                console.log('⏱️ Iniciando timer después de mostrar la pregunta completamente');
+                this.challengeEngine.startTimer();
+            }
+        }, 200); // Pequeño delay para asegurar que la UI esté completamente renderizada
     }
 
     /**
@@ -784,12 +833,21 @@ class ChallengeUI {    constructor() {
         
         // Deshabilitar todos los botones
         this.elements.challengeAnswerBtns.forEach(btn => {
-            if (btn) btn.disabled = true;
+            if (btn) {
+                btn.disabled = true;
+                // Quitar focus de los botones para evitar que se mantenga en móviles
+                btn.blur();
+            }
         });
         
         // Marcar respuesta seleccionada
         if (this.elements.challengeAnswerBtns[answerIndex]) {
             this.elements.challengeAnswerBtns[answerIndex].classList.add('selected');
+        }
+        
+        // Limpiar focus general del documento en dispositivos móviles
+        if (this.isMobileDevice() && document.activeElement) {
+            document.activeElement.blur();
         }
         
         // Procesar respuesta - SIEMPRE usar las respuestas traducidas para la lógica del juego
@@ -874,6 +932,15 @@ class ChallengeUI {    constructor() {
     continueChallenge() {
         this.challengeEngine.resumeChallenge();
         this.elements.challengeExitModal.classList.remove('active');
+        
+        // Prevenir propagación de eventos después de cerrar el modal
+        // para evitar clicks accidentales en botones de respuesta
+        setTimeout(() => {
+            // Limpiar cualquier evento pendiente
+            if (document.activeElement && document.activeElement.blur) {
+                document.activeElement.blur();
+            }
+        }, 100);
     }
 
     /**
