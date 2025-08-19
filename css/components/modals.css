@@ -246,13 +246,15 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(5px);
-    z-index: var(--z-modal);
+    z-index: 9999; /* Z-index muy alto para estar sobre todo */
     align-items: center;
     justify-content: center;
+    pointer-events: all; /* Bloquear eventos a elementos debajo */
 }
 
 #challenge-exit-modal.active {
     display: flex;
+    pointer-events: all; /* Asegurar que capture todos los eventos */
 }
 
 /* === RESPONSIVE MODALS === */

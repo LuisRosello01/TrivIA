@@ -654,6 +654,42 @@ class ChallengeUI {    constructor() {
         if (this.elements.backToMenuBtn) {
             this.addMobileOptimizedListener(this.elements.backToMenuBtn, () => this.backToMenuFromGameOver());
         }
+
+        // Prevenir propagación de eventos touch en el modal de confirmación de salida
+        if (this.elements.challengeExitModal) {
+            // Prevenir propagación en todo el modal
+            this.elements.challengeExitModal.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+            }, { passive: false });
+
+            this.elements.challengeExitModal.addEventListener('touchend', (e) => {
+                e.stopPropagation();
+            }, { passive: false });
+
+            this.elements.challengeExitModal.addEventListener('click', (e) => {
+                // Si se hace click en el backdrop (no en el contenido), cerrar el modal
+                if (e.target === this.elements.challengeExitModal) {
+                    this.continueChallenge();
+                }
+                e.stopPropagation();
+            });
+
+            // También prevenir en el contenido del modal
+            const modalContent = this.elements.challengeExitModal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.addEventListener('touchstart', (e) => {
+                    e.stopPropagation();
+                }, { passive: false });
+
+                modalContent.addEventListener('touchend', (e) => {
+                    e.stopPropagation();
+                }, { passive: false });
+
+                modalContent.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+        }
     }/**
      * Muestra la pantalla del juego de desafío
      */
