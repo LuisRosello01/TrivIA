@@ -1,6 +1,23 @@
 /**
  * Motor del Modo Desafío - Sistema independiente de juego
- * Maneja toda la lógica específica del modo desafío
+ * Maneja toda la lógica específi    /**
+     * Resetea el estado del juego a valores iniciales
+     */
+    resetGameState() {
+        this.gameState = {
+            currentQuestion: null,
+            score: 0,
+            streak: 0,
+            questionsAnswered: 0,
+            correctAnswers: 0,
+            timeRemaining: this.config.timer || 0, // 0 significa tiempo ilimitado
+            gameStartTime: null,
+            isGameRunning: false,
+            lives: this.config.mode === 'survival' ? 1 : -1, // -1 significa vidas ilimitadas
+            isAlive: true // Estado de supervivencia
+        };
+        this.nextQuestion = null; // Resetear pregunta precargada
+    }fío
  */
 class ChallengeEngine {
     constructor() {
@@ -41,9 +58,7 @@ class ChallengeEngine {
                 'animales': false,
                 'vehiculos': false
             }
-        };
-
-        this.gameState = {
+        };        this.gameState = {
             currentQuestion: null,
             score: 0,
             streak: 0,
@@ -52,15 +67,12 @@ class ChallengeEngine {
             timeRemaining: 0,
             gameStartTime: null,
             isGameRunning: false,
-            lives: -1, // -1 significa vidas ilimitadas en modo continuo
+            lives: 1, // Modo supervivencia: una sola vida
             isAlive: true // Estado de supervivencia
         };
-        
         this.timerInterval = null;
         this.apiClient = null;
-    }
-
-    /**
+    }    /**
      * Inicializa el motor de desafío con la configuración especificada
      * @param {Object} config - Configuración del desafío
      */
@@ -70,7 +82,7 @@ class ChallengeEngine {
         // Track configuración del desafío
         if (window.trivialAnalytics) {
             window.trivialAnalytics.trackChallengeSetup(
-                config.mode || 'continuous',
+                config.mode || 'survival',
                 config.timer || 20,
                 config.questionCount || 0
             );
@@ -87,7 +99,7 @@ class ChallengeEngine {
         
         // Mostrar estadísticas de categorías
         const categoryStats = this.getCategoryStats();
-        console.log('📊 Estadísticas de categorías:', categoryStats);
+        console.log('� Estadísticas de categorías:', categoryStats);
         
         // Validar que hay categorías habilitadas
         if (categoryStats.enabled === 0) {
@@ -101,12 +113,9 @@ class ChallengeEngine {
         console.log('🎯 Categorías activas:', categoryStats.list);
         
         return true;
-    }
-
-    /**
+    }/**
      * Resetea el estado del juego a valores iniciales
-     */
-    resetGameState() {
+     */    resetGameState() {
         this.gameState = {
             currentQuestion: null,
             score: 0,
@@ -116,10 +125,9 @@ class ChallengeEngine {
             timeRemaining: this.config.timer || 0, // 0 significa tiempo ilimitado
             gameStartTime: null,
             isGameRunning: false,
-            lives: this.config.mode === 'survival' ? 1 : -1, // -1 significa vidas ilimitadas
+            lives: 1, // Modo supervivencia: una sola vida
             isAlive: true // Estado de supervivencia
         };
-        this.nextQuestion = null; // Resetear pregunta precargada
     }
 
     /**
@@ -137,7 +145,7 @@ class ChallengeEngine {
             // Track inicio del desafío
             if (window.trivialAnalytics) {
                 window.trivialAnalytics.trackChallengeStart(
-                    this.config.mode || 'continuous',
+                    this.config.mode || 'survival',
                     this.config.timer || 20
                 );
             }
@@ -168,9 +176,7 @@ class ChallengeEngine {
             this.dispatchEvent('challengeError', { error: error.message });
             return false;
         }
-    }
-
-    /**
+    }    /**
      * Carga la siguiente pregunta del desafío
      */
     async loadNextQuestion() {
@@ -191,7 +197,7 @@ class ChallengeEngine {
                 // Precargar la siguiente pregunta en paralelo
                 this.preloadNextQuestion();
                 
-                console.log('📝 Pregunta precargada mostrada:', this.gameState.currentQuestion.pregunta);
+                console.log('� Pregunta precargada mostrada:', this.gameState.currentQuestion.pregunta);
                 return;
             }
             
@@ -324,17 +330,13 @@ class ChallengeEngine {
             console.error('❌ Error en precarga de pregunta:', error);
             // No es crítico, el juego puede continuar sin precarga
         }
-    }
-
-    /**
+    }    /**
      * Convierte una pregunta del formato API al formato esperado por el desafío
      * @param {Object} apiQuestion - Pregunta en formato API
      * @returns {Object} Pregunta en formato del desafío
-     */
-    convertApiQuestionToChallengeFormat(apiQuestion, effectiveDifficulty = null) {
+     */    convertApiQuestionToChallengeFormat(apiQuestion, effectiveDifficulty = null) {
         console.log('🔄 Convirtiendo pregunta de API:', apiQuestion);
-          
-        // Verificar si es formato API (con campo 'question') o fallback (con campo 'question' también)
+          // Verificar si es formato API (con campo 'question') o fallback (con campo 'question' también)
         if (apiQuestion.question && apiQuestion.answers) {
             // Formato API o fallback moderno
             const convertedQuestion = {
@@ -344,11 +346,12 @@ class ChallengeEngine {
                 categoria: apiQuestion.category || 'general',
                 dificultad: effectiveDifficulty || apiQuestion.difficulty || 'medium',
                 fuente: apiQuestion.source || 'api',
+                // PRESERVAR LA INFORMACIÓN ORIGINAL DE LA API
                 originalQuestion: apiQuestion.originalQuestion || apiQuestion.question,
                 originalAnswers: apiQuestion.originalAnswers || apiQuestion.answers,
+                // Si hay una versión traducida, incluirla
                 translatedQuestion: apiQuestion.translatedQuestion || apiQuestion.question,
-                translatedAnswers: apiQuestion.translatedAnswers || apiQuestion.answers            
-            };
+                translatedAnswers: apiQuestion.translatedAnswers || apiQuestion.answers            };
             
             // Debug: Verificar si hay diferencias reales entre original y traducido
             const hasOriginalDifferences = convertedQuestion.originalQuestion !== convertedQuestion.pregunta ||
@@ -374,6 +377,7 @@ class ChallengeEngine {
                 categoria: apiQuestion.categoria || apiQuestion.category || 'general',
                 dificultad: effectiveDifficulty || apiQuestion.dificultad || apiQuestion.difficulty || 'medium',
                 fuente: apiQuestion.fuente || apiQuestion.source || 'unknown',
+                // PRESERVAR LA INFORMACIÓN ORIGINAL
                 originalQuestion: apiQuestion.originalQuestion || apiQuestion.pregunta || apiQuestion.question || 'Pregunta no disponible',
                 originalAnswers: apiQuestion.originalAnswers || apiQuestion.opciones || apiQuestion.answers || []
             };
@@ -419,7 +423,7 @@ class ChallengeEngine {
             // Track racha si es significativa
             if (window.trivialAnalytics && this.gameState.streak >= 3) {
                 window.trivialAnalytics.trackChallengeStreak(
-                    this.config.mode || 'continuous',
+                    this.config.mode || 'survival',
                     this.gameState.streak,
                     'correct'
                 );
@@ -429,7 +433,7 @@ class ChallengeEngine {
             if (responseTime <= 5 && window.trivialAnalytics) {
                 const bonusPoints = Math.floor((5 - responseTime) * 10);
                 window.trivialAnalytics.trackChallengeSpeedBonus(
-                    this.config.mode || 'continuous',
+                    this.config.mode || 'survival',
                     bonusPoints,
                     responseTime
                 );
@@ -448,17 +452,28 @@ class ChallengeEngine {
             gameState: this.gameState
         });
 
-        // En el nuevo modo continuo, SIEMPRE continuar a la siguiente pregunta
+        // Determinar si continuar o terminar
         await this.handleQuestionResult(isCorrect);
-    }
-
-    /**
+    }    /**
      * Maneja el resultado de una pregunta y decide el siguiente paso
      * @param {boolean} isCorrect - Si la respuesta fue correcta
      */
     async handleQuestionResult(isCorrect) {
         console.log(`🎯 Procesando resultado: ${isCorrect ? 'Correcto' : 'Incorrecto'}`);
         
+        if (this.config.mode === 'survival') {
+            await this.handleSurvivalResult(isCorrect);
+        } else {
+            // Modo por defecto: continuar siempre
+            await this.handleDefaultResult(isCorrect);
+        }
+    }
+
+    /**
+     * Maneja el resultado en modo supervivencia (ahora continuo)
+     * @param {boolean} isCorrect - Si la respuesta fue correcta
+     */
+    async handleSurvivalResult(isCorrect) {
         if (isCorrect) {
             console.log(`✅ ¡Respuesta correcta! Racha: ${this.gameState.streak}, Puntuación: ${this.gameState.score}`);
         } else {
@@ -466,7 +481,7 @@ class ChallengeEngine {
         }
         
         // En el nuevo modo continuo, SIEMPRE continuar a la siguiente pregunta
-        console.log('🔄 Continuando con la siguiente pregunta...');
+        console.log('� Continuando con la siguiente pregunta...');
         
         // Continuar con la siguiente pregunta después de una pausa
         setTimeout(async () => {
@@ -478,6 +493,18 @@ class ChallengeEngine {
     }
 
     /**
+     * Maneja el resultado en modo por defecto (continúa siempre)
+     * @param {boolean} isCorrect - Si la respuesta fue correcta
+     */
+    async handleDefaultResult(isCorrect) {
+        // Lógica original: continuar independientemente del resultado
+        setTimeout(async () => {
+            if (this.gameState.isGameRunning) {
+                await this.loadNextQuestion();
+                this.startTimer();
+            }
+        }, 2000);
+    }    /**
      * Calcula la puntuación basada en el tiempo restante y racha
      */
     calculateScore() {
@@ -492,9 +519,7 @@ class ChallengeEngine {
         const unlimitedTimePenalty = (this.config.timer === 0) ? 0.8 : 1.0;
 
         return Math.floor((baseScore + timeBonus + streakBonus) * difficultyMultiplier * unlimitedTimePenalty);
-    }
-
-    /**
+    }    /**
      * Obtiene el multiplicador basado en la dificultad
      */
     getDifficultyMultiplier() {
@@ -513,9 +538,7 @@ class ChallengeEngine {
         }
         
         return multipliers[effectiveDifficulty] || 1.0;
-    }
-
-    /**
+    }/**
      * Inicia el temporizador de la pregunta current
      */
     startTimer() {
@@ -569,9 +592,7 @@ class ChallengeEngine {
         
         // Procesar como respuesta incorrecta
         this.processTimeOut();
-    }
-
-    /**
+    }    /**
      * Procesa el timeout como respuesta incorrecta
      */
     async processTimeOut() {
@@ -588,7 +609,7 @@ class ChallengeEngine {
         // Track timeout en analytics
         if (window.trivialAnalytics) {
             window.trivialAnalytics.trackChallengeTimeout(
-                this.config.mode || 'continuous',
+                this.config.mode || 'survival',
                 this.gameState.currentQuestion.categoria || 'unknown',
                 this.config.timer || 20
             );
@@ -639,11 +660,23 @@ class ChallengeEngine {
             const timeUsed = Math.round(gameResults.duration / 1000);
             
             window.trivialAnalytics.trackChallengeComplete(
-                this.config.mode || 'continuous',
+                this.config.mode || 'survival',
                 gameResults.score,
                 timeUsed,
                 gameResults.correctAnswers,
                 gameResults.questionsAnswered
+            );
+            
+            // Track milestone si es un score alto
+            if (gameResults.score >= 1000) {
+                window.trivialAnalytics.trackMilestone(`challenge_high_score_${Math.floor(gameResults.score / 1000)}k`);
+            }
+            
+            // Track dificultad vs rendimiento
+            window.trivialAnalytics.trackChallengeDifficulty(
+                this.config.mode || 'survival',
+                this.config.difficulty,
+                gameResults.accuracy
             );
         }
 
@@ -664,7 +697,7 @@ class ChallengeEngine {
             // Track pausa en analytics
             if (window.trivialAnalytics) {
                 window.trivialAnalytics.trackChallengePause(
-                    this.config.mode || 'continuous',
+                    this.config.mode || 'survival',
                     this.gameState.questionsAnswered,
                     this.gameState.score
                 );
@@ -685,7 +718,7 @@ class ChallengeEngine {
             // Track reanudación en analytics
             if (window.trivialAnalytics) {
                 window.trivialAnalytics.trackChallengeResume(
-                    this.config.mode || 'continuous',
+                    this.config.mode || 'survival',
                     this.gameState.questionsAnswered,
                     this.gameState.score
                 );
@@ -727,29 +760,32 @@ class ChallengeEngine {
     cleanup() {
         this.stopTimer();
         this.resetGameState();
-        this.nextQuestion = null;
         this.isActive = false;
         console.log('🧹 Motor de desafío limpiado');
     }
 
     /**
-     * Selecciona una dificultad aleatoria si está configurada como 'random'
+     * Prueba la conexión con la API
      */
-    getEffectiveDifficulty() {
-        if (this.config.difficulty === 'random') {
-            const difficulties = ['easy', 'medium', 'hard'];
-            const randomDifficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
-            console.log(`🎲 Dificultad aleatoria seleccionada: ${randomDifficulty}`);
-            return randomDifficulty;
+    async testApiConnection() {
+        try {
+            console.log('🔍 Probando conexión con la API...');
+            console.log('ApiClient instance:', this.apiClient);
+            
+            // Probar una categoría simple
+            const testQuestions = await this.apiClient.getQuestions('historia', 'easy', 1);
+            console.log('✅ Prueba de API exitosa:', testQuestions);
+            return true;
+        } catch (error) {
+            console.error('❌ Prueba de API falló:', error);
+            return false;
         }
-        return this.config.difficulty;
-    }
-
-    /**
+    }    /**
      * Crea una pregunta de prueba para testing
      */    
     createTestQuestion(effectiveDifficulty = 'medium') {
         const testQuestions = [
+            // Preguntas principales
             {
                 pregunta: "¿Cuál es la capital de Francia?",
                 opciones: ["París", "Londres", "Madrid", "Roma"],
@@ -780,6 +816,8 @@ class ChallengeEngine {
                 originalQuestion: "What is the largest planet in the solar system?",
                 originalAnswers: ["Jupiter", "Saturn", "Earth", "Mars"]
             },
+            
+            // Preguntas de nuevas categorías
             {
                 pregunta: "¿Qué significa HTML?",
                 opciones: ["HyperText Markup Language", "High Tech Modern Language", "Home Tool Markup Language", "Hyper Transfer Markup Language"],
@@ -789,6 +827,66 @@ class ChallengeEngine {
                 fuente: "test",
                 originalQuestion: "What does HTML stand for?",
                 originalAnswers: ["HyperText Markup Language", "High Tech Modern Language", "Home Tool Markup Language", "Hyper Transfer Markup Language"]
+            },
+            {
+                pregunta: "¿Cuál es el nombre del protagonista de 'The Legend of Zelda'?",
+                opciones: ["Link", "Zelda", "Ganondorf", "Epona"],
+                respuesta_correcta: "Link",
+                categoria: "videojuegos",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "What is the name of the main character in 'The Legend of Zelda'?",
+                originalAnswers: ["Link", "Zelda", "Ganondorf", "Epona"]
+            },
+            {
+                pregunta: "¿Cuántas cuerdas tiene una guitarra estándar?",
+                opciones: ["6", "4", "8", "12"],
+                respuesta_correcta: "6",
+                categoria: "musica",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "How many strings does a standard guitar have?",
+                originalAnswers: ["6", "4", "8", "12"]
+            },
+            {
+                pregunta: "¿Cuál es el animal terrestre más grande?",
+                opciones: ["Elefante africano", "Rinoceronte", "Hipopótamo", "Jirafa"],
+                respuesta_correcta: "Elefante africano",
+                categoria: "animales",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "What is the largest land animal?",
+                originalAnswers: ["African elephant", "Rhinoceros", "Hippopotamus", "Giraffe"]
+            },
+            {
+                pregunta: "¿Quién es el dios del trueno en la mitología nórdica?",
+                opciones: ["Thor", "Odín", "Loki", "Balder"],
+                respuesta_correcta: "Thor",
+                categoria: "mitologia",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "Who is the god of thunder in Norse mythology?",
+                originalAnswers: ["Thor", "Odin", "Loki", "Balder"]
+            },
+            {
+                pregunta: "¿Cuál es la resolución de pantalla 4K?",
+                opciones: ["3840 x 2160", "1920 x 1080", "2560 x 1440", "4096 x 2160"],
+                respuesta_correcta: "3840 x 2160",
+                categoria: "gadgets",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "What is the resolution of 4K screen?",
+                originalAnswers: ["3840 x 2160", "1920 x 1080", "2560 x 1440", "4096 x 2160"]
+            },
+            {
+                pregunta: "¿Cuál es el manga más vendido de todos los tiempos?",
+                opciones: ["One Piece", "Dragon Ball", "Naruto", "Detective Conan"],
+                respuesta_correcta: "One Piece",
+                categoria: "anime-manga",
+                dificultad: effectiveDifficulty,
+                fuente: "test",
+                originalQuestion: "What is the best-selling manga of all time?",
+                originalAnswers: ["One Piece", "Dragon Ball", "Naruto", "Detective Conan"]
             }
         ];
         
@@ -798,14 +896,113 @@ class ChallengeEngine {
     }
 
     /**
+     * Diagnóstico completo del sistema
+     */
+    async runDiagnostic() {
+        console.log('🔍 === DIAGNÓSTICO DEL MODO DESAFÍO ===');
+        
+        // 1. Verificar configuración
+        console.log('📋 Configuración actual:', this.config);
+        
+        // 2. Verificar ApiClient
+        console.log('🔌 ApiClient:', {
+            exists: !!this.apiClient,
+            type: typeof this.apiClient,
+            hasGetQuestions: this.apiClient && typeof this.apiClient.getQuestions === 'function'
+        });
+        
+        // 3. Probar carga de pregunta
+        try {
+            console.log('🧪 Probando carga de pregunta...');
+            await this.loadNextQuestion();
+            console.log('✅ Carga de pregunta exitosa');
+            console.log('📝 Pregunta actual:', this.gameState.currentQuestion);
+        } catch (error) {
+            console.error('❌ Error en carga de pregunta:', error);
+        }
+        
+        // 4. Verificar estado del juego
+        console.log('🎮 Estado del juego:', this.gameState);
+        
+        console.log('🏁 === FIN DEL DIAGNÓSTICO ===');
+    }
+
+    /**
+     * Selecciona una dificultad aleatoria si está configurada como 'random'
+     */
+    getEffectiveDifficulty() {
+        if (this.config.difficulty === 'random') {
+            const difficulties = ['easy', 'medium', 'hard'];
+            const randomDifficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+            console.log(`🎲 Dificultad aleatoria seleccionada: ${randomDifficulty}`);
+            return randomDifficulty;
+        }
+        return this.config.difficulty;
+    }
+
+    /**
+     * Abandona el desafío actual
+     */
+    abandonChallenge() {
+        if (this.gameState.isGameRunning) {
+            console.log('🚪 Abandonando desafío...');
+            
+            // Track abandono en analytics
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackChallengeAbandon(
+                    this.config.mode || 'survival',
+                    this.gameState.questionsAnswered,
+                    this.gameState.score,
+                    Math.round((Date.now() - this.gameState.gameStartTime) / 1000)
+                );
+            }
+            
+            this.stopTimer();
+            this.gameState.isGameRunning = false;
+            this.isActive = false;
+            
+            this.dispatchEvent('challengeAbandoned', { 
+                gameState: this.gameState,
+                finalScore: this.gameState.score
+            });
+        }
+    }
+
+    /**
+     * Valida y filtra las categorías disponibles usando el ApiClient
+     */
+    validateAndFilterCategories() {
+        if (!this.apiClient) {
+            console.warn('⚠️ ApiClient no disponible para validar categorías');
+            return Object.keys(this.config.categories);
+        }
+
+        // Obtener categorías disponibles del ApiClient
+        const availableCategories = this.apiClient.getAvailableCategories();
+        const allApiCategories = availableCategories.all;
+        
+        // Filtrar solo las categorías que están disponibles en el API
+        const validCategories = Object.keys(this.config.categories)
+            .filter(category => {
+                const isValid = allApiCategories.includes(category);
+                if (!isValid) {
+                    console.warn(`⚠️ Categoría ${category} no disponible en API`);
+                }
+                return isValid;
+            });
+
+        console.log(`✅ Categorías validadas: ${validCategories.length}/${Object.keys(this.config.categories).length}`);
+        return validCategories;
+    }
+
+    /**
      * Obtiene las categorías habilitadas y válidas
      */
     getEnabledCategories() {
-        // Obtener todas las categorías configuradas
-        const allCategories = Object.keys(this.config.categories);
+        const validCategories = this.validateAndFilterCategories();
         
         // Filtrar solo las categorías que están habilitadas
-        const enabledCategories = allCategories.filter(category => 
+        const enabledCategories = validCategories.filter(category => 
             this.config.categories[category] === true
         );
         
@@ -817,11 +1014,30 @@ class ChallengeEngine {
      * Obtiene estadísticas de categorías
      */
     getCategoryStats() {
+        const validCategories = this.validateAndFilterCategories();
         const enabledCategories = this.getEnabledCategories();
         
+        // Agrupar por tipo usando ApiClient si está disponible
+        let categoryGroups = {
+            main: [],
+            additional: []
+        };
+
+        if (this.apiClient) {
+            const apiCategories = this.apiClient.getAvailableCategories();
+            categoryGroups = {
+                main: enabledCategories.filter(cat => apiCategories.main.includes(cat)),
+                entertainment: enabledCategories.filter(cat => apiCategories.entertainment.includes(cat)),
+                science: enabledCategories.filter(cat => apiCategories.science.includes(cat)),
+                culture: enabledCategories.filter(cat => apiCategories.culture.includes(cat)),
+                leisure: enabledCategories.filter(cat => apiCategories.leisure.includes(cat))
+            };
+        }
+
         return {
-            total: Object.keys(this.config.categories).length,
+            total: validCategories.length,
             enabled: enabledCategories.length,
+            groups: categoryGroups,
             list: enabledCategories
         };
     }

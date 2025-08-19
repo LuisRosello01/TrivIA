@@ -367,6 +367,15 @@
             </div>
 
             <div class="control-group">
+                <label for="speedMode">Velocidad:</label>
+                <select id="speedMode" onchange="onSpeedModeChange()">
+                    <option value="fast">⚡ Rápida (15-20s)</option>
+                    <option value="balanced" selected>⚖️ Equilibrada (25-30s)</option>
+                    <option value="quality">🎯 Calidad (35-45s)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
                 <label>&nbsp;</label>
                 <button id="generateBtn" onclick="generateQuestion()">
                     🎯 Generar Pregunta
@@ -464,85 +473,10 @@
                     <div class="stat-label">Cache Size</div>
                 </div>
             </div>
-
-            <div class="experimental-stats" id="experimentalStats" style="display: none;">
-                <div class="experimental-header">
-                    🧪 Estadísticas de Validación Experimental
-                    <button class="reset-btn" onclick="resetValidationStats()">🔄 Reiniciar</button>
-                </div>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalValidations">0</div>
-                        <div class="stat-label">Total Validaciones</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="validationSuccessRate">0%</div>
-                        <div class="stat-label">Tasa de Éxito</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="correctedAnswers">0</div>
-                        <div class="stat-label">Respuestas Corregidas</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="regeneratedQuestions">0</div>
-                        <div class="stat-label">Preguntas Regeneradas</div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <h4>Distribución de Confianza:</h4>
-                    <div style="margin: 10px 0;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span>Alta</span>
-                            <span id="highConfidenceCount">0 (0%)</span>
-                        </div>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill confidence-high" id="highConfidenceBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <div style="margin: 10px 0;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span>Media</span>
-                            <span id="mediumConfidenceCount">0 (0%)</span>
-                        </div>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill confidence-medium" id="mediumConfidenceBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <div style="margin: 10px 0;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span>Baja</span>
-                            <span id="lowConfidenceCount">0 (0%)</span>
-                        </div>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill confidence-low" id="lowConfidenceBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <h4>Puntuaciones de Coincidencia:</h4>
-                    <div class="match-score">
-                        <span>Promedio:</span>
-                        <span id="avgMatchScore">0.000</span>
-                    </div>
-                    <div class="match-score">
-                        <span>Máxima:</span>
-                        <span id="maxMatchScore">0.000</span>
-                    </div>
-                    <div class="match-score">
-                        <span>Mínima:</span>
-                        <span id="minMatchScore">0.000</span>
-                    </div>
-                    <div class="match-score">
-                        <span>Muestras:</span>
-                        <span id="matchSamples">0</span>
-                    </div>
-                </div>
-            </div>
         </div>
-    </div>    <script src="js/utils/OllamaClient.js"></script>
+    </div>
+
+    <script src="js/utils/OllamaClient.js"></script>
     <script>
         let ollamaClient;
         let generationCount = 0;
@@ -581,8 +515,49 @@
             document.getElementById('success').style.display = 'none';
         }        // Inicializar al cargar la página
         document.addEventListener('DOMContentLoaded', async () => {
+            // Diagnóstico inicial del DOM
+            console.log('📄 DOM cargado - Verificando elementos críticos...');
+            
+            const experimentalStatsElement = document.getElementById('experimentalStats');
+            console.log('🔍 Elemento experimentalStats encontrado:', !!experimentalStatsElement);
+            if (experimentalStatsElement) {
+                console.log('✅ experimentalStats existe:', {
+                    id: experimentalStatsElement.id,
+                    className: experimentalStatsElement.className,
+                    style: experimentalStatsElement.style.display,
+                    parentNode: experimentalStatsElement.parentNode?.tagName
+                });
+            } else {
+                console.warn('❌ experimentalStats NO encontrado en DOM inicial');
+                console.log('🔍 Elementos similares:', 
+                    Array.from(document.querySelectorAll('[id*="Stats"], [class*="stats"]'))
+                        .map(el => ({ id: el.id, class: el.className }))
+                );
+            }
+            
             await initOllamaClient();
             updateStats();
+            
+            // Iniciar intervalos solo después de que el DOM esté completamente cargado
+            console.log('🕐 Iniciando intervalos de actualización...');
+            
+            // Actualizar stats cada 5 segundos
+            setInterval(() => {
+                try {
+                    updateStats();
+                } catch (error) {
+                    console.warn('⚠️ Error en updateStats:', error);
+                }
+            }, 5000);
+            
+            // Verificar cambios en la disponibilidad cada 10 segundos
+            setInterval(() => {
+                try {
+                    refreshOnAvailabilityChange();
+                } catch (error) {
+                    console.warn('⚠️ Error en refreshOnAvailabilityChange:', error);
+                }
+            }, 10000);
         });
 
         async function initOllamaClient() {
@@ -931,71 +906,6 @@
                     <div class="stat-label">Cache</div>
                 </div>
             `;
-            
-            // Actualizar estadísticas experimentales si están disponibles
-            updateExperimentalStats();
-        }
-
-        function updateExperimentalStats() {
-            if (!ollamaClient || typeof ollamaClient.getValidationStatsReport !== 'function') {
-                return;
-            }
-
-            try {
-                const validationStats = ollamaClient.getValidationStatsReport();
-                const experimentalSection = document.getElementById('experimentalStats');
-                
-                // Mostrar la sección experimental si hay estadísticas
-                if (validationStats.totalValidations > 0) {
-                    experimentalSection.style.display = 'block';
-                    
-                    // Actualizar valores básicos
-                    document.getElementById('totalValidations').textContent = validationStats.totalValidations;
-                    document.getElementById('validationSuccessRate').textContent = 
-                        `${(validationStats.successRate * 100).toFixed(1)}%`;
-                    document.getElementById('correctedAnswers').textContent = validationStats.correctedAnswers;
-                    document.getElementById('regeneratedQuestions').textContent = validationStats.regeneratedQuestions;
-                    
-                    // Actualizar distribución de confianza
-                    const total = validationStats.totalValidations;
-                    const confidence = validationStats.confidenceDistribution;
-                    
-                    updateConfidenceBar('high', confidence.high, total);
-                    updateConfidenceBar('medium', confidence.medium, total);
-                    updateConfidenceBar('low', confidence.low, total);
-                    
-                    // Actualizar puntuaciones de coincidencia
-                    document.getElementById('avgMatchScore').textContent = 
-                        validationStats.averageMatchScore.toFixed(3);
-                    document.getElementById('maxMatchScore').textContent = 
-                        validationStats.maxMatchScore.toFixed(3);
-                    document.getElementById('minMatchScore').textContent = 
-                        validationStats.minMatchScore.toFixed(3);
-                    document.getElementById('matchSamples').textContent = 
-                        validationStats.matchScoreSamples;
-                }
-            } catch (error) {
-                console.warn('Error actualizando estadísticas experimentales:', error);
-            }
-        }
-
-        function updateConfidenceBar(level, count, total) {
-            const percentage = total > 0 ? (count / total) * 100 : 0;
-            const countElement = document.getElementById(`${level}ConfidenceCount`);
-            const barElement = document.getElementById(`${level}ConfidenceBar`);
-            
-            if (countElement && barElement) {
-                countElement.textContent = `${count} (${percentage.toFixed(1)}%)`;
-                barElement.style.width = `${percentage}%`;
-            }
-        }
-
-        function resetValidationStats() {
-            if (ollamaClient) {
-                ollamaClient.resetValidationStats();
-                updateExperimentalStats();
-                showSuccess('📊 Estadísticas de validación reiniciadas');
-            }
         }
 
         // Funciones de configuración de servidor
@@ -1105,12 +1015,13 @@
         async function scanNetworkServers() {
             const scanBtn = document.getElementById('scanServersBtn');
             scanBtn.disabled = true;
-            
+            hideMessages();
+
             try {
-                showSuccess('🔍 Escaneando servidores en la red...');
+                showSuccess('🔍 Escaneando la red en busca de servidores Ollama...');
                 
-                const servers = await ollamaClient.listAvailableServers();
-                displayAvailableServers(servers);
+                const availableServers = await ollamaClient.listAvailableServers();
+                displayAvailableServers(availableServers);
                 
                 document.getElementById('availableServers').style.display = 'block';
                 
@@ -1281,6 +1192,15 @@
             }
         }
 
+        function onSpeedModeChange() {
+            const speedMode = document.getElementById('speedMode').value;
+            if (ollamaClient) {
+                console.log(`🚀 Cambiando modo de velocidad a: ${speedMode}`);
+                ollamaClient.setSpeedMode(speedMode);
+                showSuccess(`🚀 Velocidad configurada: ${speedMode}`);
+            }
+        }
+
         function toggleCorrectAnswer() {
             const toggleBtn = document.querySelector('.toggle-answer-btn');
             const correctAnswers = document.querySelectorAll('.answer[data-correct="true"]');
@@ -1310,45 +1230,13 @@
             try {
                 showSuccess('🔍 Escaneando la red en busca de servidores Ollama...');
                 
-                const availableServers = await ollamaClient.detectAvailableServers();
+                const availableServers = await ollamaClient.listAvailableServers();
+                displayAvailableServers(availableServers);
                 
-                if (availableServers.length > 0) {
-                    showSuccess(`🎯 Encontrados ${availableServers.length} servidor(es) Ollama`);
-                    
-                    // Mostrar servidores encontrados
-                    const serversDiv = document.getElementById('availableServers');
-                    const serversList = serversDiv.querySelector('#serversList') || document.createElement('div');
-                    serversList.id = 'serversList';
-                    serversList.innerHTML = '';
-                    
-                    availableServers.forEach((server, index) => {
-                        const serverItem = document.createElement('div');
-                        serverItem.className = 'server-item';
-                        serverItem.innerHTML = `
-                            <div style="padding: 10px; border: 1px solid #ddd; margin: 5px 0; border-radius: 5px;">
-                                <strong>🖥️ Servidor ${index + 1}:</strong> ${server.url}<br>
-                                <small>Modelos: ${server.models?.length || 0} disponible(s)</small>
-                                <button onclick="selectServer('${server.url}')" 
-                                        style="margin-left: 10px; padding: 5px 10px;">
-                                    Seleccionar
-                                </button>
-                            </div>
-                        `;
-                        serversList.appendChild(serverItem);
-                    });
-                    
-                    if (!serversDiv.querySelector('#serversList')) {
-                        serversDiv.appendChild(serversList);
-                    }
-                    serversDiv.style.display = 'block';
-                    
-                } else {
-                    showError('❌ No se encontraron servidores Ollama en la red');
-                }
+                document.getElementById('availableServers').style.display = 'block';
                 
             } catch (error) {
-                console.error('❌ Error escaneando servidores:', error);
-                showError(`Error escaneando red: ${error.message}`);
+                showError(`Error escaneando servidores: ${error.message}`);
             } finally {
                 scanBtn.disabled = false;
             }
@@ -1373,8 +1261,7 @@
             } catch (error) {
                 showError(`Error seleccionando servidor: ${error.message}`);
             }
-        }        // Actualizar stats cada 5 segundos
-        setInterval(updateStats, 5000);
+        }
 
         // Función para refrescar estado automáticamente cuando OllamaClient detecta cambios
         async function refreshOnAvailabilityChange() {
@@ -1398,9 +1285,6 @@
                 console.warn('⚠️ Error en verificación automática:', error);
             }
         }
-
-        // Verificar cambios en la disponibilidad cada 10 segundos
-        setInterval(refreshOnAvailabilityChange, 10000);
     </script>
 </body>
 </html>

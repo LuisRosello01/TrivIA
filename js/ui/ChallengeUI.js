@@ -153,7 +153,8 @@ class ChallengeUI {    constructor() {
         document.addEventListener('challengeError', (e) => this.onChallengeError(e.detail));
         document.addEventListener('challengePaused', (e) => this.onChallengePaused(e.detail));
         document.addEventListener('challengeResumed', (e) => this.onChallengeResumed(e.detail));
-        document.addEventListener('survivalGameOver', (e) => this.onSurvivalGameOver(e.detail));
+        // Comentado: El juego ahora continúa después de respuestas incorrectas
+        // document.addEventListener('survivalGameOver', (e) => this.onSurvivalGameOver(e.detail));
     }
 
     /**
@@ -823,20 +824,13 @@ class ChallengeUI {    constructor() {
         this.updateStats(data.gameState);
         
         console.log(isCorrect ? '✅ Respuesta correcta!' : '❌ Respuesta incorrecta');
-          // Solo mostrar carga de siguiente pregunta si el jugador sigue vivo
-        // y no está en modo supervivencia que haya fallado
-        const isAlive = data.gameState.isAlive !== false;
-        const shouldContinue = isAlive && (isCorrect || !data.gameState.isSurvivalMode);
         
-        if (shouldContinue) {
-            this.createSafeTimeout(() => {
-                this.showQuestionLoading();
-            }, 2000); // Dar tiempo para ver el resultado
-        } else if (!isAlive) {
-            // Si el jugador ha muerto, marcar el juego como terminado
-            this.gameEnded = true;
-            console.log('💀 Jugador eliminado, marcando juego como terminado');
-        }
+        // En el nuevo modo continuo, SIEMPRE mostrar carga de siguiente pregunta
+        console.log('🔄 Preparando siguiente pregunta...');
+        
+        this.createSafeTimeout(() => {
+            this.showQuestionLoading();
+        }, 2000); // Dar tiempo para ver el resultado
     }    /**
      * Maneja el timeout de una pregunta
      */
@@ -859,18 +853,13 @@ class ChallengeUI {    constructor() {
         
         // Actualizar estadísticas
         this.updateStats(data.gameState);
-          // Solo mostrar carga de siguiente pregunta si el jugador sigue vivo
-        const isAlive = data.gameState.isAlive !== false;
         
-        if (isAlive) {
-            this.createSafeTimeout(() => {
-                this.showQuestionLoading();
-            }, 2000); // Dar tiempo para ver el resultado
-        } else {
-            // Si el jugador ha muerto, marcar el juego como terminado
-            this.gameEnded = true;
-            console.log('💀 Jugador eliminado por timeout, marcando juego como terminado');
-        }
+        // En el nuevo modo continuo, SIEMPRE continuar después del timeout
+        console.log('⏰ Tiempo agotado, pero continuamos con la siguiente pregunta');
+        
+        this.createSafeTimeout(() => {
+            this.showQuestionLoading();
+        }, 2000); // Dar tiempo para ver el resultado
     }/**
      * Muestra la confirmación de salida
      */

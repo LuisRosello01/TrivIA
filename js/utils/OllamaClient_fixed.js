@@ -5,54 +5,98 @@
  */
 class OllamaClient {
 	constructor(config = {}) {
-		// Configuración del servidor
+		// Configuración del servidor (definir primero)
 		this.serverConfig = {
-			autoDetect: config.autoDetect !== false,
+			autoDetect: config.autoDetect !== false, // Por defecto activado
 			possibleServers: config.possibleServers || [
-				'http://localhost:11434',
-				'http://192.168.31.88:11434',
+				'http://localhost:11434',        // Servidor local (fallback)
+				'http://192.168.31.88:11434',   // Ejemplo: servidor dedicado
+				'http://ollama-server.local:11434', // Ejemplo: hostname local
+				// Agregar más IPs según tu red
 			],
 			timeout: config.timeout || 7000
 		};
 
+		// Configuración flexible del servidor (ahora que serverConfig está definido)
 		this.baseUrl = config.serverUrl || this.detectServerUrl() || 'http://localhost:11434';
+		// Modelo por defecto: optimizado para la petición del usuario
 		this.model = config.model || 'gpt-oss';
 		this.isAvailable = false;
-		this.cache = new Map();
-		this.maxCacheSize = 50;
+		this.cache = new Map(); // Cache para evitar regenerar preguntas similares
+		this.maxCacheSize = 100;
 
-		// Opciones optimizadas para modelos thinking con velocidad mejorada
+		// Optimización: opciones de generación parametrizables para modelos lentos
 		this.generationOptions = {
-			temperature: config.temperature ?? 0.3, // Más bajo para JSON consistente
+			temperature: config.temperature ?? 0.6,
 			top_p: config.top_p ?? 0.9,
 			top_k: config.top_k ?? 40,
-			num_predict: config.num_predict ?? 300, // Reducido de 500 a 300
-			repeat_penalty: config.repeat_penalty ?? 1.1,
-			num_ctx: config.num_ctx ?? 2048 // Contexto más pequeño para velocidad
+			num_predict: config.num_predict ?? 500 // Incrementado para modelos thinking
 		};
 
-		// Timeouts optimizados para velocidad
-		this.requestTimeoutMs = config.requestTimeoutMs || 45000; // Reducido de 120s a 45s
-		this.maxRetries = config.maxRetries || 3;
-		this.baseRetryDelayMs = 500; // Reducido de 800ms a 500ms
+		// Timeouts y reintentos para modelos más lentos
+		this.requestTimeoutMs = config.requestTimeoutMs || 120000; // 120s para modelos thinking
+		this.maxRetries = Math.max(1, config.maxRetries || 4);
+		this.baseRetryDelayMs = config.baseRetryDelayMs || 800; // backoff exponencial
 
 		// Control de logs
 		this.debug = config.debug ?? false;
 
-		// Mapeo de categorías a temas
+		// EXPERIMENTAL: Verificar todas las preguntas con el modelo (desactivado por defecto para rendimiento)
+		this.enableExperimentalValidation = config.enableExperimentalValidation === true ? true : false;
+
+		// Estadísticas de validación experimental
+		this.validationStats = {
+			totalValidations: 0,
+			successfulValidations: 0,
+			correctedAnswers: 0,
+			regeneratedQuestions: 0,
+			validationErrors: 0,
+			confidenceDistribution: {
+				high: 0,
+				medium: 0,
+				low: 0
+			},
+			averageMatchScore: 0,
+			matchScores: []
+		};
+
+		// Prefetch en background para mitigar latencias
+		this.prefetchEnabled = config.prefetchEnabled ?? true;
+		this.prefetchCount = Math.max(0, config.prefetchCount ?? 1);
+
+		// Coalescencia de peticiones idénticas en curso
+		this.inFlightRequests = new Map();
+
+		// Mapeo de categorías a temas más específicos
 		this.categoryTopics = {
-			historia: ['historia mundial', 'historia de España', 'historia antigua', 'historia medieval', 'historia moderna'],
-			ciencia: ['física', 'química', 'biología', 'astronomía', 'matemáticas', 'medicina'],
-			deportes: ['fútbol', 'baloncesto', 'tenis', 'atletismo', 'natación', 'ciclismo'],
-			arte: ['pintura', 'escultura', 'arquitectura', 'música clásica', 'literatura', 'cine'],
-			geografia: ['geografía física', 'geografía política', 'capitales del mundo', 'ríos y montañas'],
-			entretenimiento: ['cine y televisión', 'música popular', 'videojuegos', 'celebridades']
+			historia: [
+				'historia mundial', 'historia de España', 'historia antigua', 
+				'historia medieval', 'historia moderna', 'historia contemporánea',
+				'guerras mundiales', 'civilizaciones antiguas', 'descubrimientos'
+			],
+			ciencia: [
+				'física', 'química', 'biología', 'astronomía', 'matemáticas',
+				'medicina', 'geología', 'ecología', 'genética', 'neurociencia'
+			],
+			deportes: [
+				'fútbol', 'baloncesto', 'tenis', 'atletismo', 'natación',
+				'ciclismo', 'motor', 'deportes olímpicos', 'deportes de invierno'
+			],
+			arte: [
+				'pintura', 'escultura', 'arquitectura', 'música clásica',
+				'literatura', 'cine', 'teatro', 'arte moderno', 'arte contemporáneo'
+			],
+			geografia: [
+				'geografía física', 'geografía política', 'capitales del mundo',
+				'ríos y montañas', 'países y continentes', 'clima y ecosistemas'
+			],
+			entretenimiento: [
+				'cine y televisión', 'música popular', 'videojuegos',
+				'celebridades', 'series de TV', 'música moderna', 'cultura pop'
+			]
 		};
 		
 		this.checkAvailability();
-		
-		// Configurar modo de velocidad por defecto
-		this.setSpeedMode('balanced');
 	}
 
 	/**
@@ -112,70 +156,6 @@ class OllamaClient {
 	setModel(modelName) {
 		this.model = modelName;
 		if (this.debug) console.log(`Modelo configurado: ${this.model}`);
-	}
-
-	/**
-	 * Configura el modo de velocidad
-	 */
-	setSpeedMode(mode) {
-		const speedConfigs = {
-			fast: {
-				temperature: 0.2, // Más bajo para JSON consistente
-				top_p: 0.9,
-				top_k: 20,
-				num_predict: 200,
-				repeat_penalty: 1.2,
-				num_ctx: 1024,
-				requestTimeoutMs: 25000,
-				mirostat: 2,
-				mirostat_tau: 3.0,
-				mirostat_eta: 0.2
-			},
-			balanced: {
-				temperature: 0.3, // Más bajo para JSON consistente
-				top_p: 0.9,
-				top_k: 40,
-				num_predict: 300,
-				repeat_penalty: 1.1,
-				num_ctx: 2048,
-				requestTimeoutMs: 45000,
-				mirostat: 2,
-				mirostat_tau: 5.0,
-				mirostat_eta: 0.1
-			},
-			quality: {
-				temperature: 0.4, // Más bajo para JSON consistente
-				top_p: 0.85,
-				top_k: 60,
-				num_predict: 500,
-				repeat_penalty: 1.05,
-				num_ctx: 4096,
-				requestTimeoutMs: 60000,
-				mirostat: 1,
-				mirostat_tau: 8.0,
-				mirostat_eta: 0.05
-			}
-		};
-
-		const config = speedConfigs[mode] || speedConfigs.balanced;
-		
-		// Actualizar opciones de generación
-		this.generationOptions = {
-			temperature: config.temperature,
-			top_p: config.top_p,
-			top_k: config.top_k,
-			num_predict: config.num_predict,
-			repeat_penalty: config.repeat_penalty,
-			num_ctx: config.num_ctx,
-			mirostat: config.mirostat,
-			mirostat_tau: config.mirostat_tau,
-			mirostat_eta: config.mirostat_eta
-		};
-
-		// Actualizar timeout
-		this.requestTimeoutMs = config.requestTimeoutMs;
-		
-		if (this.debug) console.log(`🚀 Velocidad configurada: ${mode}`, this.generationOptions);
 	}
 
 	/**
@@ -331,16 +311,38 @@ class OllamaClient {
 		};
 	}
 
+	// Utilidad de backoff con jitter
+	async delayWithBackoff(attempt) {
+		const jitter = Math.floor(Math.random() * 250);
+		const delay = this.baseRetryDelayMs * Math.pow(2, attempt - 1) + jitter;
+		return new Promise(res => setTimeout(res, delay));
+	}
+
 	// Cache helpers
+	getCacheKey(category, difficulty, specificTopic) {
+		return `${category}|${difficulty}|${specificTopic || ''}`;
+	}
+
 	addToCache(category, difficulty, specificTopic, question) {
-		const key = `${category}|${difficulty}|${specificTopic || ''}`;
+		const key = this.getCacheKey(category, difficulty, specificTopic);
 		if (!this.cache.has(key)) this.cache.set(key, []);
 		const arr = this.cache.get(key);
 		arr.push(question);
-		if (arr.length > 5) arr.shift(); // Mantener solo 5 preguntas por categoría
+		// Límite simple por clave y global
+		if (arr.length > 10) arr.shift();
 		if (this.cache.size > this.maxCacheSize) {
+			// Borrar una entrada arbitraria (FIFO simple)
 			const firstKey = this.cache.keys().next().value;
 			this.cache.delete(firstKey);
+		}
+	}
+
+	async prefetchQuestions(category, difficulty, specificTopic, avoidTopics, language) {
+		if (!this.prefetchEnabled || this.prefetchCount <= 0) return;
+		for (let i = 0; i < this.prefetchCount; i++) {
+			// Lanzar en background sin bloquear
+			this.generateQuestion({ category, difficulty, specificTopic, avoidTopics, language, _internalPrefetch: true })
+				.catch(() => {});
 		}
 	}
 
@@ -356,11 +358,14 @@ class OllamaClient {
 			category = 'historia',
 			difficulty = 'medium',
 			specificTopic = null,
-			language = 'español'
+			avoidTopics = [],
+			language = 'español',
+			signal: externalSignal,
+			_internalPrefetch = false
 		} = options;
 
 		// Verificar cache primero
-		const cacheKey = `${category}|${difficulty}|${specificTopic || ''}`;
+		const cacheKey = this.getCacheKey(category, difficulty, specificTopic);
 		if (this.cache.has(cacheKey)) {
 			const cachedQuestions = this.cache.get(cacheKey);
 			if (cachedQuestions.length > 0) {
@@ -368,75 +373,105 @@ class OllamaClient {
 			}
 		}
 
+		// Declarar prompt fuera de try para poder limpiar coalescencia en catch
+		let prompt = '';
+
 		try {
-			const prompt = this.buildPrompt(category, difficulty, specificTopic, language);
+			prompt = this.buildPrompt(category, difficulty, specificTopic, avoidTopics, language);
+
+			// Coalescencia: si ya hay una petición idéntica en curso, reutilizar
+			if (this.inFlightRequests.has(prompt)) {
+				return await this.inFlightRequests.get(prompt);
+			}
 
 			if (this.debug) console.log('🤖 Generando pregunta con modelo thinking...', this.model);
 			const startTime = Date.now();
+			const maxRetries = this.maxRetries;
+			let lastError = null;
 
-			for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-				try {
-					if (this.debug) console.log(`🎯 Generando pregunta (intento ${attempt}/${this.maxRetries})...`);
+			const taskPromise = (async () => {
+				for (let attempt = 1; attempt <= maxRetries; attempt++) {
+					try {
+						if (this.debug) console.log(`🎯 Generando pregunta (intento ${attempt}/${maxRetries})...`);
 
-					const controller = new AbortController();
-					const timeoutId = setTimeout(() => controller.abort(), this.requestTimeoutMs);
+						const controller = new AbortController();
+						const timeoutId = setTimeout(() => controller.abort(), this.requestTimeoutMs);
 
-					const response = await fetch(`${this.baseUrl}/api/generate`, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({
-							model: this.model,
-							prompt,
-							stream: false,
-							options: this.generationOptions
-						}),
-						signal: controller.signal
-					});
+						// Vincular una señal externa si se proporciona
+						if (externalSignal) {
+							if (externalSignal.aborted) controller.abort();
+							externalSignal.addEventListener('abort', () => controller.abort(), { once: true });
+						}
 
-					clearTimeout(timeoutId);
+						const response = await fetch(`${this.baseUrl}/api/generate`, {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								model: this.model,
+								prompt,
+								stream: false,
+								options: { ...this.generationOptions }
+							}),
+							signal: controller.signal
+						});
 
-					if (!response.ok) {
-						throw new Error(`Error HTTP: ${response.status}`);
+						clearTimeout(timeoutId);
+
+						if (!response.ok) {
+							throw new Error(`Error HTTP: ${response.status}`);
+						}
+
+						const data = await response.json();
+						const generationTime = Date.now() - startTime;
+						if (this.debug) {
+							console.log(`⚡ Respuesta recibida en ${generationTime}ms`);
+							console.log('📝 Respuesta del modelo:', data.response);
+						}
+
+						// Parsear la respuesta del modelo con tolerancia
+						const question = await this.parseModelResponse(data.response, category, difficulty);
+
+						// Validar la pregunta
+						try {
+							await this.validateQuestion(question);
+							if (this.debug) console.log(`✅ Pregunta válida generada en intento ${attempt}`);
+
+							// Guardar en cache y lanzar prefetch en background
+							this.addToCache(category, difficulty, specificTopic, question);
+							if (!_internalPrefetch) {
+								this.prefetchQuestions(category, difficulty, specificTopic, avoidTopics, language);
+							}
+
+							return question;
+						} catch (validationError) {
+							if (validationError.message?.includes('regeneración')) {
+								if (this.debug) console.warn(`🔄 Pregunta requiere regeneración: ${validationError.message}`);
+								throw validationError;
+							}
+							throw validationError;
+						}
+					} catch (error) {
+						lastError = error;
+						if (this.debug) console.warn(`❌ Intento ${attempt} falló:`, error.message);
+						if (attempt === maxRetries) {
+							console.error('❌ Todos los intentos fallaron');
+							break;
+						}
+						await this.delayWithBackoff(attempt);
 					}
-
-					const data = await response.json();
-					const generationTime = Date.now() - startTime;
-					if (this.debug) {
-						console.log(`⚡ Respuesta recibida en ${generationTime}ms`);
-					}
-
-					// Verificar si la respuesta está vacía antes de procesar
-					if (!data.response || String(data.response).trim().length === 0) {
-						throw new Error('Respuesta vacía del modelo');
-					}
-
-					// Parsear la respuesta del modelo
-					const question = await this.parseModelResponse(data.response, category, difficulty);
-
-					// Validación básica
-					if (question && question.text && question.answers && question.answers.length === 4) {
-						if (this.debug) console.log(`✅ Pregunta válida generada en intento ${attempt}`);
-
-						// Guardar en cache
-						this.addToCache(category, difficulty, specificTopic, question);
-						return question;
-					} else {
-						throw new Error('Pregunta inválida generada');
-					}
-
-				} catch (error) {
-					if (this.debug) console.warn(`❌ Intento ${attempt} falló:`, error.message);
-					if (attempt === this.maxRetries) {
-						throw error;
-					}
-					// Esperar antes del siguiente intento
-					await new Promise(res => setTimeout(res, this.baseRetryDelayMs * attempt));
 				}
-			}
+				throw new Error(`No se pudo generar la pregunta después de ${maxRetries} intentos: ${lastError?.message || 'Error desconocido'}`);
+			})();
 
-			throw new Error(`No se pudo generar la pregunta después de ${this.maxRetries} intentos`);
+			// Registrar la promesa en curso para coalescencia
+			this.inFlightRequests.set(prompt, taskPromise);
+			const result = await taskPromise;
+			this.inFlightRequests.delete(prompt);
+			return result;
 		} catch (error) {
-			console.error('Error generando pregunta:', error);
+			console.error('Error generando pregunta con el modelo:', error);
+			// Limpiar coalescencia ante error
+			if (prompt) this.inFlightRequests.delete(prompt);
 			throw error;
 		}
 	}
@@ -444,58 +479,72 @@ class OllamaClient {
 	/**
 	 * Construye el prompt para el modelo thinking
 	 */
-	buildPrompt(category, difficulty, specificTopic, language) {
+	buildPrompt(category, difficulty, specificTopic, avoidTopics, language) {
+		// Seleccionar un tema específico si no se proporciona
 		const topic = specificTopic || this.getRandomTopic(category);
 		
+		// Configurar nivel de dificultad
 		const difficultyDescriptions = {
-			easy: 'básica y accesible',
-			medium: 'intermedia',
-			hard: 'avanzada'
+			easy: 'básica y accesible para principiantes',
+			medium: 'intermedia con conocimientos generales',
+			hard: 'avanzada para expertos en el tema'
 		};
 
-		const difficultyDescription = difficultyDescriptions[difficulty] || 'intermedia';
+		const difficultyDescription = difficultyDescriptions[difficulty] || difficultyDescriptions.medium;
+
+		// Construir lista de temas a evitar
+		const avoidText = avoidTopics.length > 0 
+			? `\n- NO hagas preguntas sobre: ${avoidTopics.join(', ')}` : '';
 			
-		const prompt = `Eres un experto en crear preguntas de trivia educativas.
+		const prompt = `Eres un experto en crear preguntas de trivial educativas y entretenidas.
 
 <thinking>
-Necesito crear una pregunta de trivia sobre ${topic} en ${language} con dificultad ${difficultyDescription} para la categoría ${category}.
+Necesito crear una pregunta de trivial sobre ${topic} en ${language} con dificultad ${difficultyDescription} para la categoría ${category}.
 
 Voy a pensar en:
-1. Una pregunta específica y clara sobre ${topic}.
-2. Cuatro opciones de respuesta, solo una correcta.
-3. Las opciones incorrectas deben ser plausibles pero erróneas.
-4. Una explicación breve de por qué la respuesta es correcta.
+1. Una pregunta específica y clara sobre ${topic}
+2. Cuatro opciones de respuesta donde solo una sea correcta
+3. Las respuestas incorrectas deben ser plausibles pero claramente erróneas
+4. Una explicación breve de por qué la respuesta es correcta
+
+Criterios:
+- La pregunta debe ser objetiva y verificable
+- Evitar preguntas demasiado obvias o demasiado oscuras
+- Las opciones deben estar bien balanceadas${avoidText}
 </thinking>
 
 INSTRUCCIONES:
-- Crea una pregunta de trivia sobre ${topic} en ${language}.
+- Crea una pregunta de trivial sobre ${topic} en ${language}
 - Dificultad: ${difficultyDescription}
 - Categoría: ${category}
-- Proporciona exactamente 4 opciones de respuesta.
-- Solo UNA respuesta debe ser correcta.
+- La pregunta debe ser clara, precisa y tener una respuesta objetiva
+- Proporciona exactamente 4 opciones de respuesta (A, B, C, D)
+- Solo UNA respuesta debe ser correcta
+- Las respuestas incorrectas deben ser plausibles pero claramente erróneas
+- Evita preguntas demasiado obvias o demasiado oscuras${avoidText}
 
 FORMATO DE RESPUESTA OBLIGATORIO:
-Responde ÚNICAMENTE con un JSON válido. NO agregues texto antes ni después.
+Responde ÚNICAMENTE con un JSON válido y completo. NO agregues texto antes o después. Evita bloques de código.
 
 {
   "pregunta": "¿Texto de la pregunta aquí?",
   "opciones": [
     "Opción A",
-    "Opción B",
+    "Opción B", 
     "Opción C",
     "Opción D"
   ],
   "respuesta_correcta": 0,
-  "explicacion": "Breve explicación de por qué esta es la respuesta correcta.",
+  "explicacion": "Breve explicación de por qué esta es la respuesta correcta (máximo 300 caracteres)",
   "tema": "${topic}",
   "dificultad": "${difficulty}"
 }
 
-CRÍTICO:
-- respuesta_correcta debe ser un número entero entre 0 y 3
-- NO usar comas después del último campo
-- NO agregar espacios extra alrededor de los dos puntos
-- El JSON debe estar completo y bien formado`;
+CRÍTICO: 
+- El JSON debe estar completo con todas las llaves cerradas
+- El índice respuesta_correcta debe ser 0, 1, 2 o 3 (no letras)
+- Todas las comillas deben estar balanceadas
+- No olvides la llave de cierre final }`;
 
 		return prompt;
 	}
@@ -516,129 +565,56 @@ CRÍTICO:
 		try {
 			let raw = String(response || '').trim();
 			
-			// Verificación temprana de respuesta vacía
-			if (raw.length === 0) {
-				console.warn('⚠️ Respuesta completamente vacía del modelo');
-				throw new Error('Respuesta vacía del modelo');
-			}
-			
-			// Log de la respuesta completa para debugging
-			console.log('🔍 Respuesta completa del modelo:', raw.substring(0, 200) + (raw.length > 200 ? '...' : ''));
-			
 			// Para modelos thinking: extraer solo la parte después del thinking
 			if (raw.includes('</thinking>')) {
 				const thinkingEnd = raw.indexOf('</thinking>');
 				raw = raw.substring(thinkingEnd + 11).trim();
-				console.log('🧠 Extraído después de </thinking>:', raw.substring(0, 100) + (raw.length > 100 ? '...' : ''));
-			}
-			
-			// También buscar otras variantes de thinking
-			const thinkingPatterns = [
-				/<\/thinking>/i,
-				/\*\*Thinking:\*\*/i,
-				/\*\*Razonamiento:\*\*/i,
-				/^Pensando:/i,
-				/^Thinking:/i
-			];
-			
-			for (const pattern of thinkingPatterns) {
-				const match = raw.match(pattern);
-				if (match) {
-					raw = raw.substring(match.index + match[0].length).trim();
-					console.log(`🧠 Extraído después de ${match[0]}:`, raw.substring(0, 100) + (raw.length > 100 ? '...' : ''));
-					break;
-				}
-			}
-			
-			// Verificar que después de procesar thinking quede contenido
-			if (raw.length === 0) {
-				console.warn('⚠️ No hay contenido después de procesar thinking');
-				throw new Error('Sin contenido útil después de thinking');
 			}
 			
 			// Quitar fences de código si los hubiera
 			raw = raw.replace(/```json[\s\S]*?```/gi, m => m.replace(/^```json\s*|\s*```$/gi, ''));
 			raw = raw.replace(/```[\s\S]*?```/g, m => m.replace(/^```\s*|\s*```$/g, ''));
-			
 			// Normalizar comillas raras
 			raw = raw.replace(/[""]/g, '"').replace(/['']/g, "'");
-			
-			console.log('🔧 Texto procesado para JSON:', raw.substring(0, 150) + (raw.length > 150 ? '...' : ''));
 
 			// 1) Intentar extraer el primer JSON bien formado
 			let jsonText = this.extractFirstJsonObject(raw);
-			console.log('📦 JSON extraído:', jsonText ? 'Encontrado' : 'null');
 
 			// 2) Si no se encontró JSON, intentar heurísticas desde texto
 			if (!jsonText) {
-				console.warn('ℹ️ No se encontró bloque JSON, intentando heurística desde texto...');
+				if (this.debug) console.warn('ℹ️ No se encontró bloque JSON, intentando heurística desde texto...');
 				const rebuilt = this.tryBuildQuestionFromText(raw, category, difficulty);
-				if (rebuilt) {
-					console.log('✅ Pregunta reconstruida desde texto:', rebuilt);
-					return rebuilt;
-				}
+				if (rebuilt) return rebuilt;
 			}
 
 			// 3) Si hay JSON, intentar parsear con pequeñas correcciones
 			if (jsonText) {
 				jsonText = this.normalizeJsonText(jsonText);
-				console.log('🔧 JSON normalizado:', jsonText.substring(0, 100) + (jsonText.length > 100 ? '...' : ''));
-				
 				let questionData;
 				try {
 					questionData = JSON.parse(jsonText);
-					console.log('✅ JSON parseado exitosamente:', questionData);
-					
-					// Validación adicional del JSON parseado
-					if (!this.validateQuestionJSON(questionData)) {
-						throw new Error('JSON válido pero estructura de pregunta incorrecta');
-					}
-					
 				} catch (e) {
-					console.warn('⚠️ Error parseando JSON, intentando correcciones:', e.message);
-					// Reintento: correcciones automáticas de formato
-					const corrected = this.fixCommonJSONIssues(jsonText);
-					console.log('🔧 JSON con correcciones:', corrected.substring(0, 100) + (corrected.length > 100 ? '...' : ''));
-					questionData = JSON.parse(corrected);
-					console.log('✅ JSON corregido parseado:', questionData);
-					
-					// Validar después de correcciones
-					if (!this.validateQuestionJSON(questionData)) {
-						throw new Error('JSON corregido pero estructura de pregunta incorrecta');
-					}
+					// Reintento: reemplazar comillas simples por dobles solo en claves/valores simples
+					const safe = jsonText
+						.replace(/:(\s*)'([^']*)'/g, ':$1"$2"')
+						.replace(/'([A-Za-z0-9_]+)'(\s*):/g, '"$1"$2:');
+					questionData = JSON.parse(safe);
 				}
 
 				return this.normalizeQuestionData(questionData, category, difficulty);
 			}
 
 			// 4) Último recurso: pedir reformateo al modelo a JSON (corto)
-			console.warn('♻️ Intentando reformateo a JSON con el modelo (fallback)...');
+			if (this.debug) console.warn('♻️ Intentando reformateo a JSON con el modelo (fallback)...');
 			const reformatted = await this.reformatToStrictJson(raw);
 			if (reformatted) {
-				console.log('✅ JSON reformateado exitosamente:', reformatted);
 				return this.normalizeQuestionData(reformatted, category, difficulty);
 			}
 
-		// 5) Último intento: buscar patrón de pregunta en formato libre
-		console.warn('🔄 Último intento: buscar patrón de pregunta en formato libre...');
-		const freeFormQuestion = this.extractFreeFormQuestion(raw, category, difficulty);
-		if (freeFormQuestion) {
-			console.log('✅ Pregunta extraída en formato libre:', freeFormQuestion);
-			return freeFormQuestion;
-		}
-
-		// Si llegamos aquí, intentar un análisis más detallado
-		console.error('💥 DEBUGGING - Respuesta que no se pudo parsear:');
-		console.error('📏 Longitud:', raw.length);
-		console.error('🔤 Primeros 200 caracteres:', raw.substring(0, 200));
-		console.error('🔚 Últimos 200 caracteres:', raw.substring(Math.max(0, raw.length - 200)));
-		console.error('🔍 Contiene JSON?', raw.includes('{') && raw.includes('}'));
-		console.error('🧠 Contiene thinking?', raw.includes('thinking') || raw.includes('Thinking'));
-		
-		throw new Error(`No se pudo extraer pregunta válida. Respuesta recibida (${raw.length} chars): "${raw.substring(0, 100)}..."`);
+			throw new Error('No se encontró JSON válido en la respuesta');
 		} catch (error) {
-			console.error('❌ Error parseando respuesta del modelo:', error);
-			console.log('📝 Respuesta completa del modelo para debugging:', response);
+			console.error('Error parseando respuesta del modelo:', error);
+			if (this.debug) console.log('Respuesta del modelo:', response);
 			throw new Error(`No se pudo parsear la respuesta del modelo: ${error.message}`);
 		}
 	}
@@ -671,123 +647,56 @@ CRÍTICO:
 		return jsonText
 			.replace(/,\s*([}\]])/g, '$1') // comas colgantes
 			.replace(/\t/g, ' ')
-			.replace(/\s+/g, ' ') // espacios múltiples
 			.trim();
-	}
-
-	/**
-	 * Valida que el JSON tenga la estructura esperada
-	 */
-	validateQuestionJSON(questionData) {
-		if (!questionData || typeof questionData !== 'object') return false;
-		
-		// Campos requeridos
-		const requiredFields = ['pregunta', 'opciones', 'respuesta_correcta'];
-		for (const field of requiredFields) {
-			if (!(field in questionData)) {
-				console.warn(`❌ Campo requerido faltante: ${field}`);
-				return false;
-			}
-		}
-		
-		// Validar tipos
-		if (typeof questionData.pregunta !== 'string' || questionData.pregunta.trim().length === 0) {
-			console.warn(`❌ Campo 'pregunta' debe ser string no vacío`);
-			return false;
-		}
-		
-		if (!Array.isArray(questionData.opciones) || questionData.opciones.length !== 4) {
-			console.warn(`❌ Campo 'opciones' debe ser array de 4 elementos`);
-			return false;
-		}
-		
-		// Validar que respuesta_correcta sea número válido
-		const correctAnswer = questionData.respuesta_correcta;
-		if (typeof correctAnswer !== 'number' || !Number.isInteger(correctAnswer) || correctAnswer < 0 || correctAnswer > 3) {
-			console.warn(`❌ Campo 'respuesta_correcta' debe ser entero 0-3, recibido: ${correctAnswer} (${typeof correctAnswer})`);
-			return false;
-		}
-		
-		return true;
-	}
-
-	/**
-	 * Corrige problemas comunes en JSON generado por LLM
-	 */
-	fixCommonJSONIssues(jsonText) {
-		return jsonText
-			// Comillas simples por dobles
-			.replace(/:(\s*)'([^']*)'/g, ':$1"$2"')
-			.replace(/'([A-Za-z0-9_]+)'(\s*):/g, '"$1"$2:')
-			// Espacios extra alrededor de dos puntos
-			.replace(/"\s*:\s*/g, '":')
-			.replace(/:\s*"/g, ':"')
-			// Comas extra antes de llaves de cierre
-			.replace(/,(\s*[}\]])/g, '$1')
-			// Agregar comillas a valores no entrecomillados (números exceptuados)
-			.replace(/:(\s*)([^",{\[\s][^,}\]]*)/g, (match, space, value) => {
-				// No modificar números
-				if (/^\d+$/.test(value.trim())) return match;
-				return `:${space}"${value.trim()}"`;
-			});
 	}
 
 	/**
 	 * Convierte un objeto del modelo a la estructura interna del juego.
 	 */
 	normalizeQuestionData(questionData, category, difficulty) {
-		// Validación y normalización estricta del índice de respuesta correcta
+		// Normalizaciones: permitir letras o 1-based
 		if (typeof questionData.respuesta_correcta === 'string') {
 			const letter = questionData.respuesta_correcta.trim().toUpperCase();
 			const map = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
-			if (letter in map) {
-				questionData.respuesta_correcta = map[letter];
-			} else {
-				// Intentar convertir string numérico
-				const numValue = parseInt(questionData.respuesta_correcta, 10);
-				if (!isNaN(numValue) && numValue >= 0 && numValue <= 3) {
-					questionData.respuesta_correcta = numValue;
-				} else if (!isNaN(numValue) && numValue >= 1 && numValue <= 4) {
-					// Convertir de 1-based a 0-based
-					questionData.respuesta_correcta = numValue - 1;
-				} else {
-					throw new Error(`Índice de respuesta correcta inválido: "${questionData.respuesta_correcta}"`);
-				}
-			}
+			if (letter in map) questionData.respuesta_correcta = map[letter];
 		}
-		
-		// Validar que sea un número entero válido
-		if (typeof questionData.respuesta_correcta !== 'number' || 
-			!Number.isInteger(questionData.respuesta_correcta) ||
-			questionData.respuesta_correcta < 0 || 
-			questionData.respuesta_correcta > 3) {
-			throw new Error(`respuesta_correcta debe ser un entero entre 0-3, recibido: ${questionData.respuesta_correcta} (${typeof questionData.respuesta_correcta})`);
+		if (typeof questionData.respuesta_correcta === 'number' && questionData.respuesta_correcta >= 1 && questionData.respuesta_correcta <= 4 && (questionData.opciones?.length === 4)) {
+			// Convertir a 0-based si parece 1-based
+			questionData.respuesta_correcta = Math.min(3, Math.max(0, questionData.respuesta_correcta - 1));
 		}
 
 		// Validar estructura básica
-		if (!questionData.pregunta || typeof questionData.pregunta !== 'string') {
-			throw new Error('Campo "pregunta" requerido y debe ser string');
-		}
-		
-		if (!questionData.opciones || !Array.isArray(questionData.opciones)) {
-			throw new Error('Campo "opciones" requerido y debe ser array');
+		if (!questionData.pregunta || !questionData.opciones || !Array.isArray(questionData.opciones)) {
+			throw new Error('Estructura de pregunta inválida');
 		}
 
-		// Normalizar y validar opciones
+		// Normalizar y limitar a 4 opciones
 		questionData.opciones = questionData.opciones.map(o => String(o).trim()).filter(Boolean);
+		if (questionData.opciones.length > 4) questionData.opciones = questionData.opciones.slice(0, 4);
 		if (questionData.opciones.length !== 4) {
-			throw new Error(`Se requieren exactamente 4 opciones, recibidas: ${questionData.opciones.length}`);
+			throw new Error('Se requieren exactamente 4 opciones de respuesta');
+		}
+
+		if (typeof questionData.respuesta_correcta !== 'number' || questionData.respuesta_correcta < 0 || questionData.respuesta_correcta > 3) {
+			// Como fallback, intentar deducir por explicación
+			const exp = (questionData.explicacion || '').toLowerCase();
+			let deduced = 0;
+			for (let i = 0; i < questionData.opciones.length; i++) {
+				const opt = questionData.opciones[i].toLowerCase();
+				if (opt.length > 2 && exp.includes(opt)) { deduced = i; break; }
+			}
+			questionData.respuesta_correcta = deduced;
 		}
 
 		return {
-			text: questionData.pregunta.trim(),
+			text: questionData.pregunta,
 			answers: questionData.opciones,
 			correctIndex: questionData.respuesta_correcta,
 			category,
 			difficulty,
 			source: 'ollama',
-			explanation: (questionData.explicacion || '').trim(),
-			topic: (questionData.tema || '').trim(),
+			explanation: questionData.explicacion || '',
+			topic: questionData.tema || '',
 			generatedAt: Date.now()
 		};
 	}
@@ -882,27 +791,19 @@ CRÍTICO:
 	 */
 	async reformatToStrictJson(rawText) {
 		try {
-			const prompt = `Convierte el siguiente contenido en JSON ESTRICTO con el esquema EXACTO.
-Responde SOLO con el JSON, sin texto adicional.
-
-ESQUEMA REQUERIDO:
+			const prompt = `Convierte el siguiente contenido en JSON ESTRICTO con el esquema EXACTO:
 {
-  "pregunta": "string",
-  "opciones": ["string", "string", "string", "string"],
-  "respuesta_correcta": 0,
-  "explicacion": "string",
-  "tema": "string",
-  "dificultad": "string"
+  "pregunta": string,
+  "opciones": [string, string, string, string],
+  "respuesta_correcta": 0|1|2|3,
+  "explicacion": string,
+  "tema": string,
+  "dificultad": string
 }
+No añadas ningún texto antes o después. No uses comillas simples. No incluyas bloques de código.
 
-REGLAS CRÍTICAS:
-- respuesta_correcta debe ser un número entero entre 0 y 3
-- NO usar comillas simples
-- NO incluir comas después del último campo
-- NO agregar texto antes o después del JSON
-
-CONTENIDO A CONVERTIR:
-${rawText.substring(0, 300)}`;
+CONTENIDO:
+${rawText}`;
 
 			const response = await fetch(`${this.baseUrl}/api/generate`, {
 				method: 'POST',
@@ -911,35 +812,17 @@ ${rawText.substring(0, 300)}`;
 					model: this.model,
 					prompt,
 					stream: false,
-					options: { 
-						temperature: 0.0, // Temperatura muy baja para consistencia
-						top_p: 0.5, 
-						top_k: 10, 
-						num_predict: 200,
-						repeat_penalty: 1.0
-					}
+					options: { temperature: 0.1, top_p: 0.8, top_k: 20, num_predict: 200 }
 				}),
-				signal: AbortSignal.timeout(15000)
+				signal: AbortSignal.timeout(12000)
 			});
-			
 			if (!response.ok) return null;
-			
 			const data = await response.json();
 			let jsonText = this.extractFirstJsonObject(String(data.response || ''));
 			if (!jsonText) return null;
-			
 			jsonText = this.normalizeJsonText(jsonText);
-			const parsed = JSON.parse(jsonText);
-			
-			// Validar el JSON reformateado
-			if (!this.validateQuestionJSON(parsed)) {
-				console.warn('⚠️ JSON reformateado no válido');
-				return null;
-			}
-			
-			return parsed;
-		} catch (error) {
-			console.warn('⚠️ Error en reformateo a JSON:', error.message);
+			return JSON.parse(jsonText);
+		} catch (_) {
 			return null;
 		}
 	}
@@ -1026,7 +909,7 @@ ${rawText.substring(0, 300)}`;
 	}
 
 	/**
-	 * Devuelve estadísticas básicas
+	 * Devuelve estadísticas básicas de ejecución y cache
 	 */
 	getStats() {
 		let cacheSize = 0;
@@ -1040,6 +923,107 @@ ${rawText.substring(0, 300)}`;
 			cacheSize,
 			requestTimeoutMs: this.requestTimeoutMs,
 			maxRetries: this.maxRetries
+		};
+	}
+
+	/**
+	 * Valida la pregunta generada. Si la validación experimental está activada,
+	 * recopila métricas adicionales. Lanza error si requiere regeneración.
+	 */
+	async validateQuestion(question) {
+		// Validaciones mínimas
+		if (!question || !question.text || !Array.isArray(question.answers) || question.answers.length !== 4) {
+			this.validationStats.validationErrors++;
+			this.validationStats.totalValidations++;
+			throw new Error('Estructura de pregunta inválida, requiere regeneración');
+		}
+		const uniqueAnswers = new Set(question.answers.map(a => (a || '').trim().toLowerCase()));
+		if (uniqueAnswers.size < 4) {
+			this.validationStats.validationErrors++;
+			this.validationStats.totalValidations++;
+			throw new Error('Respuestas duplicadas, requiere regeneración');
+		}
+		if (typeof question.correctIndex !== 'number' || question.correctIndex < 0 || question.correctIndex > 3) {
+			this.validationStats.validationErrors++;
+			this.validationStats.totalValidations++;
+			throw new Error('Índice de respuesta inválido, requiere regeneración');
+		}
+
+		// Métricas experimentales (livianas por defecto)
+		let confidence = 'high';
+		let matchScore = 0.95;
+		let corrected = false;
+
+		if (this.enableExperimentalValidation) {
+			// Heurística simple para estimar confianza y coincidencia
+			const len = (question.text || '').length;
+			if (len < 40) { confidence = 'medium'; matchScore = 0.75; }
+			if (len < 20) { confidence = 'low'; matchScore = 0.55; }
+			// Aquí se podría integrar una verificación real con el modelo si se desea
+		}
+
+		// Actualizar estadísticas
+		this.validationStats.totalValidations++;
+		this.validationStats.successfulValidations++;
+		if (corrected) this.validationStats.correctedAnswers++;
+		this.validationStats.confidenceDistribution[confidence]++;
+		this.validationStats.matchScores.push(matchScore);
+		this.validationStats.averageMatchScore = this.validationStats.matchScores.reduce((a, b) => a + b, 0) / this.validationStats.matchScores.length;
+
+		return true;
+	}
+
+	/**
+	 * Reporte de estadísticas de validación experimental (para UI)
+	 */
+	getValidationStatsReport() {
+		const s = this.validationStats;
+		const total = s.totalValidations || 0;
+		const success = s.successfulValidations || 0;
+		const rates = {
+			successRate: total > 0 ? `${Math.round((success / total) * 100)}%` : '0%'
+		};
+		const samples = s.matchScores.length;
+		const avg = samples ? (s.matchScores.reduce((a,b)=>a+b,0) / samples) : 0;
+		const max = samples ? Math.max(...s.matchScores) : 0;
+		const min = samples ? Math.min(...s.matchScores) : 0;
+		return {
+			summary: `Validaciones: ${total}, Éxito: ${rates.successRate}`,
+			details: {
+				totalValidations: total,
+				successfulValidations: success,
+				correctedAnswers: s.correctedAnswers,
+				regeneratedQuestions: s.regeneratedQuestions,
+				validationErrors: s.validationErrors,
+				rates,
+				confidence: {
+					high: s.confidenceDistribution.high,
+					medium: s.confidenceDistribution.medium,
+					low: s.confidenceDistribution.low
+				},
+				matchScore: {
+					average: avg.toFixed(3),
+					max: max.toFixed(3),
+					min: min.toFixed(3),
+					samples
+				}
+			}
+		};
+	}
+
+	/**
+	 * Reinicia las estadísticas de validación experimental
+	 */
+	resetValidationStats() {
+		this.validationStats = {
+			totalValidations: 0,
+			successfulValidations: 0,
+			correctedAnswers: 0,
+			regeneratedQuestions: 0,
+			validationErrors: 0,
+			confidenceDistribution: { high: 0, medium: 0, low: 0 },
+			averageMatchScore: 0,
+			matchScores: []
 		};
 	}
 }
