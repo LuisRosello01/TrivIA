@@ -535,6 +535,16 @@ class ChallengeEngine {
             return;
         }
 
+        // IMPORTANTE: Reiniciar el tiempo al valor completo del timer
+        this.gameState.timeRemaining = this.config.timer;
+        console.log(`⏱️ Timer reiniciado a ${this.config.timer} segundos`);
+        
+        // Disparar evento inicial para mostrar el tiempo completo
+        this.dispatchEvent('challengeTimerUpdate', {
+            timeRemaining: this.gameState.timeRemaining,
+            isUnlimited: false
+        });
+
         this.timerInterval = setInterval(() => {
             this.gameState.timeRemaining--;
 

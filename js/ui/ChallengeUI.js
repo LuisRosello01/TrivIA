@@ -751,6 +751,25 @@ class ChallengeUI {    constructor() {
         // Actualizar estadísticas
         this.updateStats(data.gameState);
         
+        // Mostrar el tiempo inicial correcto inmediatamente
+        if (this.challengeEngine) {
+            const timerConfig = this.challengeEngine.config.timer;
+            if (this.elements.challengeTimerText) {
+                if (timerConfig === 0) {
+                    this.elements.challengeTimerText.textContent = '∞';
+                    if (this.elements.challengeTimerCircle) {
+                        this.elements.challengeTimerCircle.className = 'timer-circle timer-unlimited';
+                    }
+                } else {
+                    this.elements.challengeTimerText.textContent = timerConfig;
+                    if (this.elements.challengeTimerCircle) {
+                        this.elements.challengeTimerCircle.className = 'timer-circle';
+                    }
+                }
+                console.log(`⏱️ Timer UI actualizado a: ${timerConfig === 0 ? '∞' : timerConfig}`);
+            }
+        }
+        
         // IMPORTANTE: Iniciar el timer solo después de que la pregunta esté completamente mostrada
         // Esto soluciona el problema de que la cuenta atrás empezaba durante la carga
         setTimeout(() => {
