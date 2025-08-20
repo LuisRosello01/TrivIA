@@ -627,43 +627,24 @@ class ChallengeUI {    constructor() {
 
         // Eventos de control - usando event listeners optimizados
         if (this.elements.challengeExitBtn) {
-            console.log('🔧 Configurando listener para challengeExitBtn');
             this.addMobileOptimizedListener(this.elements.challengeExitBtn, (event) => {
                 console.log('🚪 Botón de salir presionado');
-                // Prevenir propagación del evento para evitar cierre inmediato
-                if (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    event.stopImmediatePropagation();
-                }
-                this.showExitConfirmation();
-            });
+                this.handleEventWithPrevention(event, () => this.showExitConfirmation());
+            }, { allowPreventDefault: true });
         } else {
             console.error('❌ challengeExitBtn no encontrado durante la configuración!');
         }
 
         if (this.elements.challengeContinueBtn) {
             this.addMobileOptimizedListener(this.elements.challengeContinueBtn, (event) => {
-                // Prevenir propagación del evento
-                if (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    event.stopImmediatePropagation();
-                }
-                this.continueChallenge();
-            });
+                this.handleEventWithPrevention(event, () => this.continueChallenge());
+            }, { allowPreventDefault: true });
         }
 
         if (this.elements.challengeExitConfirmBtn) {
             this.addMobileOptimizedListener(this.elements.challengeExitConfirmBtn, (event) => {
-                // Prevenir propagación del evento
-                if (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    event.stopImmediatePropagation();
-                }
-                this.confirmExitChallenge();
-            });
+                this.handleEventWithPrevention(event, () => this.confirmExitChallenge());
+            }, { allowPreventDefault: true });
         }
 
         // Eventos del Game Over - usando event listeners optimizados
@@ -675,56 +656,8 @@ class ChallengeUI {    constructor() {
             this.addMobileOptimizedListener(this.elements.backToMenuBtn, () => this.backToMenuFromGameOver());
         }
 
-        // Prevenir propagación de eventos touch en el modal de confirmación de salida
-        if (this.elements.challengeExitModal) {
-            // Flag para prevenir cierre inmediato después de abrir
-            let modalJustOpened = false;
-            
-            // Método para marcar el modal como recién abierto
-            this.markModalAsJustOpened = () => {
-                modalJustOpened = true;
-                setTimeout(() => {
-                    modalJustOpened = false;
-                }, 500); // Evitar cierre por 500ms después de abrir
-            };
-            
-            // Prevenir propagación en todo el modal
-            this.elements.challengeExitModal.addEventListener('touchstart', (e) => {
-                e.stopPropagation();
-            }, { passive: false });
-
-            this.elements.challengeExitModal.addEventListener('touchend', (e) => {
-                e.stopPropagation();
-            }, { passive: false });
-
-            this.elements.challengeExitModal.addEventListener('click', (e) => {
-                // Si se hace click en el backdrop (no en el contenido), cerrar el modal
-                // PERO solo si no se acaba de abrir
-                if (e.target === this.elements.challengeExitModal && !modalJustOpened) {
-                    console.log('🖱️ Click en backdrop - cerrando modal');
-                    this.continueChallenge();
-                } else if (modalJustOpened) {
-                    console.log('🚫 Modal recién abierto - ignorando click en backdrop');
-                }
-                e.stopPropagation();
-            });
-
-            // También prevenir en el contenido del modal
-            const modalContent = this.elements.challengeExitModal.querySelector('.modal-content');
-            if (modalContent) {
-                modalContent.addEventListener('touchstart', (e) => {
-                    e.stopPropagation();
-                }, { passive: false });
-
-                modalContent.addEventListener('touchend', (e) => {
-                    e.stopPropagation();
-                }, { passive: false });
-
-                modalContent.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                });
-            }
-        }
+        // Configurar el modal de confirmación de salida para prevenir propagación de eventos
+        this.setupExitModalEventPrevention();
     }/**
      * Muestra la pantalla del juego de desafío
      */
@@ -1052,8 +985,7 @@ class ChallengeUI {    constructor() {
      * Muestra la confirmación de salida
      */
     showExitConfirmation() {
-        console.log('🚪 showExitConfirmation llamado');
-        console.log('Modal element:', this.elements.challengeExitModal);
+        console.log('🚪 Mostrando modal de confirmación de salida');
         
         if (!this.elements.challengeExitModal) {
             console.error('❌ challengeExitModal no encontrado!');
@@ -1065,22 +997,9 @@ class ChallengeUI {    constructor() {
             this.markModalAsJustOpened();
         }
         
-        // Asegurar que el modal no se cierre inmediatamente
-        setTimeout(() => {
-            // Solo mostrar el modal, sin pausar el juego
-            this.elements.challengeExitModal.classList.add('active');
-            console.log('✅ Modal de salida activado');
-            
-            // Verificar que efectivamente esté activo
-            setTimeout(() => {
-                const isActive = this.elements.challengeExitModal.classList.contains('active');
-                console.log('🔍 Modal sigue activo después de 100ms:', isActive);
-                if (!isActive) {
-                    console.warn('⚠️ El modal fue cerrado inmediatamente - reactivando');
-                    this.elements.challengeExitModal.classList.add('active');
-                }
-            }, 100);
-        }, 10); // Pequeño delay para evitar conflictos con eventos touch
+        // Solo mostrar el modal, sin pausar el juego
+        this.elements.challengeExitModal.classList.add('active');
+        console.log('✅ Modal de confirmación de salida abierto');
     }
 
     /**
@@ -1691,10 +1610,13 @@ class ChallengeUI {    constructor() {
      * Añade event listener optimizado para móviles
      * @param {Element} element - Elemento DOM
      * @param {Function} callback - Función callback
+     * @param {Object} options - Opciones del listener
+     * @param {boolean} options.allowPreventDefault - Si permitir preventDefault en el callback (default: false)
      */
-    addMobileOptimizedListener(element, callback) {
+    addMobileOptimizedListener(element, callback, options = {}) {
         if (!element) return;
         
+        const { allowPreventDefault = false } = options;
         let touchExecuted = false;
         let touchStartTime = 0;
         
@@ -1703,7 +1625,7 @@ class ChallengeUI {    constructor() {
             element.classList.add('touch-active');
             touchStartTime = Date.now();
             touchExecuted = false;
-        }, { passive: true });
+        }, { passive: !allowPreventDefault });
         
         element.addEventListener('touchend', (e) => {
             element.classList.remove('touch-active');
@@ -1719,7 +1641,7 @@ class ChallengeUI {    constructor() {
                     touchExecuted = false;
                 }, 350);
             }
-        }, { passive: true });
+        }, { passive: !allowPreventDefault });
         
         // Click events para dispositivos de escritorio y como fallback
         element.addEventListener('click', (e) => {
@@ -1728,6 +1650,64 @@ class ChallengeUI {    constructor() {
                 callback(e);
             }
         });
+    }
+    
+    /**
+     * Función helper para manejar eventos con prevención de propagación
+     * @param {Event} event - Evento a procesar
+     * @param {Function} callback - Función a ejecutar
+     */
+    handleEventWithPrevention(event, callback) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+        }
+        callback();
+    }
+    
+    /**
+     * Configura la prevención de eventos para el modal de confirmación de salida
+     */
+    setupExitModalEventPrevention() {
+        if (!this.elements.challengeExitModal) return;
+        
+        // Flag para prevenir cierre inmediato después de abrir
+        let modalJustOpened = false;
+        
+        // Método para marcar el modal como recién abierto
+        this.markModalAsJustOpened = () => {
+            modalJustOpened = true;
+            setTimeout(() => {
+                modalJustOpened = false;
+            }, 500); // Evitar cierre por 500ms después de abrir
+        };
+        
+        // Función helper para prevenir propagación
+        const preventPropagation = (e) => e.stopPropagation();
+        
+        // Prevenir propagación en todo el modal
+        this.elements.challengeExitModal.addEventListener('touchstart', preventPropagation, { passive: false });
+        this.elements.challengeExitModal.addEventListener('touchend', preventPropagation, { passive: false });
+        
+        // Manejar click en backdrop
+        this.elements.challengeExitModal.addEventListener('click', (e) => {
+            if (e.target === this.elements.challengeExitModal && !modalJustOpened) {
+                console.log('🖱️ Click en backdrop - cerrando modal');
+                this.continueChallenge();
+            } else if (modalJustOpened) {
+                console.log('🚫 Modal recién abierto - ignorando click en backdrop');
+            }
+            e.stopPropagation();
+        });
+
+        // Prevenir propagación en el contenido del modal
+        const modalContent = this.elements.challengeExitModal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.addEventListener('touchstart', preventPropagation, { passive: false });
+            modalContent.addEventListener('touchend', preventPropagation, { passive: false });
+            modalContent.addEventListener('click', preventPropagation);
+        }
     }
     
     /**
