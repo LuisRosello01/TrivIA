@@ -960,6 +960,11 @@ class ChallengeUI {    constructor() {
             }
         });
         
+        // Vibración solo para respuestas incorrectas
+        if (!isCorrect) {
+            this.provideTactileFeedback(null, 'incorrect');
+        }
+        
         // Actualizar estadísticas
         this.updateStats(data.gameState);
         
@@ -1007,9 +1012,6 @@ class ChallengeUI {    constructor() {
         
         // Actualizar estadísticas
         this.updateStats(data.gameState);
-        
-        // Proporcionar feedback táctil para timeout
-        this.provideTactileFeedback(null, 'timeout');
         
         console.log('⏰ Tiempo agotado - Respuesta correcta marcada');
         
@@ -1900,12 +1902,12 @@ class ChallengeUI {    constructor() {
         document.body.style.webkitOverflowScrolling = 'touch';
         document.body.style.overflowScrolling = 'touch';
     }    /**
-     * Método de testing para probar la vibración de timeout
+     * Método de testing para probar la vibración de respuesta incorrecta
      */
-    testTimeoutVibration() {
-        console.log('🧪 Probando vibración de timeout...');
-        this.provideTactileFeedback(null, 'timeout');
-        return 'Vibración de timeout enviada (si el dispositivo lo soporta)';
+    testIncorrectAnswerVibration() {
+        console.log('🧪 Probando vibración de respuesta incorrecta...');
+        this.provideTactileFeedback(null, 'incorrect');
+        return 'Vibración de respuesta incorrecta enviada (si el dispositivo lo soporta)';
     }
 
     /**
@@ -1927,12 +1929,12 @@ class ChallengeUI {    constructor() {
                 case 'error':
                     navigator.vibrate([50, 50, 50]);
                     break;
+                case 'incorrect':
+                    // Vibración para respuestas incorrectas
+                    navigator.vibrate([200, 100, 200]);
+                    break;
                 case 'success':
                     navigator.vibrate([25, 25, 100]);
-                    break;
-                case 'timeout':
-                    // Patrón distintivo para timeouts: tres pulsos cortos seguidos de uno largo
-                    navigator.vibrate([100, 50, 100, 50, 100, 100, 200]);
                     break;
             }
         }

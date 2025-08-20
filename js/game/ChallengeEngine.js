@@ -711,12 +711,6 @@ class ChallengeEngine {
         console.log('⏰ Tiempo agotado!');
         this.stopTimer();
         
-        // Proporcionar feedback táctil inmediatamente
-        if (navigator.vibrate) {
-            // Patrón distintivo para timeouts: tres pulsos cortos seguidos de uno largo
-            navigator.vibrate([100, 50, 100, 50, 100, 100, 200]);
-        }
-        
         // Procesar como respuesta incorrecta
         this.processTimeOut();
     }

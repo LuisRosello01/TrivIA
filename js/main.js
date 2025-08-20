@@ -11,13 +11,13 @@ let challengeEngine;
 let challengeUI;
 
 // Funciones globales de utilidad para debugging
-window.testTimeoutVibration = () => {
-    if (window.challengeUI && window.challengeUI.testTimeoutVibration) {
-        return window.challengeUI.testTimeoutVibration();
+window.testIncorrectAnswerVibration = () => {
+    if (window.challengeUI && window.challengeUI.testIncorrectAnswerVibration) {
+        return window.challengeUI.testIncorrectAnswerVibration();
     } else if (navigator.vibrate) {
-        console.log('🧪 Probando vibración de timeout directamente...');
-        navigator.vibrate([100, 50, 100, 50, 100, 100, 200]);
-        return 'Vibración de timeout enviada directamente';
+        console.log('🧪 Probando vibración de respuesta incorrecta directamente...');
+        navigator.vibrate([200, 100, 200]);
+        return 'Vibración de respuesta incorrecta enviada directamente';
     } else {
         return 'Vibración no soportada en este dispositivo/navegador';
     }
