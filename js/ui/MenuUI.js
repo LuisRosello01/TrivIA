@@ -83,6 +83,12 @@ class MenuUI {
 
         // Menú principal - usando event listeners optimizados para móviles
         this.addMobileOptimizedListener(this.menuButtons.startGame, () => {
+            // Verificar si el botón está deshabilitado
+            if (this.menuButtons.startGame.disabled) {
+                console.log('🚫 Botón Multijugador deshabilitado');
+                return;
+            }
+            
             // Track clic en botón de inicio
             if (window.trivialAnalytics) {
                 window.trivialAnalytics.trackButtonClick('start-game-btn', 'Comenzar Juego', 'main-menu');
@@ -91,6 +97,12 @@ class MenuUI {
         });
         
         this.addMobileOptimizedListener(this.menuButtons.continueGame, () => {
+            // Verificar si el botón está deshabilitado
+            if (this.menuButtons.continueGame.disabled) {
+                console.log('🚫 Botón Continuar Partida deshabilitado');
+                return;
+            }
+            
             // Track clic en continuar juego
             if (window.trivialAnalytics) {
                 window.trivialAnalytics.trackButtonClick('continue-game-btn', 'Continuar Juego', 'main-menu');
@@ -108,6 +120,12 @@ class MenuUI {
         });
         
         this.addMobileOptimizedListener(this.menuButtons.tutorial, () => {
+            // Verificar si el botón está deshabilitado
+            if (this.menuButtons.tutorial.disabled) {
+                console.log('🚫 Botón Tutorial deshabilitado');
+                return;
+            }
+            
             // Track inicio de tutorial
             if (window.trivialAnalytics) {
                 window.trivialAnalytics.trackTutorialStart('game-basics', 'menu');
