@@ -52,6 +52,7 @@ class ChallengeUI {    constructor() {
         // Elementos de configuración
         this.elements.challengeDifficulty = document.getElementById('challenge-difficulty');
         this.elements.challengeTimer = document.getElementById('challenge-timer');
+        this.elements.challengeQuestionType = document.getElementById('challenge-question-type');
         
         // Checkboxes de categorías principales
         this.elements.categoriesCheckboxes = {
@@ -122,6 +123,11 @@ class ChallengeUI {    constructor() {
         // Event listener para el selector de dificultad
         if (this.elements.challengeDifficulty) {
             this.elements.challengeDifficulty.addEventListener('change', (e) => this.onDifficultyChange(e));
+        }
+
+        // Event listener para el selector de tipo de pregunta
+        if (this.elements.challengeQuestionType) {
+            this.elements.challengeQuestionType.addEventListener('change', (e) => this.onQuestionTypeChange(e));
         }
 
         // Event listeners para categorías adicionales - usando simple click para evitar problemas
@@ -257,6 +263,7 @@ class ChallengeUI {    constructor() {
         const config = {
             difficulty: this.elements.challengeDifficulty.value,
             timer: parseInt(this.elements.challengeTimer.value),
+            questionType: this.elements.challengeQuestionType ? this.elements.challengeQuestionType.value : 'multiple',
             categories: {}
         };
 
@@ -282,6 +289,11 @@ class ChallengeUI {    constructor() {
         if (!config.difficulty || !config.timer && config.timer !== 0) {
             this.showError('⚠️ Configuración incompleta. Verifica la dificultad y el tiempo.');
             return false;
+        }
+
+        // Verificar tipo de pregunta
+        if (!config.questionType) {
+            config.questionType = 'multiple'; // Valor por defecto
         }
 
         // Mostrar estadísticas de categorías seleccionadas
@@ -330,6 +342,11 @@ class ChallengeUI {    constructor() {
         // Aplicar timer
         if (this.elements.challengeTimer && config.timer) {
             this.elements.challengeTimer.value = config.timer.toString();
+        }
+
+        // Aplicar tipo de pregunta
+        if (this.elements.challengeQuestionType && config.questionType) {
+            this.elements.challengeQuestionType.value = config.questionType;
         }
 
         // Aplicar categorías
@@ -438,6 +455,9 @@ class ChallengeUI {    constructor() {
                         <div class="question-content-center">
                             <div class="question-category">
                                 <span id="challenge-question-category">Categoría</span>
+                            </div>
+                            <div class="question-type-indicator">
+                                <span id="challenge-question-type-badge">📝 Opción Múltiple</span>
                             </div>
                             <div class="question-text">
                                 <h3 id="challenge-question-text">Pregunta aparecerá aquí...</h3>
@@ -553,6 +573,7 @@ class ChallengeUI {    constructor() {
         this.elements.questionLoading = document.getElementById('question-loading');
           // Elementos de la pregunta
         this.elements.challengeQuestionCategory = document.getElementById('challenge-question-category');
+        this.elements.challengeQuestionTypeBadge = document.getElementById('challenge-question-type-badge');
         this.elements.challengeQuestionText = document.getElementById('challenge-question-text');
         this.elements.toggleOriginalBtn = document.getElementById('toggle-original-btn');
         
@@ -598,6 +619,7 @@ class ChallengeUI {    constructor() {
             'challengeCorrectAnswers',
             'challengeQuestionText',
             'challengeQuestionCategory',
+            'challengeQuestionTypeBadge',
             'toggleOriginalBtn'
         ];
         
@@ -990,6 +1012,9 @@ class ChallengeUI {    constructor() {
         
         // Actualizar estadísticas
         this.updateStats(data.gameState);
+        
+        // Proporcionar feedback táctil para timeout
+        this.provideTactileFeedback(null, 'timeout');
         
         console.log('⏰ Tiempo agotado - Respuesta correcta marcada');
         
@@ -1520,16 +1545,74 @@ class ChallengeUI {    constructor() {
             this.adjustQuestionTextSize(this.elements.challengeQuestionText);
         }
 
-        // Actualizar opciones de respuesta manteniendo las posiciones
+        // Determinar si es pregunta de verdadero/falso
+        const isBooleanQuestion = answers && answers.length === 2 && (
+            (answers.some(a => a.toLowerCase().includes('verdadero') || a.toLowerCase().includes('true')) &&
+             answers.some(a => a.toLowerCase().includes('falso') || a.toLowerCase().includes('false'))) ||
+            (answers[0] === 'Verdadero' && answers[1] === 'Falso') ||
+            (answers[0] === 'True' && answers[1] === 'False')
+        );
+
+        console.log(`🔍 Análisis de pregunta:`, {
+            answersCount: answers?.length,
+            answers: answers,
+            isBooleanQuestion: isBooleanQuestion,
+            questionType: this.challengeEngine?.config?.questionType
+        });
+
+        // Actualizar opciones de respuesta
         if (answers && this.elements.challengeAnswerBtns) {
-            answers.forEach((answer, index) => {
-                if (this.elements.challengeAnswerBtns[index]) {
-                    this.elements.challengeAnswerBtns[index].textContent = answer;
-                    this.elements.challengeAnswerBtns[index].disabled = false;
-                    this.elements.challengeAnswerBtns[index].className = 'challenge-answer-btn';
+            // Mostrar u ocultar botones según el tipo de pregunta
+            this.elements.challengeAnswerBtns.forEach((btn, index) => {
+                if (btn) {
+                    if (isBooleanQuestion && index >= 2) {
+                        // Ocultar botones 3 y 4 para preguntas de verdadero/falso
+                        btn.style.display = 'none';
+                    } else if (index < answers.length) {
+                        // Mostrar y configurar botones necesarios
+                        btn.style.display = 'block';
+                        btn.textContent = answers[index];
+                        btn.disabled = false;
+                        btn.className = 'challenge-answer-btn';
+                        
+                        // Añadir clase especial para preguntas booleanas
+                        if (isBooleanQuestion) {
+                            btn.classList.add('boolean-answer');
+                        }
+                    } else {
+                        // Ocultar botones no necesarios
+                        btn.style.display = 'none';
+                    }
                 }
             });
+
+            // Ajustar el estilo del contenedor para preguntas booleanas
+            const answersContainer = document.querySelector('.challenge-answers');
+            if (answersContainer) {
+                if (isBooleanQuestion) {
+                    answersContainer.classList.add('boolean-answers');
+                } else {
+                    answersContainer.classList.remove('boolean-answers');
+                }
+            }
+
+            // Actualizar el indicador de tipo de pregunta
+            if (this.elements.challengeQuestionTypeBadge) {
+                if (isBooleanQuestion) {
+                    this.elements.challengeQuestionTypeBadge.textContent = '✓✗ Verdadero/Falso';
+                    this.elements.challengeQuestionTypeBadge.className = 'question-type-badge boolean-type';
+                } else {
+                    this.elements.challengeQuestionTypeBadge.textContent = '📝 Opción Múltiple';
+                    this.elements.challengeQuestionTypeBadge.className = 'question-type-badge multiple-type';
+                }
+            }
         }
+
+        console.log(`📝 Pregunta mostrada:`, {
+            type: isBooleanQuestion ? 'boolean' : 'multiple',
+            questionLength: question?.length,
+            answersCount: answers?.length
+        });
     }
 
     /**
@@ -1832,6 +1915,15 @@ class ChallengeUI {    constructor() {
         document.body.style.webkitOverflowScrolling = 'touch';
         document.body.style.overflowScrolling = 'touch';
     }    /**
+     * Método de testing para probar la vibración de timeout
+     */
+    testTimeoutVibration() {
+        console.log('🧪 Probando vibración de timeout...');
+        this.provideTactileFeedback(null, 'timeout');
+        return 'Vibración de timeout enviada (si el dispositivo lo soporta)';
+    }
+
+    /**
      * Proporciona feedback táctil para dispositivos móviles
      */
     provideTactileFeedback(element, type = 'light') {
@@ -1852,6 +1944,10 @@ class ChallengeUI {    constructor() {
                     break;
                 case 'success':
                     navigator.vibrate([25, 25, 100]);
+                    break;
+                case 'timeout':
+                    // Patrón distintivo para timeouts: tres pulsos cortos seguidos de uno largo
+                    navigator.vibrate([100, 50, 100, 50, 100, 100, 200]);
                     break;
             }
         }
@@ -1913,6 +2009,65 @@ class ChallengeUI {    constructor() {
             this.showDifficultyInfo('🎲 Dificultad Aleatoria: Cada pregunta tendrá una dificultad aleatoria (Principiante, Intermedio o Experto)');
         } else {
             this.hideDifficultyInfo();
+        }
+    }
+
+    /**
+     * Maneja el cambio en el selector de tipo de pregunta
+     */
+    onQuestionTypeChange(event) {
+        const selectedType = event.target.value;
+        console.log(`📝 Tipo de pregunta seleccionado: ${selectedType}`);
+        
+        if (selectedType === 'boolean') {
+            this.showQuestionTypeInfo('✓✗ Verdadero o Falso: Las preguntas tendrán solo dos opciones. Ideal para respuestas rápidas y conceptos fundamentales.');
+        } else if (selectedType === 'mixed') {
+            this.showQuestionTypeInfo('🎲 Tipo Mixto: Se alternarán aleatoriamente preguntas de opción múltiple y verdadero/falso. Máxima variedad y desafío.');
+        } else {
+            this.showQuestionTypeInfo('📝 Opción Múltiple: Las preguntas tendrán 4 opciones. Formato clásico de trivia con mayor variedad de respuestas.');
+        }
+    }
+
+    /**
+     * Muestra información sobre el tipo de pregunta seleccionado
+     */
+    showQuestionTypeInfo(message) {
+        // Buscar o crear el elemento de información
+        let infoElement = document.getElementById('question-type-info');
+        if (!infoElement) {
+            infoElement = document.createElement('div');
+            infoElement.id = 'question-type-info';
+            infoElement.className = 'question-type-info';
+            
+            // Insertar después del selector de tipo de pregunta
+            const typeOption = this.elements.challengeQuestionType.closest('.config-option');
+            if (typeOption) {
+                typeOption.parentNode.insertBefore(infoElement, typeOption.nextSibling);
+            }
+        }
+        
+        infoElement.textContent = message;
+        infoElement.style.display = 'block';
+        
+        // Añadir animación de entrada
+        infoElement.classList.add('show');
+        
+        // Auto-ocultar después de 5 segundos
+        setTimeout(() => {
+            this.hideQuestionTypeInfo();
+        }, 5000);
+    }
+
+    /**
+     * Oculta la información de tipo de pregunta
+     */
+    hideQuestionTypeInfo() {
+        const infoElement = document.getElementById('question-type-info');
+        if (infoElement) {
+            infoElement.classList.remove('show');
+            setTimeout(() => {
+                infoElement.style.display = 'none';
+            }, 300);
         }
     }
 

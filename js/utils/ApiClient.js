@@ -267,6 +267,13 @@ class ApiClient {
                     answers: [".js", ".java", ".jsx", ".script"],
                     correct: 0,
                     difficulty: "easy"
+                },
+                {
+                    question: "¿Java y JavaScript son el mismo lenguaje de programación?",
+                    answers: ["Falso", "Verdadero"],
+                    correct: 0,
+                    difficulty: "easy",
+                    type: "boolean"
                 }
             ],
             matematicas: [
@@ -309,6 +316,13 @@ class ApiClient {
                     answers: ["8", "6", "10", "4"],
                     correct: 0,
                     difficulty: "easy"
+                },
+                {
+                    question: "¿Los murciélagos son mamíferos?",
+                    answers: ["Verdadero", "Falso"],
+                    correct: 0,
+                    difficulty: "easy",
+                    type: "boolean"
                 }
             ],
             videojuegos: [
@@ -323,8 +337,15 @@ class ApiClient {
                     answers: ["1984", "1985", "1986", "1987"],
                     correct: 0,
                     difficulty: "medium"
+                },
+                {
+                    question: "¿Minecraft fue creado originalmente por una sola persona?",
+                    answers: ["Verdadero", "Falso"],
+                    correct: 0,
+                    difficulty: "medium",
+                    type: "boolean"
                 }
-            ]
+            ],
         };
     }
 
@@ -349,13 +370,14 @@ class ApiClient {
      * @param {string} category - Categoría de la pregunta
      * @param {string} difficulty - Dificultad de la pregunta
      * @param {number} amount - Número de preguntas a obtener
+     * @param {string} type - Tipo de pregunta ('multiple' o 'boolean')
      * @returns {Promise<Object[]>} Array de preguntas
      */
-    async getQuestions(category, difficulty = 'medium', amount = 1) {
+    async getQuestions(category, difficulty = 'medium', amount = 1, type = 'multiple') {
         // Intentar obtener de la API primero
         try {
-            console.log(`🔍 Solicitando ${amount} pregunta(s) de ${category} (${difficulty}) desde API`);
-            const apiQuestions = await this.getQuestionsFromAPI(category, difficulty, amount);
+            console.log(`🔍 Solicitando ${amount} pregunta(s) de ${category} (${difficulty}, ${type}) desde API`);
+            const apiQuestions = await this.getQuestionsFromAPI(category, difficulty, amount, type);
             if (apiQuestions && apiQuestions.length > 0) {
                 console.log(`✅ ${apiQuestions.length} pregunta(s) obtenidas de la API`);
                 return apiQuestions;
@@ -365,15 +387,15 @@ class ApiClient {
             if (error.message.includes('Rate Limit') || error.message.includes('429')) {
                 console.warn('⚠️ Rate limit de API alcanzado, usando preguntas de fallback');
             } else if (error.message.includes('No hay suficientes preguntas')) {
-                console.warn(`⚠️ No hay suficientes preguntas en la API para ${category} (${difficulty}), usando fallback`);
+                console.warn(`⚠️ No hay suficientes preguntas en la API para ${category} (${difficulty}, ${type}), usando fallback`);
             } else {
                 console.warn('⚠️ Error de API (usando fallback):', error.message);
             }
         }
 
         // Usar fallback si la API falla
-        console.log(`📋 Usando preguntas de fallback para ${category} (${difficulty})`);
-        return this.getQuestionsFromFallback(category, difficulty, amount);
+        console.log(`📋 Usando preguntas de fallback para ${category} (${difficulty}, ${type})`);
+        return this.getQuestionsFromFallback(category, difficulty, amount, type);
     }
 
     /**
@@ -509,20 +531,20 @@ class ApiClient {
     /**
      * Obtiene preguntas desde la API de Open Trivia Database con traducción automática opcional
      */
-    async getQuestionsFromAPI(category, difficulty, amount) {
+    async getQuestionsFromAPI(category, difficulty, amount, type = 'multiple') {
         return this.queueApiRequest(async () => {
             const categoryId = this.categoryMap[category.toLowerCase()];
             if (!categoryId) {
                 throw new Error(`Categoría no válida: ${category}`);
             }
 
-            let url = `${this.baseUrl}?amount=${amount}&category=${categoryId}&difficulty=${difficulty}&type=multiple`;
+            let url = `${this.baseUrl}?amount=${amount}&category=${categoryId}&difficulty=${difficulty}&type=${type}`;
             
             if (this.sessionToken) {
                 url += `&token=${this.sessionToken}`;
             }
 
-            console.log(`🔄 Petición API en cola: ${category} (${difficulty})`);
+            console.log(`🔄 Petición API en cola: ${category} (${difficulty}, ${type})`);
             
             const response = await this.fetchWithRetry(url);
             const data = await response.json();
@@ -553,7 +575,7 @@ class ApiClient {
                         
                         if (retryData.response_code === 0) {
                             console.log('✅ Reintento exitoso con nuevo token');
-                            return this.processApiQuestions(retryData.results, category);
+                            return this.processApiQuestions(retryData.results, category, type);
                         }
                     }
                 }
@@ -562,23 +584,18 @@ class ApiClient {
             }
 
             console.log(`✅ Preguntas obtenidas de API: ${data.results.length}`);
-            return this.processApiQuestions(data.results, category);
+            return this.processApiQuestions(data.results, category, type);
         });
     }
 
     /**
      * Procesa las preguntas obtenidas de la API (método auxiliar)
      */
-    async processApiQuestions(results, category) {
+    async processApiQuestions(results, category, type = 'multiple') {
         const processedQuestions = await Promise.all(
             results.map(async (q) => {
                 const question = this.decodeHtml(q.question);
-                const correctAnswer = this.decodeHtml(q.correct_answer);
-                const incorrectAnswers = q.incorrect_answers.map(a => this.decodeHtml(a));
-                
                 let translatedQuestion = question;
-                let translatedCorrectAnswer = correctAnswer;
-                let translatedIncorrectAnswers = incorrectAnswers;
 
                 // Traducir solo si está habilitado
                 if (this.translationEnabled) {
@@ -590,10 +607,6 @@ class ApiClient {
                         });
 
                         translatedQuestion = await this.translateText(question);
-                        translatedCorrectAnswer = await this.translateText(correctAnswer);
-                        translatedIncorrectAnswers = await Promise.all(
-                            incorrectAnswers.map(answer => this.translateText(answer))
-                        );
 
                         // Emitir evento de fin de traducción
                         this.emit('translationCompleted', {
@@ -613,30 +626,80 @@ class ApiClient {
                     }
                 }
 
-                // Crear arrays con índices para mantener correspondencia
-                const allAnswers = [
-                    { text: translatedCorrectAnswer, original: correctAnswer, isCorrect: true },
-                    ...translatedIncorrectAnswers.map((answer, i) => ({
-                        text: answer,
-                        original: incorrectAnswers[i],
-                        isCorrect: false
-                    }))
-                ];
-                
-                // Mezclar manteniendo correspondencia
-                const shuffledAnswers = this.shuffleArray(allAnswers);
-                const correctIndex = shuffledAnswers.findIndex(answer => answer.isCorrect);
+                if (type === 'boolean') {
+                    // Procesar preguntas de verdadero/falso
+                    const correctAnswer = this.decodeHtml(q.correct_answer);
+                    let translatedCorrectAnswer = correctAnswer;
+                    
+                    if (this.translationEnabled) {
+                        try {
+                            translatedCorrectAnswer = await this.translateText(correctAnswer);
+                        } catch (error) {
+                            console.warn('Error traduciendo respuesta correcta:', error);
+                        }
+                    }
 
-                return {
-                    question: translatedQuestion,
-                    answers: shuffledAnswers.map(answer => answer.text),
-                    correct: correctIndex,
-                    difficulty: q.difficulty,
-                    category: category,
-                    source: 'api',
-                    originalQuestion: question,
-                    originalAnswers: shuffledAnswers.map(answer => answer.original)
-                };
+                    const answers = ['Verdadero', 'Falso'];
+                    const originalAnswers = ['True', 'False'];
+                    const correctIndex = translatedCorrectAnswer.toLowerCase().includes('true') || 
+                                       translatedCorrectAnswer.toLowerCase().includes('verdadero') ? 0 : 1;
+
+                    return {
+                        question: translatedQuestion,
+                        answers: answers,
+                        correct: correctIndex,
+                        difficulty: q.difficulty,
+                        category: category,
+                        source: 'api',
+                        type: 'boolean',
+                        originalQuestion: question,
+                        originalAnswers: originalAnswers
+                    };
+                } else {
+                    // Procesar preguntas de opción múltiple (código original)
+                    const correctAnswer = this.decodeHtml(q.correct_answer);
+                    const incorrectAnswers = q.incorrect_answers.map(a => this.decodeHtml(a));
+                    
+                    let translatedCorrectAnswer = correctAnswer;
+                    let translatedIncorrectAnswers = incorrectAnswers;
+
+                    if (this.translationEnabled) {
+                        try {
+                            translatedCorrectAnswer = await this.translateText(correctAnswer);
+                            translatedIncorrectAnswers = await Promise.all(
+                                incorrectAnswers.map(answer => this.translateText(answer))
+                            );
+                        } catch (error) {
+                            console.warn('Error en traducción, usando texto original:', error);
+                        }
+                    }
+
+                    // Crear arrays con índices para mantener correspondencia
+                    const allAnswers = [
+                        { text: translatedCorrectAnswer, original: correctAnswer, isCorrect: true },
+                        ...translatedIncorrectAnswers.map((answer, i) => ({
+                            text: answer,
+                            original: incorrectAnswers[i],
+                            isCorrect: false
+                        }))
+                    ];
+                    
+                    // Mezclar manteniendo correspondencia
+                    const shuffledAnswers = this.shuffleArray(allAnswers);
+                    const correctIndex = shuffledAnswers.findIndex(answer => answer.isCorrect);
+
+                    return {
+                        question: translatedQuestion,
+                        answers: shuffledAnswers.map(answer => answer.text),
+                        correct: correctIndex,
+                        difficulty: q.difficulty,
+                        category: category,
+                        source: 'api',
+                        type: 'multiple',
+                        originalQuestion: question,
+                        originalAnswers: shuffledAnswers.map(answer => answer.original)
+                    };
+                }
             })
         );
 
@@ -646,25 +709,35 @@ class ApiClient {
     /**
      * Obtiene preguntas desde el fallback local
      */
-    getQuestionsFromFallback(category, difficulty, amount) {
+    getQuestionsFromFallback(category, difficulty, amount, type = 'multiple') {
         if (!this.fallbackQuestions || !this.fallbackQuestions[category.toLowerCase()]) {
             throw new Error(`No hay preguntas de fallback para la categoría: ${category}`);
         }
 
         const categoryQuestions = this.fallbackQuestions[category.toLowerCase()];
-        const filteredQuestions = categoryQuestions.filter(q => 
-            !difficulty || q.difficulty === difficulty
-        );        if (filteredQuestions.length === 0) {
-            // Si no hay preguntas de la dificultad específica, usar cualquiera de la categoría
-            return this.shuffleArray(categoryQuestions).slice(0, amount).map(q => ({
-                ...q,
-                source: 'fallback'
-            }));
+        let filteredQuestions = categoryQuestions.filter(q => {
+            const difficultyMatches = !difficulty || q.difficulty === difficulty;
+            let typeMatches = true;
+            
+            if (type === 'boolean') {
+                typeMatches = q.type === 'boolean';
+            } else if (type === 'multiple') {
+                typeMatches = !q.type || q.type === 'multiple';
+            }
+            // Si type === 'mixed' o undefined, incluir todos los tipos
+            
+            return difficultyMatches && typeMatches;
+        });
+
+        if (filteredQuestions.length === 0) {
+            // Si no hay preguntas del tipo específico, usar cualquiera de la categoría
+            filteredQuestions = categoryQuestions;
         }
 
         return this.shuffleArray(filteredQuestions).slice(0, amount).map(q => ({
             ...q,
-            source: 'fallback'
+            source: 'fallback',
+            type: q.type || 'multiple'
         }));
     }
 

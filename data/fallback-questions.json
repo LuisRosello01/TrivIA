@@ -85,6 +85,20 @@
       "answers": ["Robespierre", "Napoleón", "Luis XVI", "Voltaire"],
       "correct": 0,
       "difficulty": "hard"
+    },
+    {
+      "question": "¿La Segunda Guerra Mundial duró más de 5 años?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "easy",
+      "type": "boolean"
+    },
+    {
+      "question": "¿El Imperio Romano cayó en el siglo V?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "medium",
+      "type": "boolean"
     }
   ],  "ciencia": [
     {
@@ -146,6 +160,20 @@
       "answers": ["Isaac Newton", "Albert Einstein", "Galileo Galilei", "Johannes Kepler"],
       "correct": 0,
       "difficulty": "medium"
+    },
+    {
+      "question": "¿El sol es una estrella?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "easy",
+      "type": "boolean"
+    },
+    {
+      "question": "¿Los humanos tenemos más de 200 huesos al nacer?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "medium",
+      "type": "boolean"
     }
   ],  "deportes": [
     {
@@ -207,6 +235,20 @@
       "answers": ["Tenis", "Baloncesto", "Voleibol", "Bádminton"],
       "correct": 0,
       "difficulty": "easy"
+    },
+    {
+      "question": "¿El baloncesto fue inventado en Estados Unidos?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "medium",
+      "type": "boolean"
+    },
+    {
+      "question": "¿Los Juegos Olímpicos modernos comenzaron en el siglo XIX?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "medium",
+      "type": "boolean"
     }
   ],  "arte": [
     {
@@ -268,6 +310,20 @@
       "answers": ["La persistencia de la memoria", "Muchacha en la ventana", "Metamorfosis de Narciso", "El gran masturbador"],
       "correct": 0,
       "difficulty": "medium"
+    },
+    {
+      "question": "¿La Mona Lisa se encuentra en el Museo del Louvre?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "easy",
+      "type": "boolean"
+    },
+    {
+      "question": "¿Pablo Picasso fue el fundador del movimiento cubista?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "medium",
+      "type": "boolean"
     }
   ],  "geografia": [
     {
@@ -329,6 +385,20 @@
       "answers": ["Estrecho de Gibraltar", "Estrecho de Bering", "Canal de la Mancha", "Estrecho de Magallanes"],
       "correct": 0,
       "difficulty": "medium"
+    },
+    {
+      "question": "¿Australia es el continente más pequeño del mundo?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "easy",
+      "type": "boolean"
+    },
+    {
+      "question": "¿El río Nilo es el más largo del mundo?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "medium",
+      "type": "boolean"
     }
   ],  "entretenimiento": [
     {
@@ -390,6 +460,20 @@
       "answers": ["Frodo Bolsón", "Bilbo Bolsón", "Sam Gamyi", "Pippin Tuk"],
       "correct": 0,
       "difficulty": "easy"
+    },
+    {
+      "question": "¿'El Padrino' ganó el Oscar a la Mejor Película?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "medium",
+      "type": "boolean"
+    },
+    {
+      "question": "¿Walt Disney fundó la empresa Disney en el siglo XX?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "easy",
+      "type": "boolean"
     }
   ],
   "informatica": [
@@ -832,6 +916,13 @@
       "answers": ["Conquista mundial", "Acumular dinero", "Construir ciudades", "Comerciar recursos"],
       "correct": 0,
       "difficulty": "easy"
+    },
+    {
+      "question": "¿El ajedrez se originó en la India?",
+      "answers": ["Verdadero", "Falso"],
+      "correct": 0,
+      "difficulty": "medium",
+      "type": "boolean"
     }
   ]
 }

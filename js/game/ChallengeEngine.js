@@ -12,6 +12,7 @@ class ChallengeEngine {
             difficulty: 'medium',
             timer: 20,
             mode: 'continuous', // Modo continuo por defecto (no termina por respuestas incorrectas)
+            questionType: 'multiple', // Nuevo: tipo de pregunta ('multiple' o 'boolean')
             categories: {
                 // Categorías principales
                 'historia': true,
@@ -266,13 +267,16 @@ class ChallengeEngine {
             const randomCategory = enabledCategories[Math.floor(Math.random() * enabledCategories.length)];
             const effectiveDifficulty = this.getEffectiveDifficulty();
             
-            console.log(`🎲 Generando pregunta: ${randomCategory}, dificultad: ${effectiveDifficulty}`);
+            // Seleccionar tipo de pregunta efectivo (puede ser aleatorio para tipo mixto)
+            const effectiveQuestionType = this.getEffectiveQuestionType();
+            
+            console.log(`🎲 Generando pregunta: ${randomCategory}, dificultad: ${effectiveDifficulty}, tipo: ${effectiveQuestionType}`);
             
             let question = null;
 
             try {
                 // Intentar cargar pregunta de la API
-                const questions = await this.apiClient.getQuestions(randomCategory, effectiveDifficulty, 1);
+                const questions = await this.apiClient.getQuestions(randomCategory, effectiveDifficulty, 1, effectiveQuestionType);
                 if (questions && questions.length > 0) {
                     question = this.convertApiQuestionToChallengeFormat(questions[0], effectiveDifficulty);
                 }
@@ -356,7 +360,11 @@ class ChallengeEngine {
         
         // Obtener dificultad efectiva (puede ser aleatoria)
         const effectiveDifficulty = this.getEffectiveDifficulty();
-        console.log(`🎲 Categoría seleccionada: ${randomCategory}, dificultad: ${effectiveDifficulty}`);
+        
+        // Obtener tipo de pregunta efectivo (puede ser aleatorio para tipo mixto)
+        const effectiveQuestionType = this.getEffectiveQuestionType();
+        
+        console.log(`🎲 Categoría seleccionada: ${randomCategory}, dificultad: ${effectiveDifficulty}, tipo: ${effectiveQuestionType}`);
         
         // Mostrar nombre de categoría en español si está disponible
         if (this.apiClient && this.apiClient.getCategoryDisplayName) {
@@ -369,7 +377,7 @@ class ChallengeEngine {
         try {
             // Intentar cargar pregunta de la API
             console.log('🔄 Solicitando pregunta a la API...');
-            const questions = await this.apiClient.getQuestions(randomCategory, effectiveDifficulty, 1);
+            const questions = await this.apiClient.getQuestions(randomCategory, effectiveDifficulty, 1, effectiveQuestionType);
             console.log('📦 Respuesta de la API:', questions);
               
             if (questions && questions.length > 0) {
@@ -702,6 +710,12 @@ class ChallengeEngine {
     handleTimeOut() {
         console.log('⏰ Tiempo agotado!');
         this.stopTimer();
+        
+        // Proporcionar feedback táctil inmediatamente
+        if (navigator.vibrate) {
+            // Patrón distintivo para timeouts: tres pulsos cortos seguidos de uno largo
+            navigator.vibrate([100, 50, 100, 50, 100, 100, 200]);
+        }
         
         // Procesar como respuesta incorrecta
         this.processTimeOut();
@@ -1048,6 +1062,19 @@ class ChallengeEngine {
     }
 
     /**
+     * Selecciona un tipo de pregunta aleatorio si está configurado como 'mixed'
+     */
+    getEffectiveQuestionType() {
+        if (this.config.questionType === 'mixed') {
+            const types = ['multiple', 'boolean'];
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            console.log(`🎲 Tipo de pregunta aleatorio seleccionado: ${randomType}`);
+            return randomType;
+        }
+        return this.config.questionType;
+    }
+
+    /**
      * Crea una pregunta de prueba para testing
      */    
     createTestQuestion(effectiveDifficulty = 'medium') {
@@ -1059,6 +1086,7 @@ class ChallengeEngine {
                 categoria: "geografia",
                 dificultad: effectiveDifficulty,
                 fuente: "test",
+                type: "multiple",
                 originalQuestion: "What is the capital of France?",
                 originalAnswers: ["Paris", "London", "Madrid", "Rome"]
             },
@@ -1069,33 +1097,47 @@ class ChallengeEngine {
                 categoria: "historia",
                 dificultad: effectiveDifficulty,
                 fuente: "test",
+                type: "multiple",
                 originalQuestion: "In what year did World War II end?",
                 originalAnswers: ["1945", "1944", "1946", "1943"]
             },
             {
-                pregunta: "¿Cuál es el planeta más grande del sistema solar?",
-                opciones: ["Júpiter", "Saturno", "Tierra", "Marte"],
-                respuesta_correcta: "Júpiter",
+                pregunta: "¿El sol es una estrella?",
+                opciones: ["Verdadero", "Falso"],
+                respuesta_correcta: "Verdadero",
                 categoria: "ciencia",
                 dificultad: effectiveDifficulty,
                 fuente: "test",
-                originalQuestion: "What is the largest planet in the solar system?",
-                originalAnswers: ["Jupiter", "Saturn", "Earth", "Mars"]
+                type: "boolean",
+                originalQuestion: "Is the sun a star?",
+                originalAnswers: ["True", "False"]
             },
             {
-                pregunta: "¿Qué significa HTML?",
-                opciones: ["HyperText Markup Language", "High Tech Modern Language", "Home Tool Markup Language", "Hyper Transfer Markup Language"],
-                respuesta_correcta: "HyperText Markup Language",
+                pregunta: "¿JavaScript fue inventado en 1995?",
+                opciones: ["Verdadero", "Falso"],
+                respuesta_correcta: "Verdadero",
                 categoria: "informatica",
                 dificultad: effectiveDifficulty,
                 fuente: "test",
-                originalQuestion: "What does HTML stand for?",
-                originalAnswers: ["HyperText Markup Language", "High Tech Modern Language", "Home Tool Markup Language", "Hyper Transfer Markup Language"]
+                type: "boolean",
+                originalQuestion: "Was JavaScript invented in 1995?",
+                originalAnswers: ["True", "False"]
             }
         ];
         
-        const selectedQuestion = testQuestions[Math.floor(Math.random() * testQuestions.length)];
-        console.log('🧪 Pregunta de prueba creada con versiones original y traducida:', selectedQuestion);
+        // Filtrar según el tipo de pregunta configurado
+        let availableQuestions = testQuestions;
+        const effectiveType = this.getEffectiveQuestionType();
+        
+        if (effectiveType === 'boolean') {
+            availableQuestions = testQuestions.filter(q => q.type === 'boolean');
+        } else if (effectiveType === 'multiple') {
+            availableQuestions = testQuestions.filter(q => q.type === 'multiple');
+        }
+        // Si es 'mixed', usar todas las preguntas disponibles
+        
+        const selectedQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+        console.log(`🧪 Pregunta de prueba creada (${selectedQuestion.type}):`, selectedQuestion);
         return selectedQuestion;
     }
 
