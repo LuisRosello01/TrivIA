@@ -456,9 +456,6 @@ class ChallengeUI {    constructor() {
                             <div class="question-category">
                                 <span id="challenge-question-category">Categoría</span>
                             </div>
-                            <div class="question-type-indicator">
-                                <span id="challenge-question-type-badge">📝 Opción Múltiple</span>
-                            </div>
                             <div class="question-text">
                                 <h3 id="challenge-question-text">Pregunta aparecerá aquí...</h3>
                             </div>
@@ -573,7 +570,6 @@ class ChallengeUI {    constructor() {
         this.elements.questionLoading = document.getElementById('question-loading');
           // Elementos de la pregunta
         this.elements.challengeQuestionCategory = document.getElementById('challenge-question-category');
-        this.elements.challengeQuestionTypeBadge = document.getElementById('challenge-question-type-badge');
         this.elements.challengeQuestionText = document.getElementById('challenge-question-text');
         this.elements.toggleOriginalBtn = document.getElementById('toggle-original-btn');
         
@@ -619,7 +615,6 @@ class ChallengeUI {    constructor() {
             'challengeCorrectAnswers',
             'challengeQuestionText',
             'challengeQuestionCategory',
-            'challengeQuestionTypeBadge',
             'toggleOriginalBtn'
         ];
         
@@ -1596,16 +1591,6 @@ class ChallengeUI {    constructor() {
                 }
             }
 
-            // Actualizar el indicador de tipo de pregunta
-            if (this.elements.challengeQuestionTypeBadge) {
-                if (isBooleanQuestion) {
-                    this.elements.challengeQuestionTypeBadge.textContent = '✓✗ Verdadero/Falso';
-                    this.elements.challengeQuestionTypeBadge.className = 'question-type-badge boolean-type';
-                } else {
-                    this.elements.challengeQuestionTypeBadge.textContent = '📝 Opción Múltiple';
-                    this.elements.challengeQuestionTypeBadge.className = 'question-type-badge multiple-type';
-                }
-            }
         }
 
         console.log(`📝 Pregunta mostrada:`, {
