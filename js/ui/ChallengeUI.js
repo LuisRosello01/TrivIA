@@ -153,6 +153,8 @@ class ChallengeUI {    constructor() {
         document.addEventListener('challengeError', (e) => this.onChallengeError(e.detail));
         document.addEventListener('challengePaused', (e) => this.onChallengePaused(e.detail));
         document.addEventListener('challengeResumed', (e) => this.onChallengeResumed(e.detail));
+        document.addEventListener('challengeInactivityWarning', (e) => this.onInactivityWarning(e.detail));
+        document.addEventListener('challengeInactivityResolved', (e) => this.onInactivityResolved(e.detail));
         // Comentado: El juego ahora continúa después de respuestas incorrectas
         // document.addEventListener('survivalGameOver', (e) => this.onSurvivalGameOver(e.detail));
     }
@@ -584,7 +586,14 @@ class ChallengeUI {    constructor() {
         this.elements.finalCorrect = document.getElementById('final-correct');
         this.elements.finalStreak = document.getElementById('final-streak');
         this.elements.playAgainBtn = document.getElementById('play-again-btn');
-        this.elements.backToMenuBtn = document.getElementById('back-to-menu-btn');        // Verificar elementos críticos
+        this.elements.backToMenuBtn = document.getElementById('back-to-menu-btn');
+        
+        // Elementos del modal de advertencia de inactividad
+        this.elements.inactivityWarningModal = document.getElementById('inactivity-warning-modal');
+        this.elements.inactivityContinueBtn = document.getElementById('inactivity-continue-btn');
+        this.elements.inactivityQuitBtn = document.getElementById('inactivity-quit-btn');
+        
+        // Verificar elementos críticos
         const criticalElements = [
             'challengeCorrectAnswers',
             'challengeQuestionText',
@@ -654,6 +663,15 @@ class ChallengeUI {    constructor() {
 
         if (this.elements.backToMenuBtn) {
             this.addMobileOptimizedListener(this.elements.backToMenuBtn, () => this.backToMenuFromGameOver());
+        }
+
+        // Eventos del modal de advertencia de inactividad
+        if (this.elements.inactivityContinueBtn) {
+            this.addMobileOptimizedListener(this.elements.inactivityContinueBtn, () => this.onInactivityContinue());
+        }
+
+        if (this.elements.inactivityQuitBtn) {
+            this.addMobileOptimizedListener(this.elements.inactivityQuitBtn, () => this.onInactivityQuit());
         }
 
         // Configurar el modal de confirmación de salida para prevenir propagación de eventos
@@ -788,7 +806,7 @@ class ChallengeUI {    constructor() {
         setTimeout(() => {
             if (this.challengeEngine && this.challengeEngine.gameState.isGameRunning) {
                 console.log('⏱️ Iniciando timer después de mostrar la pregunta completamente');
-                this.challengeEngine.startTimer();
+                this.challengeEngine.startQuestionTimer(); // Usar el nuevo método público
             }
         }, 200); // Pequeño delay para asegurar que la UI esté completamente renderizada
     }
@@ -1049,6 +1067,16 @@ class ChallengeUI {    constructor() {
      */
     onChallengeEnded(data) {
         console.log('🏁 Desafío terminado');
+        
+        // Limpiar cualquier estado de carga activo
+        this.clearAllLoadingIndicators();
+        
+        // Cancelar cualquier timeout pendiente en la UI
+        this.cancelAllTimeouts();
+        
+        // Marcar que el juego ha terminado
+        this.gameEnded = true;
+        
         this.showChallengeResults(data.results);
     }
 
@@ -1056,8 +1084,35 @@ class ChallengeUI {    constructor() {
      * Muestra los resultados del desafío
      */
     showChallengeResults(results) {
-        // Aquí se implementará la pantalla de resultados
         console.log('📊 Resultados del desafío:', results);
+        
+        // Si el juego terminó por inactividad (puntuación 0 y pocas preguntas), regresar al menú
+        if (results.questionsAnswered <= 1 && results.score === 0) {
+            console.log('🚪 Regresando al menú principal (desafío terminado por inactividad)');
+            this.returnToMainMenu();
+            return;
+        }
+        
+        // Para otros casos, mostrar pantalla de resultados (a implementar en el futuro)
+        console.log('🏆 Aquí se mostrará la pantalla de resultados completa');
+        
+        // Por ahora, regresar al menú después de un breve delay
+        setTimeout(() => {
+            this.returnToMainMenu();
+        }, 2000);
+    }
+
+    /**
+     * Regresa al menú principal
+     */
+    returnToMainMenu() {
+        console.log('🔙 Regresando al menú principal...');
+        
+        // Limpiar el estado del desafío
+        this.cleanup();
+        
+        // Mostrar el menú principal
+        this.showMainMenu();
     }
 
     /**
@@ -1242,7 +1297,7 @@ class ChallengeUI {    constructor() {
             this.elements.challengeLoadingScreen.classList.remove('active');
             console.log('✅ Carga inicial ocultada');
         } else {
-            console.warn('⚠️ No se pudo ocultar la carga inicial - elemento no encontrado');
+            console.log('⚠️ Elemento challenge-loading-screen no encontrado (posiblemente ya destruido)');
         }
     }
 
@@ -1257,8 +1312,16 @@ class ChallengeUI {    constructor() {
         
         console.log('⏳ Mostrando carga de pregunta');
         
+        // Verificar que el elemento existe antes de usarlo
+        if (!this.elements.questionLoading) {
+            this.elements.questionLoading = document.getElementById('question-loading');
+        }
+        
+        // Solo mostrar si el elemento existe (no se ha destruido la interfaz)
         if (this.elements.questionLoading) {
             this.elements.questionLoading.classList.add('active');
+        } else {
+            console.log('⚠️ No se puede mostrar carga de pregunta: elemento no existe (interfaz destruida)');
         }
     }
 
@@ -1268,8 +1331,15 @@ class ChallengeUI {    constructor() {
     hideQuestionLoading() {
         console.log('✅ Ocultando carga de pregunta');
         
+        // Verificar que el elemento existe antes de usarlo
+        if (!this.elements.questionLoading) {
+            this.elements.questionLoading = document.getElementById('question-loading');
+        }
+        
         if (this.elements.questionLoading) {
             this.elements.questionLoading.classList.remove('active');
+        } else {
+            console.log('⚠️ Elemento question-loading no encontrado (posiblemente ya destruido)');
         }
     }    /**
      * Actualiza el estado de la carga inicial
@@ -1291,8 +1361,13 @@ class ChallengeUI {    constructor() {
      * @param {boolean} show - Si mostrar el indicador de carga
      */
     showButtonLoading(show) {
+        // Verificar que el elemento existe antes de usarlo
         if (!this.elements.challengeStartBtn) {
-            console.warn('⚠️ challengeStartBtn no encontrado para mostrar carga');
+            this.elements.challengeStartBtn = document.getElementById('challenge-start-btn');
+        }
+        
+        if (!this.elements.challengeStartBtn) {
+            console.log('⚠️ challengeStartBtn no encontrado (posiblemente ya destruido)');
             return;
         }
 
@@ -2077,6 +2152,87 @@ class ChallengeUI {    constructor() {
             appliedClass: bestFit.class || 'normal',
             finalSize: { width: element.scrollWidth, height: element.scrollHeight }
         });
+    }
+
+    /**
+     * Maneja el evento de advertencia de inactividad
+     */
+    onInactivityWarning(data) {
+        console.log('⚠️ Mostrando advertencia de inactividad');
+        
+        // Mostrar el modal de inactividad
+        this.showInactivityWarning(data.consecutiveTimeouts);
+    }
+
+    /**
+     * Maneja el evento de resolución de inactividad
+     */
+    onInactivityResolved(data) {
+        console.log('✅ Advertencia de inactividad resuelta');
+        
+        // Ocultar el modal de inactividad
+        this.hideInactivityWarning();
+    }
+
+    /**
+     * Muestra el modal de advertencia de inactividad
+     */
+    showInactivityWarning(consecutiveTimeouts) {
+        console.log(`⚠️ Mostrando advertencia: ${consecutiveTimeouts} timeouts consecutivos`);
+        
+        if (this.elements.inactivityWarningModal) {
+            this.elements.inactivityWarningModal.classList.add('active');
+        } else {
+            console.error('❌ Modal de inactividad no encontrado');
+        }
+    }
+
+    /**
+     * Oculta el modal de advertencia de inactividad
+     */
+    hideInactivityWarning() {
+        console.log('✅ Ocultando advertencia de inactividad');
+        
+        if (this.elements.inactivityWarningModal) {
+            this.elements.inactivityWarningModal.classList.remove('active');
+        }
+    }
+
+    /**
+     * Maneja el clic en "Sí, continuar" en la advertencia de inactividad
+     */
+    onInactivityContinue() {
+        console.log('✅ Usuario eligió continuar después de la advertencia');
+        
+        // Llamar al método del ChallengeEngine
+        if (this.challengeEngine) {
+            this.challengeEngine.confirmUserActive();
+        }
+    }
+
+    /**
+     * Maneja el clic en "No, salir" en la advertencia de inactividad
+     */
+    onInactivityQuit() {
+        console.log('❌ Usuario eligió salir después de la advertencia');
+        
+        // Marcar que el juego ha terminado INMEDIATAMENTE para prevenir nuevas acciones
+        this.gameEnded = true;
+        
+        // Cancelar todos los timeouts pendientes antes de limpiar
+        this.cancelAllTimeouts();
+        
+        // Limpiar cualquier indicador de carga activo
+        this.clearAllLoadingIndicators();
+        
+        // Limpiar referencias a elementos DOM que se van a destruir
+        this.elements.questionLoading = null;
+        this.elements.challengeLoadingScreen = null;
+        
+        // Llamar al método del ChallengeEngine
+        if (this.challengeEngine) {
+            this.challengeEngine.confirmUserInactive();
+        }
     }
 
     // ...existing code...

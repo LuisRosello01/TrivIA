@@ -5,7 +5,7 @@
 class ChallengeEngine {
     constructor() {
         this.isActive = false;
-        this.nextQuestion = null; // Pregunta precargada para agilizar el gameplay
+        this.questionQueue = []; // Cola de preguntas precargadas para agilizar el gameplay
         
         // Configuración por defecto con todas las categorías disponibles
         this.config = {
@@ -53,11 +53,13 @@ class ChallengeEngine {
             gameStartTime: null,
             isGameRunning: false,
             lives: -1, // -1 significa vidas ilimitadas en modo continuo
-            isAlive: true // Estado de supervivencia
+            isAlive: true, // Estado de supervivencia
+            consecutiveTimeouts: 0 // Contador de timeouts consecutivos
         };
         
         this.timerInterval = null;
         this.apiClient = null;
+        this.pendingTimeouts = new Set(); // Para rastrear timeouts pendientes
     }
 
     /**
@@ -117,9 +119,11 @@ class ChallengeEngine {
             gameStartTime: null,
             isGameRunning: false,
             lives: this.config.mode === 'survival' ? 1 : -1, // -1 significa vidas ilimitadas
-            isAlive: true // Estado de supervivencia
+            isAlive: true, // Estado de supervivencia
+            consecutiveTimeouts: 0 // Resetear contador de timeouts consecutivos
         };
-        this.nextQuestion = null; // Resetear pregunta precargada
+        this.questionQueue = []; // Resetear cola de preguntas precargadas
+        this.pendingTimeouts = new Set(); // Limpiar timeouts pendientes
     }
 
     /**
@@ -142,19 +146,20 @@ class ChallengeEngine {
                 );
             }
 
-            // Cargar primera pregunta
-            await this.loadNextQuestion();
+            // Precargar 2 preguntas al inicio para mejorar la fluidez
+            console.log('📦 Precargando 2 preguntas iniciales...');
+            await this.preloadInitialQuestions(2);
             
-            // NO iniciar temporizador aquí - se iniciará cuando la UI esté lista
-            // this.startTimer(); // Movido al UI cuando la pregunta esté completamente mostrada
+            // Cargar primera pregunta desde la cola
+            await this.loadNextQuestionFromQueue();
             
-            // Disparar evento de inicio
+            // Disparar evento de inicio (SIN iniciar temporizador aquí)
             this.dispatchEvent('challengeStarted', {
                 config: this.config,
                 gameState: this.gameState
             });
 
-            console.log('✅ Desafío iniciado correctamente');
+            console.log('✅ Desafío iniciado correctamente con', this.questionQueue.length + 1, 'preguntas cargadas');
             return true;
 
         } catch (error) {
@@ -171,40 +176,69 @@ class ChallengeEngine {
     }
 
     /**
-     * Carga la siguiente pregunta del desafío
+     * Precarga un número específico de preguntas al inicio del desafío
+     * @param {number} amount - Cantidad de preguntas a precargar
      */
-    async loadNextQuestion() {
+    async preloadInitialQuestions(amount = 2) {
+        console.log(`⚡ Precargando ${amount} preguntas iniciales...`);
+        
+        const promises = [];
+        for (let i = 0; i < amount; i++) {
+            promises.push(this.generateSingleQuestion());
+        }
+        
         try {
-            // Si ya tenemos una pregunta precargada, usarla
-            if (this.nextQuestion) {
-                console.log('🚀 Usando pregunta precargada para agilizar el gameplay');
-                this.gameState.currentQuestion = this.nextQuestion;
-                this.gameState.timeRemaining = this.config.timer || 0;
-                this.nextQuestion = null; // Limpiar la pregunta usada
-                
-                // Disparar evento de nueva pregunta
-                this.dispatchEvent('newChallengeQuestion', {
-                    question: this.gameState.currentQuestion,
-                    gameState: this.gameState
-                });
-                
-                // Precargar la siguiente pregunta en paralelo
-                this.preloadNextQuestion();
-                
-                console.log('📝 Pregunta precargada mostrada:', this.gameState.currentQuestion.pregunta);
-                return;
+            const questions = await Promise.all(promises);
+            this.questionQueue = questions.filter(q => q !== null);
+            console.log(`✅ ${this.questionQueue.length} preguntas precargadas correctamente`);
+        } catch (error) {
+            console.warn('⚠️ Error al precargar preguntas:', error);
+            this.questionQueue = [];
+        }
+    }
+
+    /**
+     * Carga la siguiente pregunta desde la cola o genera una nueva
+     */
+    async loadNextQuestionFromQueue() {
+        try {
+            let question = null;
+            
+            // Si hay preguntas en la cola, usar la primera
+            if (this.questionQueue.length > 0) {
+                question = this.questionQueue.shift();
+                console.log('📤 Pregunta cargada desde la cola. Quedan:', this.questionQueue.length);
+            } else {
+                // Si no hay preguntas en la cola, generar una nueva
+                console.log('🔄 Cola vacía, generando nueva pregunta...');
+                question = await this.generateSingleQuestion();
             }
             
-            // Si no hay pregunta precargada, cargar normalmente
-            await this.loadQuestionFromAPI();
+            // Si no se pudo obtener pregunta, usar una de emergencia
+            if (!question) {
+                console.warn('🚨 Usando pregunta de emergencia');
+                question = this.createTestQuestion(this.getEffectiveDifficulty());
+            }
             
-            // Precargar la siguiente pregunta para la próxima vez
-            this.preloadNextQuestion();
+            this.gameState.currentQuestion = question;
+            this.gameState.timeRemaining = this.config.timer || 0;
 
+            // Disparar evento de nueva pregunta
+            this.dispatchEvent('newChallengeQuestion', {
+                question: question,
+                gameState: this.gameState
+            });
+
+            // Precargar otra pregunta en segundo plano para mantener la cola
+            if (this.questionQueue.length < 2) {
+                this.preloadBackgroundQuestion();
+            }
+
+            console.log('📝 Pregunta cargada desde cola:', question.pregunta);
+            
         } catch (error) {
-            console.error('❌ Error crítico al cargar pregunta:', error);
-            console.error('Stack trace:', error.stack);
-              
+            console.error('❌ Error crítico al cargar pregunta desde cola:', error);
+            
             // Como último recurso, usar una pregunta de emergencia
             const emergencyQuestion = this.createTestQuestion(this.getEffectiveDifficulty());
             this.gameState.currentQuestion = emergencyQuestion;
@@ -214,9 +248,96 @@ class ChallengeEngine {
                 question: emergencyQuestion,
                 gameState: this.gameState
             });
-
-            console.log('🚨 Pregunta de emergencia cargada');
         }
+    }
+
+    /**
+     * Genera una sola pregunta (método auxiliar)
+     */
+    async generateSingleQuestion() {
+        try {
+            // Obtener categorías habilitadas
+            const enabledCategories = this.getEnabledCategories();
+            if (enabledCategories.length === 0) {
+                throw new Error('No hay categorías seleccionadas');
+            }
+
+            // Seleccionar categoría aleatoria
+            const randomCategory = enabledCategories[Math.floor(Math.random() * enabledCategories.length)];
+            const effectiveDifficulty = this.getEffectiveDifficulty();
+            
+            console.log(`🎲 Generando pregunta: ${randomCategory}, dificultad: ${effectiveDifficulty}`);
+            
+            let question = null;
+
+            try {
+                // Intentar cargar pregunta de la API
+                const questions = await this.apiClient.getQuestions(randomCategory, effectiveDifficulty, 1);
+                if (questions && questions.length > 0) {
+                    question = this.convertApiQuestionToChallengeFormat(questions[0], effectiveDifficulty);
+                }
+            } catch (apiError) {
+                // Comprobar si es un error de rate limiting para ajustar la estrategia
+                if (apiError.message.includes('Rate Limit') || apiError.message.includes('429')) {
+                    console.warn('⚠️ Rate limit detectado, reduciendo precarga en segundo plano');
+                    // Podríamos reducir la precarga automática aquí
+                } else {
+                    console.warn('⚠️ Error de API al generar pregunta:', apiError.message);
+                }
+            }
+
+            // Si no se pudo obtener de la API, usar pregunta de prueba
+            if (!question) {
+                question = this.createTestQuestion(effectiveDifficulty);
+            }
+
+            return question;
+            
+        } catch (error) {
+            console.error('❌ Error al generar pregunta individual:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Precarga una pregunta en segundo plano para mantener la cola
+     */
+    async preloadBackgroundQuestion() {
+        if (!this.gameState.isGameRunning) {
+            return; // No precargar si el juego no está activo
+        }
+
+        // Reducir la precarga agresiva para evitar rate limiting
+        if (this.questionQueue.length >= 2) {
+            console.log('📋 Cola tiene suficientes preguntas, omitiendo precarga');
+            return;
+        }
+
+        try {
+            console.log('⚡ Precargando pregunta en segundo plano...');
+            const question = await this.generateSingleQuestion();
+            
+            if (question && this.questionQueue.length < 2) { // Reducido de 3 a 2
+                this.questionQueue.push(question);
+                console.log('🎯 Pregunta precargada en segundo plano. Cola:', this.questionQueue.length);
+            }
+        } catch (error) {
+            // Si hay errores de rate limiting, ser menos agresivo con la precarga
+            if (error.message.includes('Rate Limit') || error.message.includes('429')) {
+                console.warn('⚠️ Rate limit en precarga, reduciendo frecuencia');
+            } else {
+                console.error('❌ Error en precarga de segundo plano:', error.message);
+            }
+            // No es crítico, el juego puede continuar
+        }
+    }
+
+    /**
+     * Carga la siguiente pregunta del desafío (método legacy - ahora usa la cola)
+     */
+    async loadNextQuestion() {
+        // Redirigir al nuevo método basado en cola
+        return this.loadNextQuestionFromQueue();
     }
 
     /**
@@ -277,53 +398,6 @@ class ChallengeEngine {
         });
 
         console.log('📝 Nueva pregunta cargada exitosamente:', question.pregunta);
-    }
-
-    /**
-     * Precarga la siguiente pregunta en segundo plano para agilizar el gameplay
-     */
-    async preloadNextQuestion() {
-        if (!this.gameState.isGameRunning) {
-            return; // No precargar si el juego no está activo
-        }
-
-        try {
-            console.log('⚡ Precargando siguiente pregunta...');
-            
-            // Obtener categorías habilitadas
-            const enabledCategories = this.getEnabledCategories();
-            if (enabledCategories.length === 0) {
-                return;
-            }
-
-            // Seleccionar categoría aleatoria para la próxima pregunta
-            const randomCategory = enabledCategories[Math.floor(Math.random() * enabledCategories.length)];
-            const effectiveDifficulty = this.getEffectiveDifficulty();
-            
-            let nextQuestion = null;
-
-            try {
-                const questions = await this.apiClient.getQuestions(randomCategory, effectiveDifficulty, 1);
-                
-                if (questions && questions.length > 0) {
-                    nextQuestion = this.convertApiQuestionToChallengeFormat(questions[0], effectiveDifficulty);
-                    console.log('✅ Siguiente pregunta precargada desde API');
-                } else {
-                    nextQuestion = this.createTestQuestion(effectiveDifficulty);
-                    console.log('⚠️ Siguiente pregunta precargada desde test');
-                }
-            } catch (apiError) {
-                console.warn('⚠️ Error en precarga de API, usando pregunta test:', apiError.message);
-                nextQuestion = this.createTestQuestion(effectiveDifficulty);
-            }
-
-            this.nextQuestion = nextQuestion;
-            console.log('🎯 Pregunta precargada lista:', nextQuestion.pregunta.substring(0, 50) + '...');
-
-        } catch (error) {
-            console.error('❌ Error en precarga de pregunta:', error);
-            // No es crítico, el juego puede continuar sin precarga
-        }
     }
 
     /**
@@ -400,6 +474,9 @@ class ChallengeEngine {
 
         const isCorrect = answer === this.gameState.currentQuestion.respuesta_correcta;
         this.gameState.questionsAnswered++;
+        
+        // Resetear contador de timeouts consecutivos ya que el usuario respondió
+        this.gameState.consecutiveTimeouts = 0;
 
         // Track respuesta en challenge
         if (window.trivialAnalytics) {
@@ -469,7 +546,7 @@ class ChallengeEngine {
         console.log('🔄 Continuando con la siguiente pregunta...');
         
         // Continuar con la siguiente pregunta después de una pausa
-        setTimeout(async () => {
+        this.createSafeTimeout(async () => {
             if (this.gameState.isGameRunning && this.gameState.isAlive) {
                 await this.loadNextQuestion();
                 // NO iniciar timer aquí - se iniciará cuando la UI esté lista
@@ -514,6 +591,14 @@ class ChallengeEngine {
         }
         
         return multipliers[effectiveDifficulty] || 1.0;
+    }
+
+    /**
+     * Inicia el temporizador de la pregunta actual (método público para llamar desde UI)
+     */
+    startQuestionTimer() {
+        console.log('⏱️ Iniciando temporizador desde UI cuando la pregunta está lista...');
+        this.startTimer();
     }
 
     /**
@@ -572,6 +657,46 @@ class ChallengeEngine {
     }
 
     /**
+     * Reanuda el temporizador (igual que startTimer pero sin reiniciar el tiempo)
+     */
+    resumeTimer() {
+        this.stopTimer(); // Limpiar cualquier temporizador previo
+
+        // Si el tiempo está configurado a 0, no iniciar temporizador (tiempo ilimitado)
+        if (this.config.timer === 0) {
+            console.log('⏳ Reanudando en modo sin límite de tiempo');
+            this.dispatchEvent('challengeTimerUpdate', {
+                timeRemaining: 0,
+                isUnlimited: true
+            });
+            return;
+        }
+
+        console.log(`⏱️ Reanudando timer con ${this.gameState.timeRemaining} segundos restantes`);
+        
+        // Disparar evento inicial para mostrar el tiempo actual
+        this.dispatchEvent('challengeTimerUpdate', {
+            timeRemaining: this.gameState.timeRemaining,
+            isUnlimited: false
+        });
+
+        this.timerInterval = setInterval(() => {
+            this.gameState.timeRemaining--;
+
+            // Disparar evento de actualización del temporizador
+            this.dispatchEvent('challengeTimerUpdate', {
+                timeRemaining: this.gameState.timeRemaining,
+                isUnlimited: false
+            });
+
+            // Si se acaba el tiempo
+            if (this.gameState.timeRemaining <= 0) {
+                this.handleTimeOut();
+            }
+        }, 1000);
+    }
+
+    /**
      * Maneja cuando se acaba el tiempo para responder
      */
     handleTimeOut() {
@@ -595,6 +720,10 @@ class ChallengeEngine {
 
         this.gameState.questionsAnswered++;
         this.gameState.streak = 0;
+        
+        // Incrementar contador de timeouts consecutivos
+        this.gameState.consecutiveTimeouts++;
+        console.log(`⏰ Timeout ${this.gameState.consecutiveTimeouts}/3`);
 
         // Track timeout en analytics
         if (window.trivialAnalytics) {
@@ -608,14 +737,22 @@ class ChallengeEngine {
         // Disparar evento de timeout
         this.dispatchEvent('challengeTimeOut', {
             correctAnswer: this.gameState.currentQuestion.respuesta_correcta,
-            gameState: this.gameState
+            gameState: this.gameState,
+            consecutiveTimeouts: this.gameState.consecutiveTimeouts
         });
 
-        // Ahora en modo continuo, continuar después del timeout
+        // Verificar si hemos alcanzado 3 timeouts consecutivos
+        if (this.gameState.consecutiveTimeouts >= 3) {
+            console.log('⚠️ 3 timeouts consecutivos detectados - Activando advertencia de inactividad');
+            this.handleInactivityWarning();
+            return; // No continuar con la siguiente pregunta
+        }
+
+        // Continuar normalmente si no hay 3 timeouts consecutivos
         console.log('⏰ Tiempo agotado, pero el juego continúa');
         
         // Continuar con la siguiente pregunta después de una pausa
-        setTimeout(async () => {
+        this.createSafeTimeout(async () => {
             if (this.gameState.isGameRunning && this.gameState.isAlive) {
                 await this.loadNextQuestion();
                 // NO iniciar timer aquí - se iniciará cuando la UI esté lista
@@ -625,12 +762,164 @@ class ChallengeEngine {
     }
 
     /**
+     * Maneja la advertencia de inactividad después de 3 timeouts consecutivos
+     */
+    handleInactivityWarning() {
+        console.log('⚠️ Mostrando advertencia de inactividad');
+        
+        // Cancelar todos los timeouts pendientes para evitar que continúe cargando preguntas
+        this.cancelAllTimeouts();
+        
+        // Pausar el juego
+        this.pauseChallenge();
+        
+        // Track evento de inactividad
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackChallengeInactivity(
+                this.config.mode || 'continuous',
+                this.gameState.questionsAnswered,
+                this.gameState.score
+            );
+        }
+        
+        // Disparar evento para que la UI muestre el modal de advertencia
+        this.dispatchEvent('challengeInactivityWarning', {
+            consecutiveTimeouts: this.gameState.consecutiveTimeouts,
+            gameState: this.gameState
+        });
+    }
+
+    /**
+     * Confirma que el usuario sigue activo (botón "Sí")
+     */
+    confirmUserActive() {
+        console.log('✅ Usuario confirmó que sigue activo');
+        
+        // Resetear contador de timeouts
+        this.gameState.consecutiveTimeouts = 0;
+        
+        // Track confirmación de actividad
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackChallengeActivityConfirmed(
+                this.config.mode || 'continuous',
+                this.gameState.questionsAnswered
+            );
+        }
+        
+        // Disparar evento para cerrar el modal
+        this.dispatchEvent('challengeInactivityResolved', {
+            userActive: true,
+            gameState: this.gameState
+        });
+        
+        // Reanudar el juego
+        this.resumeChallenge();
+    }
+
+    /**
+     * El usuario confirma que no quiere continuar (botón "No")
+     */
+    confirmUserInactive() {
+        console.log('❌ Usuario confirmó que no quiere continuar');
+        
+        // Cancelar todos los timeouts pendientes inmediatamente
+        this.cancelAllTimeouts();
+        
+        // Detener el temporizador si está activo
+        this.stopTimer();
+        
+        // Marcar el juego como inactivo
+        this.gameState.isGameRunning = false;
+        this.gameState.isAlive = false;
+        
+        // Track abandono por inactividad
+        if (window.trivialAnalytics) {
+            window.trivialAnalytics.trackChallengeAbandonedInactivity(
+                this.config.mode || 'continuous',
+                this.gameState.questionsAnswered,
+                this.gameState.score
+            );
+        }
+        
+        // Disparar evento para cerrar el modal
+        this.dispatchEvent('challengeInactivityResolved', {
+            userActive: false,
+            gameState: this.gameState
+        });
+        
+        // Terminar el desafío
+        this.endChallenge();
+    }
+
+    /**
+     * Obtiene estadísticas de timeouts (método de debugging)
+     */
+    getTimeoutStats() {
+        return {
+            consecutiveTimeouts: this.gameState.consecutiveTimeouts,
+            isWarningActive: this.gameState.consecutiveTimeouts >= 3
+        };
+    }
+
+    /**
+     * Método de testing para simular timeouts consecutivos
+     * @param {number} count - Número de timeouts a simular
+     */
+    simulateTimeouts(count = 1) {
+        console.log(`🧪 Simulando ${count} timeout(s) para testing`);
+        
+        for (let i = 0; i < count; i++) {
+            this.gameState.consecutiveTimeouts++;
+            console.log(`⏰ Timeout simulado ${this.gameState.consecutiveTimeouts}/3`);
+            
+            if (this.gameState.consecutiveTimeouts >= 3) {
+                console.log('⚠️ 3 timeouts alcanzados, activando advertencia');
+                this.handleInactivityWarning();
+                break;
+            }
+        }
+        
+        return this.getTimeoutStats();
+    }
+
+    /**
+     * Crea un timeout que se puede cancelar si el juego termina
+     */
+    createSafeTimeout(callback, delay) {
+        const timeoutId = setTimeout(() => {
+            this.pendingTimeouts.delete(timeoutId);
+            // Verificar que el juego sigue activo antes de ejecutar callback
+            if (this.gameState.isGameRunning && this.gameState.isAlive) {
+                callback();
+            } else {
+                console.log('⏰ Timeout cancelado: juego ya no está activo');
+            }
+        }, delay);
+        
+        this.pendingTimeouts.add(timeoutId);
+        console.log(`⏰ Timeout creado: ${timeoutId}, total pendientes: ${this.pendingTimeouts.size}`);
+        return timeoutId;
+    }
+
+    /**
+     * Cancela todos los timeouts pendientes
+     */
+    cancelAllTimeouts() {
+        console.log(`🧹 Cancelando ${this.pendingTimeouts.size} timeouts pendientes`);
+        for (const timeoutId of this.pendingTimeouts) {
+            clearTimeout(timeoutId);
+        }
+        this.pendingTimeouts.clear();
+    }
+
+    /**
      * Termina el desafío actual
      */
     endChallenge() {
         console.log('🏁 Finalizando desafío...');
         
         this.stopTimer();
+        this.cancelAllTimeouts(); // Cancelar todos los timeouts pendientes
         this.gameState.isGameRunning = false;
         this.isActive = false;
 
@@ -738,8 +1027,9 @@ class ChallengeEngine {
      */
     cleanup() {
         this.stopTimer();
+        this.cancelAllTimeouts(); // Cancelar todos los timeouts pendientes
         this.resetGameState();
-        this.nextQuestion = null;
+        this.questionQueue = []; // Limpiar cola de preguntas
         this.isActive = false;
         console.log('🧹 Motor de desafío limpiado');
     }

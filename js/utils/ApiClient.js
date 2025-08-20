@@ -11,6 +11,14 @@ class ApiClient {
         this.translationCache = new Map(); // Cache para traducciones
         this.translationUrl = 'https://api.mymemory.translated.net/get'; // API de traducción
         this.translationEnabled = true; // Por defecto está activada la traducción
+        
+        // Sistema de rate limiting para evitar error 429
+        this.apiRequestQueue = [];
+        this.isProcessingQueue = false;
+        this.lastApiRequest = 0;
+        this.minRequestInterval = 1000; // Mínimo 1 segundo entre peticiones
+        this.maxRetries = 2; // Máximo 2 reintentos en caso de error 429
+        
         // Mapeo completo de categorías Open Trivia DB (inglés -> español)
         this.categoryMap = {
             // Categorías principales del juego original
@@ -116,14 +124,17 @@ class ApiClient {
      */
     async initSession() {
         try {
-            const response = await fetch('https://opentdb.com/api_token.php?command=request');
+            console.log('🔐 Inicializando sesión de API...');
+            const response = await this.fetchWithRetry('https://opentdb.com/api_token.php?command=request');
             const data = await response.json();
             if (data.response_code === 0) {
                 this.sessionToken = data.token;
-                console.log('Sesión de API inicializada correctamente');
+                console.log('✅ Sesión de API inicializada correctamente');
+            } else {
+                console.warn(`⚠️ Error al inicializar sesión: código ${data.response_code}`);
             }
         } catch (error) {
-            console.warn('No se pudo inicializar la sesión de API:', error);
+            console.warn('⚠️ No se pudo inicializar la sesión de API (el juego funcionará sin token):', error.message);
         }
     }
 
@@ -343,15 +354,25 @@ class ApiClient {
     async getQuestions(category, difficulty = 'medium', amount = 1) {
         // Intentar obtener de la API primero
         try {
+            console.log(`🔍 Solicitando ${amount} pregunta(s) de ${category} (${difficulty}) desde API`);
             const apiQuestions = await this.getQuestionsFromAPI(category, difficulty, amount);
             if (apiQuestions && apiQuestions.length > 0) {
+                console.log(`✅ ${apiQuestions.length} pregunta(s) obtenidas de la API`);
                 return apiQuestions;
             }
         } catch (error) {
-            console.warn('Error al obtener preguntas de la API:', error);
+            // Distinguir entre diferentes tipos de error para logging
+            if (error.message.includes('Rate Limit') || error.message.includes('429')) {
+                console.warn('⚠️ Rate limit de API alcanzado, usando preguntas de fallback');
+            } else if (error.message.includes('No hay suficientes preguntas')) {
+                console.warn(`⚠️ No hay suficientes preguntas en la API para ${category} (${difficulty}), usando fallback`);
+            } else {
+                console.warn('⚠️ Error de API (usando fallback):', error.message);
+            }
         }
 
         // Usar fallback si la API falla
+        console.log(`📋 Usando preguntas de fallback para ${category} (${difficulty})`);
         return this.getQuestionsFromFallback(category, difficulty, amount);
     }
 
@@ -410,28 +431,147 @@ class ApiClient {
     }
 
     /**
+     * Procesa la cola de peticiones API para evitar rate limiting
+     */
+    async processApiRequestQueue() {
+        if (this.isProcessingQueue || this.apiRequestQueue.length === 0) {
+            return;
+        }
+
+        this.isProcessingQueue = true;
+
+        while (this.apiRequestQueue.length > 0) {
+            const { resolve, reject, requestFunction } = this.apiRequestQueue.shift();
+            
+            try {
+                // Verificar el tiempo desde la última petición
+                const timeSinceLastRequest = Date.now() - this.lastApiRequest;
+                if (timeSinceLastRequest < this.minRequestInterval) {
+                    const waitTime = this.minRequestInterval - timeSinceLastRequest;
+                    console.log(`⏳ Esperando ${waitTime}ms antes de la siguiente petición API`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                }
+
+                this.lastApiRequest = Date.now();
+                const result = await requestFunction();
+                resolve(result);
+            } catch (error) {
+                reject(error);
+            }
+
+            // Pequeña pausa entre peticiones para ser más conservador
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+
+        this.isProcessingQueue = false;
+    }
+
+    /**
+     * Añade una petición a la cola para procesamiento controlado
+     */
+    queueApiRequest(requestFunction) {
+        return new Promise((resolve, reject) => {
+            this.apiRequestQueue.push({ resolve, reject, requestFunction });
+            this.processApiRequestQueue();
+        });
+    }
+
+    /**
+     * Realiza una petición HTTP con reintentos en caso de error 429
+     */
+    async fetchWithRetry(url, retries = this.maxRetries) {
+        try {
+            const response = await fetch(url);
+            
+            // Si recibimos un 429, esperar más tiempo y reintentar
+            if (response.status === 429) {
+                if (retries > 0) {
+                    const waitTime = Math.pow(2, this.maxRetries - retries + 1) * 2000; // Backoff exponencial
+                    console.warn(`⚠️ Error 429 (Too Many Requests). Esperando ${waitTime/1000}s antes de reintentar...`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                    return this.fetchWithRetry(url, retries - 1);
+                } else {
+                    throw new Error('Rate limit excedido después de reintentos');
+                }
+            }
+
+            return response;
+        } catch (error) {
+            if (retries > 0 && (error.name === 'TypeError' || error.message.includes('fetch'))) {
+                console.warn(`⚠️ Error de red. Reintentando en 3s... (${retries} reintentos restantes)`);
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                return this.fetchWithRetry(url, retries - 1);
+            }
+            throw error;
+        }
+    }
+
+    /**
      * Obtiene preguntas desde la API de Open Trivia Database con traducción automática opcional
      */
     async getQuestionsFromAPI(category, difficulty, amount) {
-        const categoryId = this.categoryMap[category.toLowerCase()];
-        if (!categoryId) {
-            throw new Error(`Categoría no válida: ${category}`);
-        }
+        return this.queueApiRequest(async () => {
+            const categoryId = this.categoryMap[category.toLowerCase()];
+            if (!categoryId) {
+                throw new Error(`Categoría no válida: ${category}`);
+            }
 
-        let url = `${this.baseUrl}?amount=${amount}&category=${categoryId}&difficulty=${difficulty}&type=multiple`;
-        
-        if (this.sessionToken) {
-            url += `&token=${this.sessionToken}`;
-        }
+            let url = `${this.baseUrl}?amount=${amount}&category=${categoryId}&difficulty=${difficulty}&type=multiple`;
+            
+            if (this.sessionToken) {
+                url += `&token=${this.sessionToken}`;
+            }
 
-        const response = await fetch(url);
-        const data = await response.json();
+            console.log(`🔄 Petición API en cola: ${category} (${difficulty})`);
+            
+            const response = await this.fetchWithRetry(url);
+            const data = await response.json();
 
-        if (data.response_code !== 0) {
-            throw new Error(`Error de API: ${data.response_code}`);
-        }        // Procesar preguntas (con o sin traducción)
+            // Manejo mejorado de códigos de error
+            if (data.response_code !== 0) {
+                const errorMessages = {
+                    1: 'No hay suficientes preguntas para la categoría y dificultad especificadas',
+                    2: 'Parámetros de petición inválidos',
+                    3: 'Token de sesión no encontrado',
+                    4: 'Token de sesión ha devuelto todas las preguntas posibles',
+                    5: 'Límite de peticiones excedido (Rate Limit)'
+                };
+                
+                const errorMessage = errorMessages[data.response_code] || `Error desconocido: ${data.response_code}`;
+                console.warn(`⚠️ Error de API (${data.response_code}): ${errorMessage}`);
+                
+                // Si es error de token (3 o 4), intentar regenerar el token
+                if (data.response_code === 3 || data.response_code === 4) {
+                    console.log('🔄 Regenerando token de sesión...');
+                    await this.initSession();
+                    
+                    // Reintentar una vez con el nuevo token
+                    if (this.sessionToken) {
+                        url = url.replace(/token=[^&]*/, `token=${this.sessionToken}`);
+                        const retryResponse = await this.fetchWithRetry(url);
+                        const retryData = await retryResponse.json();
+                        
+                        if (retryData.response_code === 0) {
+                            console.log('✅ Reintento exitoso con nuevo token');
+                            return this.processApiQuestions(retryData.results, category);
+                        }
+                    }
+                }
+                
+                throw new Error(errorMessage);
+            }
+
+            console.log(`✅ Preguntas obtenidas de API: ${data.results.length}`);
+            return this.processApiQuestions(data.results, category);
+        });
+    }
+
+    /**
+     * Procesa las preguntas obtenidas de la API (método auxiliar)
+     */
+    async processApiQuestions(results, category) {
         const processedQuestions = await Promise.all(
-            data.results.map(async (q) => {
+            results.map(async (q) => {
                 const question = this.decodeHtml(q.question);
                 const correctAnswer = this.decodeHtml(q.correct_answer);
                 const incorrectAnswers = q.incorrect_answers.map(a => this.decodeHtml(a));
@@ -471,7 +611,9 @@ class ApiClient {
                         });
                         // Mantener texto original si hay error
                     }
-                }// Crear arrays con índices para mantener correspondencia
+                }
+
+                // Crear arrays con índices para mantener correspondencia
                 const allAnswers = [
                     { text: translatedCorrectAnswer, original: correctAnswer, isCorrect: true },
                     ...translatedIncorrectAnswers.map((answer, i) => ({
@@ -717,5 +859,27 @@ class ApiClient {
         }
         
         return results;
+    }
+
+    /**
+     * Obtiene estadísticas de la cola de peticiones API
+     */
+    getApiQueueStats() {
+        return {
+            queueLength: this.apiRequestQueue.length,
+            isProcessing: this.isProcessingQueue,
+            lastRequestTime: this.lastApiRequest,
+            timeSinceLastRequest: Date.now() - this.lastApiRequest,
+            minInterval: this.minRequestInterval
+        };
+    }
+
+    /**
+     * Limpia la cola de peticiones API (útil para debugging)
+     */
+    clearApiQueue() {
+        this.apiRequestQueue = [];
+        this.isProcessingQueue = false;
+        console.log('🧹 Cola de peticiones API limpiada');
     }
 }
