@@ -143,7 +143,10 @@ class ChallengeEngine {
             if (window.trivialAnalytics) {
                 window.trivialAnalytics.trackChallengeStart(
                     this.config.mode || 'continuous',
-                    this.config.timer || 20
+                    this.config.timer || 20,
+                    this.config.difficulty || 'medium',
+                    this.config.questionType || 'multiple',
+                    this.config.categories
                 );
             }
 
@@ -494,6 +497,15 @@ class ChallengeEngine {
                 isCorrect,
                 responseTime
             );
+            
+            // Track respuesta individual (nuevo)
+            window.trivialAnalytics.trackQuestionAnswered(isCorrect, responseTime);
+            
+            if (isCorrect) {
+                window.trivialAnalytics.trackCorrectAnswer(responseTime);
+            } else {
+                window.trivialAnalytics.trackIncorrectAnswer(responseTime);
+            }
         }
 
         if (isCorrect) {
@@ -740,6 +752,16 @@ class ChallengeEngine {
                 this.gameState.currentQuestion.categoria || 'unknown',
                 this.config.timer || 20
             );
+            
+            // Track timeout específico (nuevo)
+            window.trivialAnalytics.trackTimeout(
+                this.config.timer || 20,
+                this.gameState.questionsAnswered
+            );
+            
+            // Track como respuesta incorrecta (nuevo)
+            window.trivialAnalytics.trackQuestionAnswered(false, this.config.timer || 20);
+            window.trivialAnalytics.trackIncorrectAnswer(this.config.timer || 20);
         }
 
         // Disparar evento de timeout
@@ -752,8 +774,22 @@ class ChallengeEngine {
         // Verificar si hemos alcanzado 3 timeouts consecutivos
         if (this.gameState.consecutiveTimeouts >= 3) {
             console.log('⚠️ 3 timeouts consecutivos detectados - Activando advertencia de inactividad');
+            
+            // Track timeouts consecutivos
+            if (window.trivialAnalytics) {
+                window.trivialAnalytics.trackConsecutiveTimeouts(
+                    this.gameState.consecutiveTimeouts,
+                    this.config.mode || 'continuous'
+                );
+            }
+            
             this.handleInactivityWarning();
             return; // No continuar con la siguiente pregunta
+        }
+
+        // Track patrón de timeouts si hay 2 consecutivos (advertencia)
+        if (this.gameState.consecutiveTimeouts === 2 && window.trivialAnalytics) {
+            window.trivialAnalytics.trackTimeoutPattern('warning', this.gameState.consecutiveTimeouts);
         }
 
         // Continuar normalmente si no hay 3 timeouts consecutivos

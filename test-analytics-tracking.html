@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Analytics Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        .incorrect { background: #f44336; }
+        .incorrect:hover { background: #da190b; }
+        .results {
+            background: #e8f5e8;
+            padding: 10px;
+            border-left: 4px solid #4CAF50;
+            margin: 10px 0;
+        }
+        .log {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Analytics Tracking - Modo Desafío</h1>
+
+    <div class="test-section">
+        <h2>📊 Sistema de Analytics</h2>
+        <p>Estado: <span id="analytics-status">Verificando...</span></p>
+        <div id="analytics-info"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Test Eventos de Desafío</h2>
+        <button onclick="testChallengeStart()">Iniciar Desafío</button>
+        <button onclick="testChallengeComplete()">Completar Desafío</button>
+        <button onclick="testChallengeAbandon()">Abandonar Desafío</button>
+    </div>
+
+    <div class="test-section">
+        <h2>✅❌ Test Respuestas</h2>
+        <button onclick="testCorrectAnswer()">Respuesta Correcta (Rápida)</button>
+        <button onclick="testCorrectAnswerSlow()">Respuesta Correcta (Lenta)</button>
+        <button class="incorrect" onclick="testIncorrectAnswer()">Respuesta Incorrecta</button>
+        <button class="incorrect" onclick="testTimeout()">Timeout</button>
+    </div>
+
+    <div class="test-section">
+        <h2>⏰ Test Específicos de Timeout</h2>
+        <button onclick="testSimpleTimeout()">Timeout Simple</button>
+        <button onclick="testChallengeTimeout()">Timeout de Desafío</button>
+        <button onclick="testConsecutiveTimeouts()">Timeouts Consecutivos</button>
+        <button onclick="testInactivityTimeout()">Timeout de Inactividad</button>
+        <button onclick="testTimeoutPattern()">Patrón de Timeouts</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🚨 Test Eventos de Inactividad</h2>
+        <button onclick="testInactivityWarning()">Advertencia de Inactividad</button>
+        <button onclick="testActivityConfirmed()">Confirmar Actividad</button>
+        <button onclick="testAbandonedInactivity()">Abandonar por Inactividad</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 Test Compatibilidad GameEngine</h2>
+        <button onclick="testGameEngineFormat()">Formato GameEngine</button>
+        <button onclick="testChallengeEngineFormat()">Formato ChallengeEngine</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Registro de Eventos</h2>
+        <div id="log" class="log"></div>
+        <button onclick="clearLog()">Limpiar Log</button>
+    </div>
+
+    <!-- Google Analytics Script -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RQVNQE35NT"></script>
+    
+    <!-- Analytics Utils -->
+    <script src="js/utils/Analytics.js"></script>
+
+    <script>
+        // Sistema de logging
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('log');
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? '#f44336' : type === 'success' ? '#4CAF50' : '#333';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[Analytics Test] ${message}`);
+        }
+
+        // Verificar estado del sistema
+        function checkAnalyticsStatus() {
+            const statusEl = document.getElementById('analytics-status');
+            const infoEl = document.getElementById('analytics-info');
+
+            if (typeof window.trivialAnalytics !== 'undefined') {
+                statusEl.textContent = '✅ Cargado correctamente';
+                statusEl.style.color = '#4CAF50';
+                infoEl.innerHTML = `
+                    <div class="results">
+                        <strong>Analytics Activo:</strong><br>
+                        • Métodos disponibles: ${Object.getOwnPropertyNames(window.trivialAnalytics.__proto__).filter(m => m.startsWith('track')).length}<br>
+                        • Sesión iniciada: ${new Date(window.trivialAnalytics.sessionStartTime).toLocaleTimeString()}<br>
+                        • Google Analytics: ${typeof gtag !== 'undefined' ? '✅ Disponible' : '❌ No disponible'}
+                    </div>
+                `;
+                log('Sistema de Analytics cargado correctamente', 'success');
+            } else {
+                statusEl.textContent = '❌ Error de carga';
+                statusEl.style.color = '#f44336';
+                infoEl.innerHTML = '<div class="results" style="background: #ffebee; border-left-color: #f44336;">Analytics no está disponible</div>';
+                log('ERROR: Sistema de Analytics no disponible', 'error');
+            }
+        }
+
+        // Tests de eventos de desafío
+        function testChallengeStart() {
+            try {
+                // Test completo con todos los parámetros
+                const testConfig = {
+                    historia: true,
+                    ciencia: false,
+                    deportes: true,
+                    arte: false,
+                    geografia: true,
+                    entretenimiento: false
+                };
+                
+                window.trivialAnalytics.trackChallengeStart(
+                    'continuous', 
+                    30, 
+                    'hard', 
+                    'multiple', 
+                    testConfig
+                );
+                log('✅ Evento challenge_start enviado:', 'success');
+                log(`   - Modo: continuous`, 'info');
+                log(`   - Tiempo: 30s`, 'info');
+                log(`   - Dificultad: hard`, 'info');
+                log(`   - Tipo: multiple`, 'info');
+                
+                log('✅ Eventos challenge_categories enviados:', 'success');
+                Object.keys(testConfig).forEach(cat => {
+                    if (testConfig[cat]) {
+                        log(`   - challenge_categories: ${cat}`, 'info');
+                    }
+                });
+                
+            } catch (error) {
+                log(`❌ Error en challengeStart: ${error.message}`, 'error');
+            }
+        }
+
+        function testChallengeComplete() {
+            try {
+                const score = Math.floor(Math.random() * 1000);
+                const correct = Math.floor(Math.random() * 20);
+                const total = correct + Math.floor(Math.random() * 10);
+                
+                window.trivialAnalytics.trackChallengeComplete('test_mode', score, correct, total);
+                log(`✅ Evento challengeComplete enviado (${score} pts, ${correct}/${total})`, 'success');
+            } catch (error) {
+                log(`❌ Error en challengeComplete: ${error.message}`, 'error');
+            }
+        }
+
+        function testChallengeAbandon() {
+            try {
+                const questions = Math.floor(Math.random() * 15);
+                window.trivialAnalytics.trackChallengeAbandoned('test_mode', questions);
+                log(`✅ Evento challengeAbandoned enviado (${questions} preguntas)`, 'success');
+            } catch (error) {
+                log(`❌ Error en challengeAbandoned: ${error.message}`, 'error');
+            }
+        }
+
+        // Tests de respuestas
+        function testCorrectAnswer() {
+            try {
+                const responseTime = Math.floor(Math.random() * 5) + 1; // 1-5 segundos
+                window.trivialAnalytics.trackQuestionAnswered(true, responseTime);
+                window.trivialAnalytics.trackCorrectAnswer(responseTime);
+                log(`✅ Respuesta correcta enviada (${responseTime}s - rápida)`, 'success');
+            } catch (error) {
+                log(`❌ Error en respuesta correcta: ${error.message}`, 'error');
+            }
+        }
+
+        function testCorrectAnswerSlow() {
+            try {
+                const responseTime = Math.floor(Math.random() * 10) + 10; // 10-20 segundos
+                window.trivialAnalytics.trackQuestionAnswered(true, responseTime);
+                window.trivialAnalytics.trackCorrectAnswer(responseTime);
+                log(`✅ Respuesta correcta enviada (${responseTime}s - lenta)`, 'success');
+            } catch (error) {
+                log(`❌ Error en respuesta correcta lenta: ${error.message}`, 'error');
+            }
+        }
+
+        function testIncorrectAnswer() {
+            try {
+                const responseTime = Math.floor(Math.random() * 15) + 5;
+                window.trivialAnalytics.trackQuestionAnswered(false, responseTime);
+                window.trivialAnalytics.trackIncorrectAnswer(responseTime);
+                log(`✅ Respuesta incorrecta enviada (${responseTime}s)`, 'success');
+            } catch (error) {
+                log(`❌ Error en respuesta incorrecta: ${error.message}`, 'error');
+            }
+        }
+
+        function testTimeout() {
+            try {
+                const timeLimit = 20;
+                const questionNumber = Math.floor(Math.random() * 10) + 1;
+                
+                // Test métodos específicos de timeout
+                window.trivialAnalytics.trackTimeout(timeLimit, questionNumber);
+                window.trivialAnalytics.trackChallengeTimeout('test_mode', 'historia', timeLimit);
+                
+                // También track como respuesta incorrecta
+                window.trivialAnalytics.trackQuestionAnswered(false, timeLimit);
+                window.trivialAnalytics.trackIncorrectAnswer(timeLimit);
+                
+                log(`✅ Timeout completo enviado (${timeLimit}s, pregunta #${questionNumber})`, 'success');
+            } catch (error) {
+                log(`❌ Error en timeout: ${error.message}`, 'error');
+            }
+        }
+
+        // Tests específicos de timeout
+        function testSimpleTimeout() {
+            try {
+                const timeLimit = Math.floor(Math.random() * 30) + 10; // 10-40 segundos
+                const questionNumber = Math.floor(Math.random() * 20) + 1;
+                
+                window.trivialAnalytics.trackTimeout(timeLimit, questionNumber);
+                log(`✅ Timeout simple enviado (${timeLimit}s, pregunta #${questionNumber})`, 'success');
+            } catch (error) {
+                log(`❌ Error en timeout simple: ${error.message}`, 'error');
+            }
+        }
+
+        function testChallengeTimeout() {
+            try {
+                const modes = ['continuous', 'survival', 'speed'];
+                const categories = ['historia', 'ciencia', 'deportes', 'arte', 'geografia', 'entretenimiento'];
+                const mode = modes[Math.floor(Math.random() * modes.length)];
+                const category = categories[Math.floor(Math.random() * categories.length)];
+                const timeLimit = [10, 15, 20, 30][Math.floor(Math.random() * 4)];
+                
+                window.trivialAnalytics.trackChallengeTimeout(mode, category, timeLimit);
+                log(`✅ Timeout de desafío enviado (${mode}, ${category}, ${timeLimit}s)`, 'success');
+            } catch (error) {
+                log(`❌ Error en timeout de desafío: ${error.message}`, 'error');
+            }
+        }
+
+        function testConsecutiveTimeouts() {
+            try {
+                // Simular 3 timeouts consecutivos
+                for (let i = 1; i <= 3; i++) {
+                    setTimeout(() => {
+                        window.trivialAnalytics.trackTimeout(20, i);
+                        window.trivialAnalytics.trackQuestionAnswered(false, 20);
+                        log(`✅ Timeout consecutivo ${i}/3 enviado`, 'success');
+                        
+                        if (i === 3) {
+                            log('⚠️ Simulación de 3 timeouts consecutivos completada', 'info');
+                        }
+                    }, i * 500);
+                }
+            } catch (error) {
+                log(`❌ Error en timeouts consecutivos: ${error.message}`, 'error');
+            }
+        }
+
+        function testInactivityTimeout() {
+            try {
+                // Simular timeout por inactividad
+                window.trivialAnalytics.trackTimeout(60, null); // Sin número de pregunta = inactividad
+                window.trivialAnalytics.trackInactivityTimeout(60, 5);
+                
+                log('✅ Timeout de inactividad enviado (60s sin respuesta, 5 preguntas)', 'success');
+            } catch (error) {
+                log(`❌ Error en timeout de inactividad: ${error.message}`, 'error');
+            }
+        }
+
+        function testTimeoutPattern() {
+            try {
+                const patterns = ['warning', 'critical', 'frequent'];
+                const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+                const timeouts = Math.floor(Math.random() * 10) + 1;
+                
+                window.trivialAnalytics.trackTimeoutPattern(pattern, timeouts);
+                log(`✅ Patrón de timeout enviado (${pattern}, ${timeouts} timeouts)`, 'success');
+            } catch (error) {
+                log(`❌ Error en patrón de timeout: ${error.message}`, 'error');
+            }
+        }
+
+        // Tests de eventos de inactividad
+        function testInactivityWarning() {
+            try {
+                const questionsAnswered = Math.floor(Math.random() * 15) + 1;
+                const score = Math.floor(Math.random() * 500);
+                
+                window.trivialAnalytics.trackChallengeInactivity('continuous', questionsAnswered, score);
+                log(`✅ Advertencia de inactividad enviada (${questionsAnswered} preguntas, ${score} pts)`, 'success');
+            } catch (error) {
+                log(`❌ Error en advertencia de inactividad: ${error.message}`, 'error');
+            }
+        }
+
+        function testActivityConfirmed() {
+            try {
+                const questionsAnswered = Math.floor(Math.random() * 20) + 5;
+                
+                window.trivialAnalytics.trackChallengeActivityConfirmed('continuous', questionsAnswered);
+                log(`✅ Actividad confirmada enviada (${questionsAnswered} preguntas)`, 'success');
+            } catch (error) {
+                log(`❌ Error en actividad confirmada: ${error.message}`, 'error');
+            }
+        }
+
+        function testAbandonedInactivity() {
+            try {
+                const questionsAnswered = Math.floor(Math.random() * 10) + 1;
+                const score = Math.floor(Math.random() * 300);
+                
+                window.trivialAnalytics.trackChallengeAbandonedInactivity('continuous', questionsAnswered, score);
+                log(`✅ Abandono por inactividad enviado (${questionsAnswered} preguntas, ${score} pts)`, 'success');
+            } catch (error) {
+                log(`❌ Error en abandono por inactividad: ${error.message}`, 'error');
+            }
+        }
+
+        // Tests de compatibilidad
+        function testGameEngineFormat() {
+            try {
+                // Formato GameEngine: (category, difficulty, isCorrect, responseTime)
+                window.trivialAnalytics.trackQuestionAnswered('historia', 'medium', true, 8);
+                log('✅ Formato GameEngine enviado (historia, medium, correcto, 8s)', 'success');
+            } catch (error) {
+                log(`❌ Error en formato GameEngine: ${error.message}`, 'error');
+            }
+        }
+
+        function testChallengeEngineFormat() {
+            try {
+                // Formato ChallengeEngine: (isCorrect, responseTime)
+                window.trivialAnalytics.trackQuestionAnswered(true, 5);
+                log('✅ Formato ChallengeEngine enviado (correcto, 5s)', 'success');
+            } catch (error) {
+                log(`❌ Error en formato ChallengeEngine: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            log('Log limpiado');
+        }
+
+        // Interceptar eventos de gtag para logging
+        if (typeof gtag !== 'undefined') {
+            const originalGtag = gtag;
+            window.gtag = function(...args) {
+                if (args[0] === 'event') {
+                    log(`📊 GA Event: ${args[1]} (${args[2]?.event_category})`, 'info');
+                }
+                return originalGtag.apply(this, args);
+            };
+        }
+
+        // Verificar estado al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            // Esperar un poco para que Analytics se cargue
+            setTimeout(checkAnalyticsStatus, 1000);
+        });
+    </script>
+</body>
+</html>
