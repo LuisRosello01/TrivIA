@@ -8,6 +8,7 @@
 #challenge-config-screen {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    padding: 20px;
 }
 
 #challenge-config-screen .config-container {
@@ -138,16 +139,18 @@
 .challenge-game-screen {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     color: white;
-    padding: 20px;
 }
 
 .challenge-game-container {
+    position: absolute;
+    width: 100%;
     min-width: 50%;
     max-width: 1200px;
-    padding: 30px 0;
+    padding: 30px 20px;
     height: 100dvh;
     display: flex;
     flex-direction: column;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* === HEADER CON ESTADÍSTICAS === */

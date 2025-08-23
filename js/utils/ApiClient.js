@@ -10,13 +10,13 @@ class ApiClient {
         this.fallbackQuestions = null;
         this.translationCache = new Map(); // Cache para traducciones
         this.translationUrl = 'https://api.mymemory.translated.net/get'; // API de traducción
-        this.translationEnabled = true; // Por defecto está activada la traducción
+        this.translationEnabled = true;
         
         // Sistema de rate limiting para evitar error 429
         this.apiRequestQueue = [];
         this.isProcessingQueue = false;
         this.lastApiRequest = 0;
-        this.minRequestInterval = 1000; // Mínimo 1 segundo entre peticiones
+        this.minRequestInterval = 3000; // Mínimo 3 segundos entre peticiones para evitar 429
         this.maxRetries = 2; // Máximo 2 reintentos en caso de error 429
         
         // Mapeo completo de categorías Open Trivia DB (inglés -> español)

@@ -154,7 +154,7 @@ class ChallengeUI {    constructor() {
         document.addEventListener('newChallengeQuestion', (e) => this.onNewQuestion(e.detail));
         document.addEventListener('challengeAnswerProcessed', (e) => this.onAnswerProcessed(e.detail));
         document.addEventListener('challengeTimerUpdate', (e) => this.onTimerUpdate(e.detail));
-        document.addEventListener('challengeTimeOut', (e) => this.onTimeOut(e.detail));
+        document.addEventListener('challengeTimeout', (e) => this.onTimeOut(e.detail));
         document.addEventListener('challengeEnded', (e) => this.onChallengeEnded(e.detail));
         document.addEventListener('challengeError', (e) => this.onChallengeError(e.detail));
         document.addEventListener('challengePaused', (e) => this.onChallengePaused(e.detail));
@@ -242,9 +242,15 @@ class ChallengeUI {    constructor() {
             this.saveConfig(config);
 
             // Inicializar y comenzar desafío
-            if (this.challengeEngine.initialize(config)) {
-                await this.challengeEngine.startChallenge();
-            } else {
+            try {
+                await this.challengeEngine.initialize(config);
+                // Llamar directamente a onChallengeStarted ya que tenemos toda la info
+                this.onChallengeStarted({
+                    config: config,
+                    gameState: this.challengeEngine.gameState
+                });
+            } catch (error) {
+                console.error('Error iniciando desafío:', error);
                 this.showButtonLoading(false);
             }
         } catch (error) {
@@ -420,23 +426,24 @@ class ChallengeUI {    constructor() {
             }
             
             gameScreen.innerHTML = `
-                <div class="challenge-game-container">
-                    <!-- Indicador de carga inicial -->
-                    <div id="challenge-loading-screen" class="loading-screen active">
-                        <div class="loading-content">
-                            <div class="loading-spinner"></div>
-                            <h3>🎯 Preparando Desafío...</h3>
-                            <p id="loading-status">Configurando el juego</p>
-                        </div>
+                <!-- Indicador de carga inicial -->
+                <div id="challenge-loading-screen" class="loading-screen active">
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <h3>🎯 Preparando Desafío...</h3>
+                        <p id="loading-status">Configurando el juego</p>
                     </div>
-
-                    <!-- Indicador de carga entre preguntas -->
+                </div>
+                <div class="challenge-game-container">
+                    <!-- Indicador de carga entre preguntas (DESHABILITADO) -->
+                    <!-- 
                     <div id="question-loading" class="question-loading">
                         <div class="loading-content">
                             <div class="loading-spinner small"></div>
                             <p>Cargando siguiente pregunta...</p>
                         </div>
-                    </div>                    <!-- Área de la pregunta -->
+                    </div>
+                    -->                    <!-- Área de la pregunta -->
                     <div class="challenge-question-area">
                         <!-- Estadísticas simplificadas encima de la pregunta -->
                         <div class="question-stats">
@@ -522,7 +529,9 @@ class ChallengeUI {    constructor() {
                         </div>
                     </div>
                 </div>
-            `;            document.body.appendChild(gameScreen);
+            `;
+            
+            document.body.appendChild(gameScreen);
 
             // Cachear inmediatamente el elemento principal
             this.elements.challengeGameScreen = gameScreen;
@@ -567,7 +576,7 @@ class ChallengeUI {    constructor() {
         // Elementos de carga
         this.elements.challengeLoadingScreen = document.getElementById('challenge-loading-screen');
         this.elements.loadingStatus = document.getElementById('loading-status');
-        this.elements.questionLoading = document.getElementById('question-loading');
+        // this.elements.questionLoading = document.getElementById('question-loading'); // Deshabilitado
           // Elementos de la pregunta
         this.elements.challengeQuestionCategory = document.getElementById('challenge-question-category');
         this.elements.challengeQuestionText = document.getElementById('challenge-question-text');
@@ -638,7 +647,8 @@ class ChallengeUI {    constructor() {
 
     /**
      * Vincula los eventos del juego
-     */    bindGameEvents() {
+     */
+    bindGameEvents() {
         // Eventos de respuesta - usando event listeners optimizados para móviles
         this.elements.challengeAnswerBtns.forEach((btn, index) => {
             if (btn) {
@@ -719,27 +729,79 @@ class ChallengeUI {    constructor() {
         this.hideAllScreens();
         this.elements.challengeGameScreen.classList.add('active');
         this.currentScreen = 'challenge-game';
+        
+        // Cachear elementos después de mostrar la pantalla para asegurar disponibilidad
+        setTimeout(() => {
+            this.cacheGameElements();
+            console.log('✅ Elementos del juego re-cacheados después de mostrar la pantalla');
+            
+            // Ahora que la UI está lista, iniciar el desafío
+            if (this.challengeEngine && !this.challengeEngine.isActive) {
+                console.log('🚀 UI lista, iniciando el desafío...');
+                console.log('📊 Estado de elementos antes de iniciar:', {
+                    challengeQuestionText: !!this.elements.challengeQuestionText,
+                    challengeAnswerBtns: this.elements.challengeAnswerBtns ? this.elements.challengeAnswerBtns.length : 0,
+                    challengeGameScreen: !!this.elements.challengeGameScreen
+                });
+                this.challengeEngine.start().catch(error => {
+                    console.error('Error al iniciar el desafío:', error);
+                });
+            }
+        }, 100);
     }/**
      * Maneja una nueva pregunta
      */
     onNewQuestion(data) {
         console.log('❓ Nueva pregunta del desafío');
+        console.log('📊 Datos recibidos:', data);
+        console.log('📊 Pregunta:', data.question);
         
-        // Mostrar carga de pregunta brevemente
-        this.showQuestionLoading();
+        // Asegurar que los elementos están disponibles antes de cualquier procesamiento
+        if (!this.elements.challengeQuestionText || !this.elements.challengeAnswerBtns) {
+            console.warn('⚠️ Elementos críticos no disponibles, re-cacheando...');
+            this.cacheGameElements();
+            
+            // Pequeño delay para asegurar que el DOM esté actualizado
+            setTimeout(() => {
+                this.onNewQuestion(data);
+            }, 50);
+            return;
+        }
         
-        // Procesar la pregunta después de un breve delay
-        setTimeout(() => {
+        // Si es la primera pregunta, no hacer animación
+        if (this.elements.challengeQuestionText.textContent === 'Pregunta aparecerá aquí...') {
             this.processNewQuestion(data);
-            this.hideQuestionLoading();
-        }, 800);
+            return;
+        }
+        
+        // Animar salida de la pregunta actual hacia la izquierda
+        this.animateQuestionTransition(data);
     }
 
     /**
-     * Procesa una nueva pregunta (separado para manejar la carga)
+     * Procesa una nueva pregunta (ahora simplificado para el sistema de contenedores)
      */
-    processNewQuestion(data) {
+    processNewQuestion(data, skipTimerStart = false) {
         const question = data.question;
+        console.log('🔍 Procesando nueva pregunta:', question);
+        
+        // Verificar que los elementos están cacheados - si no, cachearlos
+        if (!this.elements.challengeAnswerBtns) {
+            console.warn('⚠️ Elementos no cacheados, re-cacheando antes de procesar pregunta...');
+            this.cacheGameElements();
+        }
+        
+        // Verificar nuevamente después del cacheo
+        if (!this.elements.challengeAnswerBtns || this.elements.challengeAnswerBtns.length === 0) {
+            console.error('❌ No se pudieron cachear los botones de respuesta. Intentando recuperación de emergencia...');
+            this.forceElementCaching();
+            
+            // Intentar de nuevo después del cacheo de emergencia
+            if (!this.elements.challengeAnswerBtns) {
+                console.error('❌ Recuperación de emergencia fallida. Abortando procesamiento de pregunta.');
+                return;
+            }
+        }
         
         // Limpiar focus de botones anteriores para nueva pregunta
         this.elements.challengeAnswerBtns.forEach(btn => {
@@ -763,7 +825,7 @@ class ChallengeUI {    constructor() {
             
             // Intentar de nuevo después del cacheo de emergencia
             setTimeout(() => {
-                this.processNewQuestion(data);
+                this.processNewQuestion(data, skipTimerStart);
             }, 300);
             return;        
         }
@@ -788,7 +850,7 @@ class ChallengeUI {    constructor() {
         
         // Actualizar categoría
         if (this.elements.challengeQuestionCategory) {
-            this.elements.challengeQuestionCategory.textContent = this.getCategoryName(question.categoria);
+            this.elements.challengeQuestionCategory.textContent = this.getCategoryName(question.category);
         } else {
             console.error('❌ challengeQuestionCategory no encontrado');
         }
@@ -818,14 +880,201 @@ class ChallengeUI {    constructor() {
             }
         }
         
-        // IMPORTANTE: Iniciar el timer solo después de que la pregunta esté completamente mostrada
-        // Esto soluciona el problema de que la cuenta atrás empezaba durante la carga
+        // IMPORTANTE: Solo iniciar el timer si no se solicita saltarlo (para animaciones)
+        if (!skipTimerStart) {
+            setTimeout(() => {
+                if (this.challengeEngine && this.challengeEngine.gameState.isGameRunning) {
+                    console.log('⏱️ Iniciando timer después de mostrar la pregunta completamente');
+                    this.challengeEngine.startTimer(); // Usar el nuevo método público
+                }
+            }, 2000); // Pequeño delay para asegurar que la UI esté completamente renderizada
+        }
+    }
+
+    /**
+     * Anima la transición entre preguntas con deslizamiento de contenedores completos
+     */
+    animateQuestionTransition(data) {
+        console.log('🎬 Iniciando animación de transición de contenedor completo');
+        
+        const currentContainer = document.querySelector('.challenge-game-container');
+        if (!currentContainer) {
+            console.warn('⚠️ No se encontró contenedor actual, procesando pregunta directamente');
+            this.processNewQuestion(data);
+            return;
+        }
+        
+        const parentContainer = currentContainer.parentElement;
+        
+        // Crear nuevo contenedor con la nueva pregunta
+        const newContainer = this.createQuestionContainer(data);
+        
+        // Configurar el contenedor actual para la animación
+        //currentContainer.style.position = 'absolute';
+        //currentContainer.style.top = '0';
+        //currentContainer.style.left = '0';
+        //currentContainer.style.width = '100%';
+        //currentContainer.style.height = '100%';
+        //currentContainer.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        // Configurar el nuevo contenedor para entrar desde la derecha
+        //newContainer.style.position = 'absolute';
+        //newContainer.style.top = '0';
+        //newContainer.style.left = '0';
+        //newContainer.style.width = '100%';
+        //newContainer.style.height = '100%';
+        newContainer.style.transform = 'translateX(150%)';
+        //newContainer.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        // Añadir el nuevo contenedor al DOM
+        parentContainer.appendChild(newContainer);
+        
+        // Forzar reflow para asegurar que el elemento esté en el DOM
+        newContainer.offsetHeight;
+        
+        // Iniciar las animaciones
+        requestAnimationFrame(() => {
+            // Animar salida del contenedor actual hacia la izquierda
+            currentContainer.style.transform = 'translateX(-150%)';
+            
+            // Animar entrada del nuevo contenedor desde la derecha
+            newContainer.style.transform = 'translateX(0)';
+        });
+        
+        // Después de la animación, limpiar y cachear elementos
         setTimeout(() => {
-            if (this.challengeEngine && this.challengeEngine.gameState.isGameRunning) {
-                console.log('⏱️ Iniciando timer después de mostrar la pregunta completamente');
-                this.challengeEngine.startQuestionTimer(); // Usar el nuevo método público
+            // Remover el contenedor antiguo
+            if (currentContainer && currentContainer.parentElement) {
+                currentContainer.remove();
             }
-        }, 200); // Pequeño delay para asegurar que la UI esté completamente renderizada
+            
+            // Re-cachear los elementos del nuevo contenedor
+            this.cacheGameElements();
+            
+            // Configurar event listeners para los nuevos elementos
+            this.bindGameEvents();
+            
+            // IMPORTANTE: Iniciar el timer después de que el nuevo contenedor esté activo
+            setTimeout(() => {
+                if (this.challengeEngine && this.challengeEngine.gameState.isGameRunning) {
+                    console.log('⏱️ Iniciando timer para el nuevo contenedor');
+                    this.challengeEngine.startTimer();
+                }
+            }, 100);
+            
+            console.log('✅ Transición de contenedor completada');
+            
+        }, 450); // Esperar a que termine la animación
+    }
+
+    /**
+     * Crea un nuevo contenedor de pregunta con todos sus elementos
+     */
+    createQuestionContainer(data) {
+        const question = data.question;
+        
+        // Almacenar versiones original y traducida ANTES de usar los datos
+        this.storeQuestionVersions(question);
+        
+        const container = document.createElement('div');
+        container.className = 'challenge-game-container';
+        
+        // Obtener estadísticas actuales
+        const gameState = data.gameState || (this.challengeEngine ? this.challengeEngine.gameState : {});
+        const correctAnswers = gameState.correctAnswers || 0;
+        
+        // Configuración del timer
+        const timerConfig = this.challengeEngine ? this.challengeEngine.config.timer : 0;
+        const timerText = timerConfig === 0 ? '∞' : timerConfig;
+        const timerClass = timerConfig === 0 ? 'timer-circle timer-unlimited' : 'timer-circle';
+        
+        // Obtener texto de pregunta y respuestas directamente
+        const questionText = question.question || 'Pregunta aparecerá aquí...'; // Cambiado de pregunta_traducida/pregunta
+        const answers = question.answers || ['Opción A', 'Opción B', 'Opción C', 'Opción D']; // Cambiado de respuestas_traducidas/respuestas
+        
+        console.log('🔍 Debug createQuestionContainer:', {
+            questionText: questionText,
+            answers: answers,
+            answersLength: answers?.length,
+            questionType: question.type,
+            answer0: answers[0],
+            answer1: answers[1],
+            answer2: answers[2],
+            answer3: answers[3]
+        });
+        
+        container.innerHTML = `
+            <!-- Área de la pregunta -->
+            <div class="challenge-question-area">
+                <!-- Estadísticas simplificadas encima de la pregunta -->
+                <div class="question-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Correctas:</span>
+                        <span id="challenge-correct-answers" class="stat-value">${correctAnswers}</span>
+                    </div>
+                    <div class="challenge-timer">
+                        <div id="challenge-timer-circle" class="${timerClass}">
+                            <span id="challenge-timer-text">${timerText}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contenedor central para la pregunta -->
+                <div class="question-content-center">
+                    <div class="question-category">
+                        <span id="challenge-question-category">${this.getCategoryName(question.category)}</span>
+                    </div>
+                    <div class="question-text">
+                        <h3 id="challenge-question-text">${questionText}</h3>
+                    </div>
+                    <div class="question-controls">
+                        <button id="toggle-original-btn" class="btn btn-small btn-secondary">
+                            🌐 Ver Original
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Opciones de respuesta -->
+            <div class="challenge-answers">
+                <button id="challenge-answer-0" class="challenge-answer-btn">${answers[0] || 'Opción A'}</button>
+                <button id="challenge-answer-1" class="challenge-answer-btn">${answers[1] || 'Opción B'}</button>
+                ${answers.length > 2 ? `<button id="challenge-answer-2" class="challenge-answer-btn">${answers[2] || 'Opción C'}</button>` : ''}
+                ${answers.length > 3 ? `<button id="challenge-answer-3" class="challenge-answer-btn">${answers[3] || 'Opción D'}</button>` : ''}
+            </div>
+
+            <!-- Controles del juego -->
+            <div class="challenge-controls">
+                <button id="challenge-exit-btn" class="btn btn-danger">🚪 Salir</button>
+            </div>
+        `;
+        
+        return container;
+    }
+
+    /**
+     * Obtiene el texto de la pregunta a mostrar (traducido u original)
+     */
+    getDisplayQuestionText() {
+        if (this.questionDisplay.showingOriginal && this.questionDisplay.originalQuestion) {
+            return this.questionDisplay.originalQuestion; // Ya es un string
+        } else if (this.questionDisplay.translatedQuestion) {
+            return this.questionDisplay.translatedQuestion; // Ya es un string
+        } else if (this.questionDisplay.originalQuestion) {
+            return this.questionDisplay.originalQuestion; // Ya es un string
+        }
+        return 'Pregunta aparecerá aquí...';
+    }
+
+    /**
+     * Obtiene el texto de una respuesta específica a mostrar
+     */
+    getDisplayAnswerText(index) {
+        const answers = this.questionDisplay.showingOriginal && this.questionDisplay.originalAnswers 
+            ? this.questionDisplay.originalAnswers 
+            : this.questionDisplay.translatedAnswers || this.questionDisplay.originalAnswers;
+        
+        return answers && answers[index] ? answers[index] : `Opción ${String.fromCharCode(65 + index)}`;
     }
 
     /**
@@ -937,7 +1186,7 @@ class ChallengeUI {    constructor() {
         const currentQuestion = this.challengeEngine.gameState.currentQuestion;
         if (currentQuestion && this.questionDisplay.translatedAnswers) {
             const selectedAnswer = this.questionDisplay.translatedAnswers[answerIndex];
-            this.challengeEngine.processAnswer(selectedAnswer);
+            this.challengeEngine.handleAnswer(selectedAnswer);
         }
     }    /**
      * Maneja la respuesta procesada
@@ -974,9 +1223,13 @@ class ChallengeUI {    constructor() {
         console.log('🔄 Preparando siguiente pregunta...');
         
         this.createSafeTimeout(() => {
-            this.showQuestionLoading();
-        }, 2000); // Dar tiempo para ver el resultado
-    }    /**
+            // Indicador de carga deshabilitado - ahora usamos animación de deslizamiento
+            // this.showQuestionLoading();
+            console.log('💨 Preparando para siguiente pregunta (animación automática)');
+        }, 3000); // Dar tiempo para ver el resultado
+    }    
+    
+    /**
      * Maneja el timeout de una pregunta
      */
     onTimeOut(data) {
@@ -990,37 +1243,29 @@ class ChallengeUI {    constructor() {
             }
         });
         
-        // USAR EXACTAMENTE LA MISMA LÓGICA QUE onAnswerProcessed
-        const { correctAnswer } = data;
-        
-        console.log('🔍 DEBUG - Buscando respuesta correcta:');
-        console.log('  - correctAnswer:', correctAnswer);
-        console.log('  - translatedAnswers:', this.questionDisplay.translatedAnswers);
-        
-        // Encontrar el índice de la respuesta correcta usando las respuestas traducidas
-        const correctIndex = this.questionDisplay.translatedAnswers.indexOf(correctAnswer);
-        
-        console.log('  - correctIndex encontrado:', correctIndex);
-        
-        // Marcar respuesta correcta (IGUAL QUE onAnswerProcessed)
-        if (correctIndex !== -1 && this.elements.challengeAnswerBtns[correctIndex]) {
-            this.elements.challengeAnswerBtns[correctIndex].classList.add('correct');
-            console.log(`✅ Respuesta correcta mostrada en índice ${correctIndex}: "${correctAnswer}"`);
+        // Mostrar la respuesta correcta usando la información del evento
+        if (data.correctAnswer) {
+            const { index, text } = data.correctAnswer;
+            console.log(`🔍 Mostrando respuesta correcta - Índice: ${index}, Texto: "${text}"`);
+            
+            // Marcar la respuesta correcta visualmente
+            if (this.elements.challengeAnswerBtns[index]) {
+                this.elements.challengeAnswerBtns[index].classList.add('correct');
+                console.log(`✅ Respuesta correcta mostrada en índice ${index}: "${text}"`);
+            } else {
+                console.warn(`⚠️ No se pudo encontrar el botón para el índice ${index}`);
+            }
         } else {
-            console.warn(`⚠️ No se encontró la respuesta correcta "${correctAnswer}" en:`, this.questionDisplay.translatedAnswers);
+            console.warn('⚠️ No se recibió información de respuesta correcta en el timeout');
         }
         
         // Actualizar estadísticas
         this.updateStats(data.gameState);
         
-        console.log('⏰ Tiempo agotado - Respuesta correcta marcada');
+        console.log('⏰ Tiempo agotado - Respuesta correcta marcada durante 4 segundos');
         
-        // En el nuevo modo continuo, SIEMPRE continuar después del timeout
-        console.log('⏰ Tiempo agotado, pero continuamos con la siguiente pregunta');
-        
-        this.createSafeTimeout(() => {
-            this.showQuestionLoading();
-        }, 2000); // Dar tiempo para ver el resultado
+        // El ChallengeEngine manejará el avance después de 4 segundos
+        // No necesitamos timeout aquí
     }/**
      * Muestra la confirmación de salida
      */
@@ -1073,7 +1318,7 @@ class ChallengeUI {    constructor() {
      * Confirma la salida del desafío
      */
     confirmExitChallenge() {
-        this.challengeEngine.endChallenge();
+        this.challengeEngine.stop();
         this.elements.challengeExitModal.classList.remove('active');
         
         // Limpiar focus antes de cambiar de pantalla
@@ -1158,7 +1403,8 @@ class ChallengeUI {    constructor() {
      * Maneja el evento de pausa
      */
     onChallengePaused(data) {
-        console.log('⏸️ Desafío pausado');
+        console.log('⏸️ Desafío pausado:', data.reason || 'manual');
+        // La funcionalidad de pausa por timeouts ahora usa el modal de inactividad
     }
 
     /**
@@ -1166,7 +1412,9 @@ class ChallengeUI {    constructor() {
      */
     onChallengeResumed(data) {
         console.log('▶️ Desafío reanudado');
-    }    /**
+    }
+
+    /**
      * Maneja el evento de Game Over en modo supervivencia
      */      onSurvivalGameOver(data) {
         console.log('💀 Game Over en modo supervivencia:', data);
@@ -1242,7 +1490,7 @@ class ChallengeUI {    constructor() {
                     // Obtener configuración actual y reiniciar
                     const config = this.collectConfigFromForm();
                     this.challengeEngine.initialize(config);
-                    this.challengeEngine.startChallenge();
+                    this.challengeEngine.start();
                     
                     // Cerrar modal después de inicializar
                     if (this.elements.survivalGameOverModal) {
@@ -1275,7 +1523,7 @@ class ChallengeUI {    constructor() {
         }
 
         // Limpiar el desafío
-        this.challengeEngine.cleanup();
+        // this.challengeEngine.cleanup(); // Método no necesario en versión simplificada
 
         // Volver al menú principal
         this.showMainMenu();
@@ -1324,8 +1572,14 @@ class ChallengeUI {    constructor() {
     }
 
     /**
-     * Muestra el indicador de carga entre preguntas
+     * Muestra el indicador de carga entre preguntas (DESHABILITADO)
      */    showQuestionLoading() {
+        // Función deshabilitada - ahora usamos animaciones de deslizamiento
+        console.log('💨 showQuestionLoading deshabilitado - usando animaciones de deslizamiento');
+        return;
+        
+        // Código original comentado:
+        /*
         // No mostrar carga si el juego ha terminado
         if (this.gameEnded) {
             console.log('⚠️ No se mostrará carga de pregunta: el juego ha terminado');
@@ -1345,12 +1599,19 @@ class ChallengeUI {    constructor() {
         } else {
             console.log('⚠️ No se puede mostrar carga de pregunta: elemento no existe (interfaz destruida)');
         }
+        */
     }
 
     /**
-     * Oculta el indicador de carga entre preguntas
+     * Oculta el indicador de carga entre preguntas (DESHABILITADO)
      */
     hideQuestionLoading() {
+        // Función deshabilitada - ahora usamos animaciones de deslizamiento
+        console.log('💨 hideQuestionLoading deshabilitado - usando animaciones de deslizamiento');
+        return;
+        
+        // Código original comentado:
+        /*
         console.log('✅ Ocultando carga de pregunta');
         
         // Verificar que el elemento existe antes de usarlo
@@ -1363,6 +1624,7 @@ class ChallengeUI {    constructor() {
         } else {
             console.log('⚠️ Elemento question-loading no encontrado (posiblemente ya destruido)');
         }
+        */
     }    /**
      * Actualiza el estado de la carga inicial
      */
@@ -1501,18 +1763,18 @@ class ChallengeUI {    constructor() {
         
         // Verificar si la pregunta tiene información original preservada
         if (question.originalQuestion && question.originalAnswers) {
-            // Usar la información original preservada por el ChallengeEngine
+            // Usar la información original preservada por el API
             this.questionDisplay.originalQuestion = question.originalQuestion;
             this.questionDisplay.originalAnswers = question.originalAnswers;
-            this.questionDisplay.translatedQuestion = question.pregunta;
-            this.questionDisplay.translatedAnswers = question.opciones;
+            this.questionDisplay.translatedQuestion = question.question; // Cambiado de question.pregunta
+            this.questionDisplay.translatedAnswers = question.answers;   // Cambiado de question.opciones
             console.log('✅ Versiones original y traducida detectadas desde pregunta preservada');
         } else {
             // Fallback: usar la pregunta actual como ambas versiones
-            this.questionDisplay.originalQuestion = question.pregunta;
-            this.questionDisplay.originalAnswers = question.opciones;
-            this.questionDisplay.translatedQuestion = question.pregunta;
-            this.questionDisplay.translatedAnswers = question.opciones;
+            this.questionDisplay.originalQuestion = question.question;   // Cambiado de question.pregunta
+            this.questionDisplay.originalAnswers = question.answers;     // Cambiado de question.opciones
+            this.questionDisplay.translatedQuestion = question.question; // Cambiado de question.pregunta
+            this.questionDisplay.translatedAnswers = question.answers;   // Cambiado de question.opciones
             console.log('ℹ️ Solo una versión disponible, usando como original y traducida');
         }
         
@@ -2346,9 +2608,12 @@ class ChallengeUI {    constructor() {
     onInactivityContinue() {
         console.log('✅ Usuario eligió continuar después de la advertencia');
         
-        // Llamar al método del ChallengeEngine
+        // Ocultar el modal primero
+        this.hideInactivityWarning();
+        
+        // ChallengeEngine se encarga de todo: resetear timeouts y avanzar si es necesario
         if (this.challengeEngine) {
-            this.challengeEngine.confirmUserActive();
+            this.challengeEngine.resumeGame();
         }
     }
 
@@ -2371,10 +2636,16 @@ class ChallengeUI {    constructor() {
         this.elements.questionLoading = null;
         this.elements.challengeLoadingScreen = null;
         
-        // Llamar al método del ChallengeEngine
+        // Ocultar el modal
+        this.hideInactivityWarning();
+        
+        // Detener el motor del desafío
         if (this.challengeEngine) {
-            this.challengeEngine.confirmUserInactive();
+            this.challengeEngine.stop();
         }
+        
+        // Volver al menú principal
+        document.dispatchEvent(new CustomEvent('backToMenu'));
     }
 
     // ...existing code...

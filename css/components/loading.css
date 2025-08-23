@@ -138,7 +138,6 @@
     align-items: center;
     justify-content: center;
     z-index: 500;
-    border-radius: 20px;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
