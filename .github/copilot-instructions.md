@@ -3,76 +3,141 @@
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 
 ## Project Overview
-This is a modern trivia game built with vanilla JavaScript, HTML5, and CSS3. The game features:
+Modern trivia game with vanilla JavaScript, HTML5, and CSS3 featuring:
+- **Two game modes**: Classic multiplayer (2-6 players) and Challenge mode (single player)
+- **Dynamic questions**: Open Trivia Database API with Spanish translations via Ollama LLM
+- **Progressive rendering**: Canvas 2D board with dynamic sizing and smooth animations
+- **23 categories total**: 6 main + 17 additional categories from Open Trivia DB
+- **Advanced features**: Google Analytics tracking, vibration feedback, mobile optimizations
 
-- **Local multiplayer support** (2-6 players)
-- **Dynamic question system** using Open Trivia Database API with local fallback
-- **Interactive board** rendered with Canvas 2D
-- **Six categories**: Historia, Ciencia, Deportes, Arte, Geografía, Entretenimiento
-- **Progressive difficulty levels**: Easy, Medium, Hard
-- **Game state persistence** using LocalStorage
-- **Responsive design** for desktop and tablet
+## Architecture Insights
 
-## Architecture Patterns
-- **MVC Pattern**: Clear separation between game logic, UI, and data
-- **Event-driven architecture**: Components communicate through events
-- **Modular design**: Each class has a specific responsibility
-- **Error handling**: Graceful degradation when APIs fail
+### Module Loading Pattern
+The app uses a sophisticated module loading system:
+```javascript
+// main.js waits for DOM, then for custom 'modulesReady' event
+// Modules are loaded via HTML includes: menu.html, game.html, modals.html
+// attemptInitialization() retries with exponential backoff if elements aren't ready
+```
 
-## Code Style Guidelines
-- **Language**: All code comments and variable names should be in Spanish
-- **ES6+ Features**: Use modern JavaScript features (classes, arrow functions, async/await)
-- **Naming Convention**: Use camelCase for variables and functions, PascalCase for classes
-- **Error Handling**: Always include try-catch blocks for async operations
-- **Documentation**: Include JSDoc comments for all public methods
+### Event Communication
+Components communicate through custom events and callbacks:
+- **GameEngine** emits: `gameStarted`, `gameQuit`, `translationStarted/Completed/Error`
+- **Global events**: `backToMenu`, `modulesReady`, `appReady`
+- **ApiClient** propagates translation events through GameEngine
 
-## Key Components
+### State Management
+- **GameEngine** owns game state, persisted to LocalStorage via Storage utility
+- **ChallengeEngine** manages independent challenge mode state
+- **Pending states**: `pendingQuestionData` and `pendingMovement` handle async flows
 
-### Game Logic (`js/game/`)
-- **GameEngine.js**: Main game controller and state management
-- **Player.js**: Player state, statistics, and actions
-- **Board.js**: Canvas-based game board rendering and animations
-- **Question.js**: Question handling, validation, and formatting
+## Key Implementation Details
 
-### UI Layer (`js/ui/`)
-- **MenuUI.js**: Menu screens, configuration, and tutorial
-- **GameUI.js**: In-game interface, modals, and player interactions
+### Question System
+```javascript
+// ApiClient handles 3 layers of questions:
+// 1. Open Trivia DB (primary) - returns English questions
+// 2. Ollama translation (if enabled) - translates to Spanish
+// 3. Fallback JSON (offline) - pre-translated Spanish questions
+// Category mapping: Open Trivia IDs (9-32) → Spanish names
+```
 
-### Utilities (`js/utils/`)
-- **ApiClient.js**: External API integration with fallback support
-- **Storage.js**: LocalStorage management and data persistence
+### Canvas Rendering
+```javascript
+// Board.js implements dynamic sizing:
+// - calculateOptimalDimensions() adapts to viewport
+// - Double buffering for smooth animations
+// - RequestAnimationFrame for 60fps rendering
+// setupResizeHandlers() with debouncing prevents performance issues
+```
 
-## API Integration
-- **Primary source**: Open Trivia Database (https://opentdb.com/)
-- **Fallback**: Local JSON file with Spanish questions
-- **Error handling**: Automatic fallback when API is unavailable
-- **Caching**: Prevent question repetition within the same game
+### Mobile Detection & Optimization
+```javascript
+// MobileUtils uses multi-factor detection:
+// - Screen size + UserAgent + Touch + Memory
+// - Explicitly excludes Windows touchscreens
+// - Applies CSS classes and performance tweaks
+```
 
-## Styling Guidelines
-- **CSS Custom Properties**: Use CSS variables for theming
-- **Mobile-first**: Responsive design approach
-- **Animations**: Smooth transitions and visual feedback
-- **Accessibility**: Maintain good contrast ratios and keyboard navigation
+## Development Workflows
 
-## Development Notes
-- **Browser Compatibility**: Support modern browsers with ES6+ support
-- **Performance**: Optimize Canvas rendering and DOM manipulation
-- **State Management**: Use localStorage for game persistence
-- **Testing**: Validate game logic and API error scenarios
+### Local Development
+```powershell
+# Start development server (Python HTTP server on port 8000)
+python -m http.server 8000
+# Access at http://localhost:8000
+```
 
-## Common Tasks
-When working on this project, consider:
+### Ollama Integration (Optional)
+```javascript
+// OllamaClient auto-detects servers at:
+// - localhost:11434 (default)
+// - 192.168.31.88:11434 (network)
+// Uses gpt-oss model for thinking-optimized translations
+```
 
-1. **Adding new questions**: Update `data/fallback-questions.json` for offline support
-2. **New game features**: Follow the event-driven pattern for loose coupling
-3. **UI improvements**: Maintain consistency with existing design system
-4. **Performance optimization**: Focus on Canvas rendering and memory management
-5. **Accessibility**: Ensure keyboard navigation and screen reader support
+### Debug Functions
+```javascript
+// Available in browser console:
+debugInfo()        // Game state and storage info
+debugTrivial()     // Module loading diagnostics  
+clearAllData()     // Reset all game data
+exportGameData()   // Export save to JSON
+importGameData()   // Load save from JSON
+testIncorrectAnswerVibration() // Test haptic feedback
+```
 
-## External Dependencies
-- **Open Trivia Database API**: For dynamic question content
-- **Canvas 2D API**: For game board rendering
-- **LocalStorage API**: For data persistence
-- **Fetch API**: For network requests
+## Project-Specific Patterns
 
-Remember to maintain the Spanish language context for user-facing content and follow the established patterns for consistency.
+### Translation Flow
+1. Question fetched from Open Trivia DB (English)
+2. If translation enabled: OllamaClient translates to Spanish
+3. Events fired: `translationStarted` → `translationCompleted/Error`
+4. UI shows translation indicator during process
+
+### Analytics Integration
+```javascript
+// TrivialAnalytics wraps Google Analytics (G-RQVNQE35NT)
+// Tracks: game setup, question answers, challenge modes, technical events
+// Challenge mode has dedicated tracking methods
+```
+
+### CSS Architecture
+```css
+/* Modular structure:
+   base/     - Reset, typography, CSS variables
+   components/ - Reusable UI elements  
+   layouts/   - Screen-specific styles
+   themes/    - Category colors, player themes
+   utilities/ - Helpers, animations, responsive
+*/
+```
+
+## Critical Files to Understand
+
+- **js/main.js**: Application bootstrap, retry logic, global event handling
+- **js/game/GameEngine.js**: Core game state machine and turn management
+- **js/game/ChallengeEngine.js**: Independent challenge mode implementation
+- **js/utils/ApiClient.js**: Question fetching, translation, category mapping
+- **js/utils/MenuTransitionManager.js**: Menu animation orchestration
+- **modules/*.html**: HTML templates loaded dynamically
+
+## Common Pitfalls & Solutions
+
+### Module Loading Issues
+If UI doesn't initialize, check browser console with `debugTrivial()`. The app retries loading 3 times with exponential backoff.
+
+### Translation Delays
+Ollama translations can be slow. The app continues without translations if they timeout (45s default).
+
+### Canvas Performance
+Board rendering is optimized for 60fps but can lag on low-end devices. Mobile optimizations automatically reduce quality.
+
+### Question Repetition
+`usedQuestions` Set prevents repeats within a game session. Clears on new game start.
+
+## Language Context
+- **Spanish UI**: All user-facing text in Spanish
+- **Spanish code comments**: Developer comments in Spanish
+- **English**: Variable names and console logs
+- **Translations**: Questions auto-translated if Ollama available
