@@ -505,10 +505,10 @@ class ApiClient {
         try {
             const response = await fetch(url);
             
-            // Si recibimos un 429, esperar más tiempo y reintentar
+            // Si recibimos un 429, esperar tiempo fijo y reintentar
             if (response.status === 429) {
                 if (retries > 0) {
-                    const waitTime = Math.pow(2, this.maxRetries - retries + 1) * 2000; // Backoff exponencial
+                    const waitTime = 3000; // Espera fija de 3 segundos
                     console.warn(`⚠️ Error 429 (Too Many Requests). Esperando ${waitTime/1000}s antes de reintentar...`);
                     await new Promise(resolve => setTimeout(resolve, waitTime));
                     return this.fetchWithRetry(url, retries - 1);
