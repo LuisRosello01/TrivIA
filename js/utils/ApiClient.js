@@ -124,12 +124,10 @@ class ApiClient {
      */
     async initSession() {
         try {
-            console.log('🔐 Inicializando sesión de API...');
             const response = await this.fetchWithRetry('https://opentdb.com/api_token.php?command=request');
             const data = await response.json();
             if (data.response_code === 0) {
                 this.sessionToken = data.token;
-                console.log('✅ Sesión de API inicializada correctamente');
             } else {
                 console.warn(`⚠️ Error al inicializar sesión: código ${data.response_code}`);
             }
@@ -145,7 +143,6 @@ class ApiClient {
         try {
             const response = await fetch('data/fallback-questions.json');
             this.fallbackQuestions = await response.json();
-            console.log('Preguntas de fallback cargadas correctamente');
         } catch (error) {
             console.warn('No se pudieron cargar las preguntas de fallback:', error);
             this.generateBasicFallback();
@@ -356,11 +353,8 @@ class ApiClient {
     setTranslationEnabled(enabled) {
         this.translationEnabled = enabled;
         const status = enabled ? 'activada' : 'desactivada';
-        console.log(`🌐 Traducción automática ${status}`);
         
-        if (enabled) {
-            console.log('Las preguntas de la API se traducirán automáticamente del inglés al español');
-        } else {
+        if (!enabled) {
             console.log('Las preguntas de la API se mostrarán en su idioma original (inglés)');
         }
     }
@@ -379,7 +373,6 @@ class ApiClient {
             console.log(`🔍 Solicitando ${amount} pregunta(s) de ${category} (${difficulty}, ${type}) desde API`);
             const apiQuestions = await this.getQuestionsFromAPI(category, difficulty, amount, type);
             if (apiQuestions && apiQuestions.length > 0) {
-                console.log(`✅ ${apiQuestions.length} pregunta(s) obtenidas de la API`);
                 return apiQuestions;
             }
         } catch (error) {
@@ -505,10 +498,9 @@ class ApiClient {
         try {
             const response = await fetch(url);
             
-            // Si recibimos un 429, esperar tiempo fijo y reintentar
             if (response.status === 429) {
                 if (retries > 0) {
-                    const waitTime = 3000; // Espera fija de 3 segundos
+                    const waitTime = 4000; // Espera fija de 4 segundos
                     console.warn(`⚠️ Error 429 (Too Many Requests). Esperando ${waitTime/1000}s antes de reintentar...`);
                     await new Promise(resolve => setTimeout(resolve, waitTime));
                     return this.fetchWithRetry(url, retries - 1);
@@ -520,8 +512,8 @@ class ApiClient {
             return response;
         } catch (error) {
             if (retries > 0 && (error.name === 'TypeError' || error.message.includes('fetch'))) {
-                console.warn(`⚠️ Error de red. Reintentando en 3s... (${retries} reintentos restantes)`);
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                console.warn(`⚠️ Error de red. Reintentando en 4s... (${retries} reintentos restantes)`);
+                await new Promise(resolve => setTimeout(resolve, 4000));
                 return this.fetchWithRetry(url, retries - 1);
             }
             throw error;
@@ -533,7 +525,24 @@ class ApiClient {
      */
     async getQuestionsFromAPI(category, difficulty, amount, type = 'multiple') {
         return this.queueApiRequest(async () => {
+            // Validar parámetros antes de enviar
+            const validDifficulties = ['easy', 'medium', 'hard'];
+            const validTypes = ['multiple', 'boolean'];
+            
+            if (!validDifficulties.includes(difficulty)) {
+                throw new Error(`Dificultad inválida: ${difficulty}. Válidas: ${validDifficulties.join(', ')}`);
+            }
+            
+            if (!validTypes.includes(type)) {
+                throw new Error(`Tipo inválido: ${type}. Válidos: ${validTypes.join(', ')}`);
+            }
+            
+            if (amount < 1 || amount > 50) {
+                throw new Error(`Cantidad inválida: ${amount}. Debe estar entre 1 y 50`);
+            }
+            
             const categoryId = this.categoryMap[category.toLowerCase()];
+            
             if (!categoryId) {
                 throw new Error(`Categoría no válida: ${category}`);
             }

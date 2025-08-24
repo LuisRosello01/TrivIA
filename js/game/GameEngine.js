@@ -31,15 +31,11 @@ class GameEngine {    constructor() {
      * Inicializa el motor del juego
      */
     initialize() {
-        console.log('Inicializando motor del juego...');
-        
         // Cargar configuración
         this.loadConfig();
         
         // Configurar tablero
         this.setupBoard();
-        
-        console.log('Motor del juego inicializado');
     }
 
     /**
@@ -61,15 +57,12 @@ class GameEngine {    constructor() {
             // Configurar eventos de traducción
             this.setupApiClientEvents();
         }
-        
-        console.log('Configuración cargada:', this.config);
     }    /**
      * Configura el tablero del juego
      */
     setupBoard() {
         // El tablero ahora se configura automáticamente con dimensiones dinámicas
         this.board = new Board('game-board');
-        console.log('Tablero configurado con dimensiones dinámicas');
     }
 
     /**
@@ -90,8 +83,6 @@ class GameEngine {    constructor() {
         this.apiClient.on('translationError', (data) => {
             this.emit('translationError', data);
         });
-
-        console.log('Event listeners del ApiClient configurados');
     }
 
     /**
@@ -139,8 +130,6 @@ class GameEngine {    constructor() {
             
             // Guardar estado inicial
             this.saveGameState();
-            
-            console.log('Nuevo juego iniciado con', this.players.length, 'jugadores');
             
             // Emitir evento de inicio de juego
             this.emit('gameStarted', {

@@ -23,18 +23,13 @@ class MenuTransitionManager {
     }
     
     setupElements() {
-        console.log('🔍 Buscando elementos del menú...');
-        
         // Intentar obtener elementos con reintentos más agresivos
         const checkElements = (attempt = 1, maxAttempts = 20) => {
             this.menuContainer = document.querySelector('.menu-container');
             this.gameTitle = document.querySelector('.game-title');
             this.menuOptions = document.querySelector('.menu-options');
             
-            console.log(`📍 Intento ${attempt}: Container: ${!!this.menuContainer}, Title: ${!!this.gameTitle}, Options: ${!!this.menuOptions}`);
-            
             if (this.menuContainer && this.gameTitle && this.menuOptions) {
-                console.log('✅ Todos los elementos del menú encontrados');
                 this.setupInitialState();
                 return;
             }
@@ -68,8 +63,6 @@ class MenuTransitionManager {
         if (this.menuOptions) {
             this.menuOptions.classList.add('hidden');
         }
-        
-        console.log('🎭 Estado inicial del menú configurado');
     }
     
     // Método público para forzar configuración del estado inicial
@@ -83,7 +76,6 @@ class MenuTransitionManager {
             this.setupInitialState();
             return true;
         } else {
-            console.warn('🔍 No se pudieron encontrar elementos para configurar estado inicial');
             return false;
         }
     }
@@ -94,7 +86,6 @@ class MenuTransitionManager {
         
         // Re-verificar elementos por si se perdieron las referencias
         if (!this.gameTitle || !this.menuOptions || !this.menuContainer) {
-            console.log('🔄 Re-verificando elementos antes de activar transiciones...');
             this.menuContainer = document.querySelector('.menu-container');
             this.gameTitle = document.querySelector('.game-title');
             this.menuOptions = document.querySelector('.menu-options');
@@ -111,7 +102,6 @@ class MenuTransitionManager {
         }
         
         this.isInitialized = true;
-        console.log('🚀 Activando transiciones del menú principal');
         
         // Remover estado de inicialización
         if (this.menuContainer) {
@@ -120,13 +110,10 @@ class MenuTransitionManager {
         }
         
         // Transición del título - SIMPLE: solo cambiar las clases
-        console.log('📍 Estado inicial clases:', this.gameTitle.className);
         
         // Cambio directo y simple
         this.gameTitle.classList.remove('centered');
         this.gameTitle.classList.add('positioned');
-        
-        console.log('📍 Estado final clases:', this.gameTitle.className);
         
         // Mostrar botones con animación
         if (this.menuOptions) {
@@ -140,13 +127,11 @@ class MenuTransitionManager {
         
         // Disparar evento de menú listo
         document.dispatchEvent(new CustomEvent('menuTransitionComplete'));
-        console.log('✨ Transiciones del menú completadas');
     }
     
     // Método para forzar activar transiciones (fallback)
     forceActivate() {
         if (!this.isInitialized) {
-            console.log('⚡ Forzando activación de transiciones del menú');
             this.activateTransitions();
         }
     }
@@ -154,13 +139,11 @@ class MenuTransitionManager {
 
 // Inicializar el gestor de transiciones DESPUÉS de que los módulos estén cargados
 document.addEventListener('modulesReady', () => {
-    console.log('🎭 Módulos listos, inicializando MenuTransitionManager...');
     window.menuTransitionManager = new MenuTransitionManager();
     
     // Fallback: forzar activación si toma demasiado tiempo
     setTimeout(() => {
         if (window.menuTransitionManager && !window.menuTransitionManager.isInitialized) {
-            console.log('⏰ Timeout alcanzado, forzando activación de transiciones');
             window.menuTransitionManager.forceActivate();
         }
     }, 5000);
@@ -171,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Solo inicializar si no se ha inicializado ya con modulesReady
     setTimeout(() => {
         if (!window.menuTransitionManager) {
-            console.log('🎭 Fallback: Inicializando MenuTransitionManager desde DOMContentLoaded...');
             window.menuTransitionManager = new MenuTransitionManager();
         }
     }, 1000);

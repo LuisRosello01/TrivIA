@@ -108,6 +108,12 @@ class ChallengeEngine {
         } else {
             // Si no hay precargada, generar una nueva
             console.warn('⚠️ No hay pregunta precargada, generando nueva...');
+            
+            // Notificar a la UI que se está cargando una nueva pregunta
+            this.dispatchEvent('challengeError', {
+                error: 'Obteniendo siguiente pregunta...'
+            });
+            
             this.currentQuestion = await this.generateSingleQuestion();
         }
         
@@ -133,6 +139,15 @@ class ChallengeEngine {
             console.log('✅ Siguiente pregunta precargada');
         } catch (error) {
             console.error('❌ Error precargando pregunta:', error);
+            
+            // Detectar específicamente error 429 y emitir evento
+            if (error.message && (error.message.includes('429') || error.message.includes('Rate Limit') || error.message.includes('Too Many Requests'))) {
+                console.log('⚠️ Error 429 detectado en precarga de pregunta, notificando UI...');
+                this.dispatchEvent('challengeError', {
+                    error: 'Error 429: Demasiadas solicitudes. Esperando disponibilidad de API...'
+                });
+            }
+            
             this.nextQuestion = null;
         } finally {
             this.isPreloadingNext = false;
@@ -255,6 +270,14 @@ class ChallengeEngine {
         } catch (error) {
             console.error('❌ Error crítico al avanzar pregunta:', error);
             
+            // Detectar específicamente error 429 y emitir evento
+            if (error.message && (error.message.includes('429') || error.message.includes('Rate Limit') || error.message.includes('Too Many Requests'))) {
+                console.log('⚠️ Error 429 detectado en avance de pregunta, notificando UI...');
+                this.dispatchEvent('challengeError', {
+                    error: 'Error 429: Demasiadas solicitudes. Esperando disponibilidad de API...'
+                });
+            }
+            
             // Como último recurso, usar una pregunta de emergencia
             const emergencyQuestion = this.createTestQuestion(this.getEffectiveDifficulty());
             this.gameState.currentQuestion = emergencyQuestion;
@@ -310,6 +333,15 @@ class ChallengeEngine {
 
         } catch (error) {
             console.error('❌ Error generando pregunta:', error);
+            
+            // Detectar específicamente error 429 y emitir evento
+            if (error.message && (error.message.includes('429') || error.message.includes('Rate Limit') || error.message.includes('Too Many Requests'))) {
+                console.log('⚠️ Error 429 detectado en generación de pregunta, notificando UI...');
+                this.dispatchEvent('challengeError', {
+                    error: 'Error 429: Demasiadas solicitudes. Esperando disponibilidad de API...'
+                });
+            }
+            
             return this.createTestQuestion(this.getEffectiveDifficulty());
         }
     }
@@ -406,7 +438,7 @@ class ChallengeEngine {
             if (this.gameState.isGameRunning && this.gameState.isAlive) {
                 this.advanceToNextQuestion();
             }
-        }, 1500);
+        }, 3000);
     }
 
     /**
@@ -576,7 +608,15 @@ class ChallengeEngine {
      * Obtiene la dificultad efectiva considerando configuración
      */
     getEffectiveDifficulty() {
-        return this.config.difficulty || 'medium';
+        const difficulty = this.config.difficulty || 'medium';
+        
+        // Si la dificultad es 'random', elegir aleatoriamente una válida
+        if (difficulty === 'random') {
+            const validDifficulties = ['easy', 'medium', 'hard'];
+            return validDifficulties[Math.floor(Math.random() * validDifficulties.length)];
+        }
+        
+        return difficulty;
     }
 
     /**
@@ -730,6 +770,19 @@ class ChallengeEngine {
     resetConsecutiveTimeouts() {
         console.log('🔄 Reseteando contador de timeouts consecutivos');
         this.gameState.consecutiveTimeouts = 0;
+    }
+
+    /**
+     * Función de test para simular error 429
+     * Solo para debugging - no usar en producción
+     */
+    simulateApiError429() {
+        if (typeof window !== 'undefined' && window.console) {
+            console.log('🧪 [TEST] Simulando error 429...');
+            this.dispatchEvent('challengeError', {
+                error: 'Error 429: Demasiadas solicitudes. Esperando disponibilidad de API...'
+            });
+        }
     }
 }
 

@@ -2,7 +2,15 @@
 <html lang="es">
 <head>
     <!-- Google tag (gtag.js) - Script principal -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RQVNQE35NT"></script>
+    <script async src="https://www.googletagman                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = () => {
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        console.error(`❌ Error cargando script: ${src}`);
+                        reject(new Error(`Failed to load script: ${src}`));tag/js?id=G-RQVNQE35NT"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Trivial - Juego de Preguntas</title>
@@ -79,11 +87,10 @@
                     if (container) {
                         container.innerHTML = content;
                         
-                        // Verificar que se cargaron elementos importantes
+                        // Verificar que se cargaron elementos importantes del menú
                         if (module.id === 'menu-module') {
                             const menuScreen = container.querySelector('#menu-screen');
                             const startBtn = container.querySelector('#start-game-btn');
-                            console.log(`🔍 Verificación menú - Screen: ${!!menuScreen}, Botón: ${!!startBtn}`);
                         }
                     } else {
                         console.error(`❌ No se encontró el contenedor: ${module.id}`);
@@ -104,13 +111,10 @@
              */
             checkAllModulesLoaded() {
                 if (this.loadedModules === this.totalModules) {
-                    console.log('🎯 Todos los módulos HTML cargados correctamente');
-                    
                     // Solo cargar scripts si no está la bandera loadOnlyModules
                     if (!this.loadOnlyModules) {
                         this.loadScripts();
                     } else {
-                        console.log('🚀 Módulos cargados, scripts ya incluidos directamente');
                         // Disparar evento para indicar que los módulos están listos
                         document.dispatchEvent(new CustomEvent('modulesReady'));
                     }
@@ -133,8 +137,6 @@
                     for (const script of scripts) {
                         await this.loadScript(script.src);
                     }
-                    
-                    console.log('🚀 Aplicación completamente cargada y lista');
                     
                     // Disparar evento personalizado para indicar que todo está listo
                     document.dispatchEvent(new CustomEvent('appReady'));
@@ -166,9 +168,7 @@
             /**
              * Inicia la carga de todos los módulos
              */
-            async init() {
-                console.log('🔄 Iniciando carga de módulos HTML...');
-                
+            async init() {                
                 // Cargar todos los módulos en paralelo
                 const loadPromises = this.modules.map(module => this.loadModule(module));
                 
@@ -194,7 +194,7 @@
 
         // Trackear cuando todos los módulos están cargados
         document.addEventListener('modulesReady', () => {
-            console.log('🎯 Todos los módulos HTML cargados');
+            // Módulos listos para la aplicación
         });
     </script>
 

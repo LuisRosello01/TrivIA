@@ -27,8 +27,6 @@ class ChallengeUI {    constructor() {
      * Inicializa la UI del modo desafío
      * @param {ChallengeEngine} challengeEngine - Motor del desafío
      */    initialize(challengeEngine) {
-        console.log('🎨 Inicializando UI del Modo Desafío...');
-        
         this.challengeEngine = challengeEngine;
         this.cacheElements();
         this.bindEvents();
@@ -36,8 +34,6 @@ class ChallengeUI {    constructor() {
         
         // Optimizar para móviles si es necesario
         this.optimizeForMobile();
-
-        console.log('✅ UI del Modo Desafío inicializada');
     }
 
     /**
@@ -434,16 +430,17 @@ class ChallengeUI {    constructor() {
                         <p id="loading-status">Configurando el juego</p>
                     </div>
                 </div>
-                <div class="challenge-game-container">
-                    <!-- Indicador de carga entre preguntas (DESHABILITADO) -->
-                    <!-- 
-                    <div id="question-loading" class="question-loading">
-                        <div class="loading-content">
-                            <div class="loading-spinner small"></div>
-                            <p>Cargando siguiente pregunta...</p>
-                        </div>
+                
+                <!-- Indicador de carga entre preguntas - FUERA del contenedor que se recrea -->
+                <div id="question-loading" class="question-loading">
+                    <div class="loading-content">
+                        <div class="loading-spinner small"></div>
+                        <p>Obteniendo siguiente pregunta...</p>
                     </div>
-                    -->                    <!-- Área de la pregunta -->
+                </div>
+                
+                <div class="challenge-game-container">
+                    <!-- Área de la pregunta -->
                     <div class="challenge-question-area">
                         <!-- Estadísticas simplificadas encima de la pregunta -->
                         <div class="question-stats">
@@ -576,7 +573,8 @@ class ChallengeUI {    constructor() {
         // Elementos de carga
         this.elements.challengeLoadingScreen = document.getElementById('challenge-loading-screen');
         this.elements.loadingStatus = document.getElementById('loading-status');
-        // this.elements.questionLoading = document.getElementById('question-loading'); // Deshabilitado
+        // El elemento de carga de preguntas ahora está fuera del contenedor que se recrea
+        this.elements.questionLoading = document.getElementById('question-loading');
           // Elementos de la pregunta
         this.elements.challengeQuestionCategory = document.getElementById('challenge-question-category');
         this.elements.challengeQuestionText = document.getElementById('challenge-question-text');
@@ -752,9 +750,8 @@ class ChallengeUI {    constructor() {
      * Maneja una nueva pregunta
      */
     onNewQuestion(data) {
-        console.log('❓ Nueva pregunta del desafío');
-        console.log('📊 Datos recibidos:', data);
-        console.log('📊 Pregunta:', data.question);
+        // Ocultar indicador de carga al recibir nueva pregunta
+        this.hideQuestionLoading();
         
         // Asegurar que los elementos están disponibles antes de cualquier procesamiento
         if (!this.elements.challengeQuestionText || !this.elements.challengeAnswerBtns) {
@@ -1387,7 +1384,20 @@ class ChallengeUI {    constructor() {
      */
     onChallengeError(data) {
         console.error('❌ Error en el desafío:', data.error);
-        this.showError(data.error);
+        
+        // Detectar mensajes de carga (incluyendo error 429 y carga general)
+        if (data.error && (
+            data.error.includes('429') || 
+            data.error.includes('Rate Limit') || 
+            data.error.includes('Too Many Requests') ||
+            data.error.includes('Obteniendo siguiente pregunta') ||
+            data.error.includes('Esperando disponibilidad')
+        )) {
+            console.log('⏳ Mensaje de carga detectado, mostrando indicador...');
+            this.showQuestionLoading(data.error);
+        } else {
+            this.showError(data.error);
+        }
     }    /**
      * Muestra un mensaje de error
      */
@@ -1572,11 +1582,42 @@ class ChallengeUI {    constructor() {
     }
 
     /**
-     * Muestra el indicador de carga entre preguntas (DESHABILITADO)
-     */    showQuestionLoading() {
-        // Función deshabilitada - ahora usamos animaciones de deslizamiento
-        console.log('💨 showQuestionLoading deshabilitado - usando animaciones de deslizamiento');
-        return;
+     * Muestra el indicador de carga entre preguntas
+     */    
+    showQuestionLoading(message = 'Obteniendo siguiente pregunta...') {
+        // No mostrar carga si el juego ha terminado
+        if (this.gameEnded) {
+            console.log('⚠️ No se mostrará carga de pregunta: el juego ha terminado');
+            return;
+        }
+        
+        console.log('⏳ Mostrando carga de pregunta:', message);
+        
+        // Siempre buscar el elemento por ID para asegurarse de que existe
+        const questionLoading = document.getElementById('question-loading');
+        
+        // Solo mostrar si el elemento existe
+        if (questionLoading) {
+            // Actualizar el mensaje de carga
+            const loadingText = questionLoading.querySelector('p');
+            if (loadingText) {
+                loadingText.textContent = message;
+            }
+            
+            questionLoading.classList.add('active');
+            console.log('✅ Indicador de carga mostrado');
+        } else {
+            console.error('❌ No se puede mostrar carga de pregunta: elemento question-loading no encontrado');
+            
+            // Debug adicional
+            const gameScreen = document.getElementById('challenge-game-screen');
+            if (gameScreen) {
+                console.log('🔍 gameScreen existe, buscando question-loading dentro...');
+                const allLoadingElements = gameScreen.querySelectorAll('[id*="loading"]');
+                console.log('🔍 Elementos con "loading" encontrados:', allLoadingElements);
+            }
+        }
+    }
         
         // Código original comentado:
         /*
@@ -1598,34 +1639,27 @@ class ChallengeUI {    constructor() {
             this.elements.questionLoading.classList.add('active');
         } else {
             console.log('⚠️ No se puede mostrar carga de pregunta: elemento no existe (interfaz destruida)');
-        }
-        */
     }
 
     /**
-     * Oculta el indicador de carga entre preguntas (DESHABILITADO)
+     * Oculta el indicador de carga entre preguntas
      */
     hideQuestionLoading() {
-        // Función deshabilitada - ahora usamos animaciones de deslizamiento
-        console.log('💨 hideQuestionLoading deshabilitado - usando animaciones de deslizamiento');
-        return;
-        
-        // Código original comentado:
-        /*
         console.log('✅ Ocultando carga de pregunta');
         
-        // Verificar que el elemento existe antes de usarlo
-        if (!this.elements.questionLoading) {
-            this.elements.questionLoading = document.getElementById('question-loading');
-        }
+        // Siempre buscar el elemento por ID para asegurarse de que existe
+        const questionLoading = document.getElementById('question-loading');
         
-        if (this.elements.questionLoading) {
-            this.elements.questionLoading.classList.remove('active');
+        // Solo ocultar si el elemento existe
+        if (questionLoading) {
+            questionLoading.classList.remove('active');
+            console.log('✅ Indicador de carga ocultado');
         } else {
-            console.log('⚠️ Elemento question-loading no encontrado (posiblemente ya destruido)');
+            console.warn('⚠️ No se puede ocultar carga de pregunta: elemento question-loading no encontrado');
         }
-        */
-    }    /**
+    }
+
+    /**
      * Actualiza el estado de la carga inicial
      */
     updateLoadingStatus(status) {

@@ -270,4 +270,4 @@ window.addEventListener('error', (event) => {
     window.trivialAnalytics.trackError('JAVASCRIPT_ERROR', `${event.message}`);
 });
 
-console.log('📊 Google Analytics simplificado - Solo Modo Desafío');
+// Configuración simplificada para Modo Desafío

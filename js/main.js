@@ -27,12 +27,9 @@ window.testIncorrectAnswerVibration = () => {
  * Inicializa la aplicación cuando el DOM está listo
  */
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM cargado, esperando módulos...');
-    
     // Fallback: Si los módulos no se cargan en 3 segundos, intentar inicialización
     setTimeout(() => {
         if (!window.gameEngine) {
-            console.log('⚠️ Fallback: Módulos no cargados en tiempo esperado, intentando inicialización...');
             attemptInitialization();
         }
     }, 3000);
@@ -42,8 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
  * Inicializa la aplicación cuando todos los módulos están cargados
  */
 document.addEventListener('modulesReady', () => {
-    console.log('Módulos cargados, iniciando aplicación...');
-    
     // Inicializar la aplicación directamente
     setTimeout(() => {
         attemptInitialization();
@@ -54,9 +49,7 @@ document.addEventListener('modulesReady', () => {
  * Inicializa la aplicación cuando todos los módulos están cargados (fallback)
  */
 document.addEventListener('appReady', () => {
-    console.log('Evento appReady recibido');
     if (!window.gameEngine) {
-        console.log('Inicializando desde appReady...');
         attemptInitialization();
     }
 });
@@ -111,8 +104,6 @@ function initializeApplication() {
         window.trivialAnalytics.trackLoadTime('app_initialization', initTime);
         window.trivialAnalytics.trackPageView('App_Initialized');
     }
-    
-    console.log(`✅ Aplicación inicializada en ${Math.round(initTime)}ms`);
 }
 
 /**
@@ -398,8 +389,6 @@ function handleOrientationChange() {
         
         // Actualizar variables CSS para viewport
         updateViewportVariables();
-        
-        console.log('Orientación cambiada - Dimensiones actualizadas');
     }, 100);
 }
 
@@ -473,7 +462,6 @@ function showInitialScreen() {
     
     // Asegurar que MenuTransitionManager esté disponible y configure el estado inicial
     if (window.menuTransitionManager) {
-        console.log('🎭 Configurando estado inicial del menú antes de mostrarlo...');
         // Forzar la configuración del estado inicial
         window.menuTransitionManager.forceSetupInitialState();
     }
@@ -483,10 +471,7 @@ function showInitialScreen() {
     
     // Activar transiciones del menú cuando todo esté listo
     if (window.menuTransitionManager) {
-        console.log('🚀 Activando transiciones después de mostrar el menú...');
         window.menuTransitionManager.activateTransitions();
-    } else {
-        console.warn('MenuTransitionManager no está disponible');
     }
 }
 
@@ -661,7 +646,6 @@ function attemptInitialization(retryCount = 0, maxRetries = 3) {
             const elementsAvailable = criticalElements.every(id => {
                 const element = document.getElementById(id);
                 if (!element) {
-                    console.log(`❌ Elemento no encontrado: ${id}`);
                     return false;
                 }
                 return true;
@@ -669,7 +653,6 @@ function attemptInitialization(retryCount = 0, maxRetries = 3) {
             
             if (!elementsAvailable) {
                 if (retryCount < maxRetries) {
-                    console.log(`🔄 Elementos no disponibles, reintentando en ${delay}ms... (intento ${retryCount + 1}/${maxRetries + 1})`);
                     attemptInitialization(retryCount + 1, maxRetries);
                     return;
                 } else {
@@ -678,11 +661,9 @@ function attemptInitialization(retryCount = 0, maxRetries = 3) {
             }
             
             initializeApplication();
-            console.log('✅ Aplicación inicializada correctamente');
         } catch (error) {
             console.error('❌ Error al inicializar la aplicación:', error);
             if (retryCount < maxRetries) {
-                console.log(`🔄 Reintentando inicialización en ${delay}ms... (intento ${retryCount + 1}/${maxRetries + 1})`);
                 attemptInitialization(retryCount + 1, maxRetries);
             } else {
                 showCriticalError('Error al inicializar la aplicación después de múltiples intentos. Por favor, recarga la página.');
@@ -788,4 +769,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1000);
 });
 
-console.log('Archivo main.js cargado correctamente');
+// ===== FUNCIONES DE DEBUG PARA DESARROLLADORES =====
+
+/**
+ * Función de debug para probar indicador de carga con error 429
+ */
+function testApi429Error() {
+    console.log('🧪 [DEBUG] Probando indicador de carga para error 429...');
+    
+    // Buscar instancia del desafío actual
+    if (window.challengeEngine && window.challengeEngine.simulateApiError429) {
+        window.challengeEngine.simulateApiError429();
+        console.log('✅ Test de error 429 enviado');
+    } else {
+        console.warn('⚠️ No hay instancia de ChallengeEngine activa');
+        // Simular evento directamente
+        document.dispatchEvent(new CustomEvent('challengeError', {
+            detail: {
+                error: 'Error 429: Demasiadas solicitudes. Esperando disponibilidad de API...'
+            }
+        }));
+        console.log('✅ Evento de test enviado directamente');
+    }
+}
+
+// Hacer función global para fácil acceso desde consola
+window.testApi429Error = testApi429Error;
